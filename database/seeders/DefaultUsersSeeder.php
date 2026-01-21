@@ -18,6 +18,8 @@ class DefaultUsersSeeder extends Seeder
             'email' => 'admin@fannrental.com',
             'password' => \Illuminate\Support\Facades\Hash::make('admin123'),
             'role' => 'admin',
+            'status' => 'verified',
+            'verified_at' => now(),
             'phone' => '081234567890',
             'email_verified_at' => now(),
         ]);
@@ -28,6 +30,8 @@ class DefaultUsersSeeder extends Seeder
             'email' => 'pemilik@gmail.com',
             'password' => \Illuminate\Support\Facades\Hash::make('password'),
             'role' => 'pemilik',
+            'status' => 'verified',
+            'verified_at' => now(),
             'phone' => '081234567891',
             'email_verified_at' => now(),
         ]);
@@ -38,6 +42,8 @@ class DefaultUsersSeeder extends Seeder
             'email' => 'penyewa@gmail.com',
             'password' => \Illuminate\Support\Facades\Hash::make('password'),
             'role' => 'penyewa',
+            'status' => 'verified',
+            'verified_at' => now(),
             'phone' => '081234567892',
             'email_verified_at' => now(),
         ]);
@@ -48,6 +54,8 @@ class DefaultUsersSeeder extends Seeder
             'email' => 'superadmin@fannrental.com',
             'password' => \Illuminate\Support\Facades\Hash::make('superadmin123'),
             'role' => 'admin',
+            'status' => 'verified',
+            'verified_at' => now(),
             'phone' => '081234567893',
             'email_verified_at' => now(),
         ]);
@@ -58,6 +66,8 @@ class DefaultUsersSeeder extends Seeder
             'email' => 'erfan@pemilik.com',
             'password' => \Illuminate\Support\Facades\Hash::make('erfan123'),
             'role' => 'pemilik',
+            'status' => 'verified',
+            'verified_at' => now(),
             'phone' => '081234567894',
             'email_verified_at' => now(),
         ]);

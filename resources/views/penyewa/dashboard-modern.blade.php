@@ -1,6 +1,44 @@
-@extends('layouts.fann')
+@extends('layouts.app-modern')
 
 @section('title', 'Dashboard Penyewa')
+
+@section('header')
+    <h1 class="text-2xl font-bold text-gray-900">Dashboard Penyewa</h1>
+    <p class="mt-1 text-sm text-gray-500">Temukan dan sewa motor impian Anda dengan mudah</p>
+@endsection
+
+@section('navigation')
+    <div class="space-y-1">
+        <div class="px-3 mb-2">
+            <p class="text-xs font-semibold text-blue-200 uppercase tracking-wider">Menu Utama</p>
+        </div>
+        <a href="{{ route('penyewa.dashboard') }}" 
+           class="flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-800/50 rounded-lg">
+            <i class="bi bi-speedometer2 w-5 mr-3"></i>
+            Dashboard
+        </a>
+        <a href="{{ route('penyewa.motors') }}" 
+           class="flex items-center px-3 py-2 text-sm font-medium text-blue-100 hover:bg-blue-800/50 hover:text-white rounded-lg transition">
+            <i class="bi bi-motorcycle w-5 mr-3"></i>
+            Daftar Motor
+        </a>
+        <a href="{{ route('penyewa.bookings') }}" 
+           class="flex items-center px-3 py-2 text-sm font-medium text-blue-100 hover:bg-blue-800/50 hover:text-white rounded-lg transition">
+            <i class="bi bi-calendar-check w-5 mr-3"></i>
+            Pemesanan Saya
+        </a>
+        <a href="{{ route('penyewa.payment-history') }}" 
+           class="flex items-center px-3 py-2 text-sm font-medium text-blue-100 hover:bg-blue-800/50 hover:text-white rounded-lg transition">
+            <i class="bi bi-credit-card w-5 mr-3"></i>
+            Riwayat Pembayaran
+        </a>
+        <a href="{{ route('penyewa.reports') }}" 
+           class="flex items-center px-3 py-2 text-sm font-medium text-blue-100 hover:bg-blue-800/50 hover:text-white rounded-lg transition">
+            <i class="bi bi-file-earmark-text w-5 mr-3"></i>
+            Laporan
+        </a>
+    </div>
+@endsection
 
 @section('content')
     <!-- Verification Status Alert -->

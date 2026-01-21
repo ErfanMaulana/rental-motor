@@ -33,6 +33,13 @@ class AdminController extends Controller
         $availableMotors = Motor::where('status', 'available')->count();
         $pendingBookings = Booking::where('status', 'pending')->count();
         $confirmedBookings = Booking::where('status', 'confirmed')->count();
+        $activeBookings = Booking::whereIn('status', ['confirmed', 'ongoing'])->count();
+        
+        // Recent bookings for dashboard
+        $recentBookings = Booking::with(['user', 'motor'])
+            ->latest()
+            ->take(5)
+            ->get();
 
         // Data untuk grafik pendapatan bulanan
         $monthlyRevenue = Booking::selectRaw('MONTH(created_at) as month, YEAR(created_at) as year, SUM(price) as total_revenue, SUM(price) * 0.3 as admin_commission, SUM(price) * 0.7 as owner_share')
@@ -59,7 +66,7 @@ class AdminController extends Controller
             'totalUsers', 'totalPenyewa', 'totalPemilik', 'totalMotors', 
             'totalBookings', 'totalRevenue', 'pendingMotorsCount', 'pendingMotors',
             'pendingBookingsList', 'availableMotors', 'pendingBookings', 'confirmedBookings',
-            'chartData'
+            'activeBookings', 'recentBookings', 'chartData'
         ));
     }
 
@@ -67,11 +74,16 @@ class AdminController extends Controller
     {
         $query = User::query();
 
-        if ($request->has('role') && $request->role !== '') {
+        // Apply filters
+        if ($request->filled('role')) {
             $query->where('role', $request->role);
         }
 
-        if ($request->has('search') && $request->search !== '') {
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
@@ -82,9 +94,6 @@ class AdminController extends Controller
 
         $users = $query->orderBy('created_at', 'desc')->paginate(15);
         
-        // Append query parameters to pagination links
-        $users->appends($request->query());
-
         return view('admin.users', compact('users'));
     }
 

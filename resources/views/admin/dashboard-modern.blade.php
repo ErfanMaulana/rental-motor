@@ -1,6 +1,54 @@
-@extends('layouts.fann')
+@extends('layouts.app-modern')
 
 @section('title', 'Dashboard Admin')
+
+@section('header')
+    <h1 class="text-2xl font-bold text-gray-900">Dashboard Admin</h1>
+    <p class="mt-1 text-sm text-gray-500">Kelola platform rental motor dengan kontrol penuh</p>
+@endsection
+
+@section('navigation')
+    <div class="space-y-1">
+        <div class="px-3 mb-2">
+            <p class="text-xs font-semibold text-blue-200 uppercase tracking-wider">Menu Utama</p>
+        </div>
+        <a href="{{ route('admin.dashboard') }}" 
+           class="flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-800/50 rounded-lg">
+            <i class="bi bi-speedometer2 w-5 mr-3"></i>
+            Dashboard
+        </a>
+        <a href="{{ route('admin.users.index') }}" 
+           class="flex items-center px-3 py-2 text-sm font-medium text-blue-100 hover:bg-blue-800/50 hover:text-white rounded-lg transition">
+            <i class="bi bi-people w-5 mr-3"></i>
+            Manajemen Pengguna
+        </a>
+        <a href="{{ route('admin.motors') }}" 
+           class="flex items-center px-3 py-2 text-sm font-medium text-blue-100 hover:bg-blue-800/50 hover:text-white rounded-lg transition">
+            <i class="bi bi-motorcycle w-5 mr-3"></i>
+            Manajemen Motor
+        </a>
+        <a href="{{ route('admin.bookings.index') }}" 
+           class="flex items-center px-3 py-2 text-sm font-medium text-blue-100 hover:bg-blue-800/50 hover:text-white rounded-lg transition">
+            <i class="bi bi-calendar-check w-5 mr-3"></i>
+            Manajemen Pemesanan
+        </a>
+        <a href="{{ route('admin.payments.index') }}" 
+           class="flex items-center px-3 py-2 text-sm font-medium text-blue-100 hover:bg-blue-800/50 hover:text-white rounded-lg transition">
+            <i class="bi bi-credit-card w-5 mr-3"></i>
+            Manajemen Pembayaran
+        </a>
+        <a href="{{ route('admin.financial-report') }}" 
+           class="flex items-center px-3 py-2 text-sm font-medium text-blue-100 hover:bg-blue-800/50 hover:text-white rounded-lg transition">
+            <i class="bi bi-file-earmark-bar-graph w-5 mr-3"></i>
+            Laporan Keuangan
+        </a>
+        <a href="{{ route('admin.reports.index') }}" 
+           class="flex items-center px-3 py-2 text-sm font-medium text-blue-100 hover:bg-blue-800/50 hover:text-white rounded-lg transition">
+            <i class="bi bi-file-earmark-text w-5 mr-3"></i>
+            Laporan
+        </a>
+    </div>
+@endsection
 
 @section('content')
     <!-- Primary Statistics -->
@@ -116,7 +164,7 @@
                         <i class="bi bi-calendar-check mr-2 text-blue-600"></i>
                         Pemesanan Terbaru
                     </h2>
-                    <a href="{{ route('admin.bookings') }}" 
+                    <a href="{{ route('admin.bookings.index') }}" 
                        class="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center">
                         Lihat Semua
                         <i class="bi bi-arrow-right ml-1"></i>
@@ -192,7 +240,7 @@
                     @endif
                     
                     @if($pendingBookings > 0)
-                    <a href="{{ route('admin.bookings') }}?status=pending" 
+                    <a href="{{ route('admin.bookings.index') }}?status=pending" 
                        class="block p-4 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition">
                         <div class="flex items-center justify-between">
                             <div>
