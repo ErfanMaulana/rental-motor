@@ -11,8 +11,8 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:300,400,500,600,700,800&display=swap" rel="stylesheet" />
     
-    <!-- Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     
     <!-- Tailwind CSS -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -71,7 +71,7 @@
                         </a>
                         <a href="{{ route('admin.motors') }}" 
                            class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition {{ str_starts_with($currentRoute, 'admin.motors') ? 'bg-white/20 text-white' : 'text-blue-100 hover:bg-white/10 hover:text-white' }}">
-                            <i class="bi bi-motorcycle mr-3 text-base"></i>
+                            <i class="bi bi-scooter mr-3 text-base"></i>
                             Manajemen Motor
                         </a>
                         <a href="{{ route('admin.bookings') }}" 
@@ -88,11 +88,6 @@
                            class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition {{ str_starts_with($currentRoute, 'admin.financial') ? 'bg-white/20 text-white' : 'text-blue-100 hover:bg-white/10 hover:text-white' }}">
                             <i class="bi bi-file-earmark-bar-graph mr-3 text-base"></i>
                             Laporan Keuangan
-                        </a>
-                        <a href="{{ route('admin.reports') }}" 
-                           class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition {{ str_starts_with($currentRoute, 'admin.reports') ? 'bg-white/20 text-white' : 'text-blue-100 hover:bg-white/10 hover:text-white' }}">
-                            <i class="bi bi-file-earmark-text mr-3 text-base"></i>
-                            Laporan
                         </a>
                     @elseif($role === 'pemilik')
                         <div class="px-3 mb-3">

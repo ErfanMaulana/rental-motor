@@ -175,7 +175,6 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::patch('/payments/{id}/verify', [AdminController::class, 'verifyPayment'])->name('payments.verify');
     
     // Reports & Revenue Sharing
-    Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
     Route::get('/financial-report', [AdminController::class, 'financialReport'])->name('financial-report');
     Route::get('/financial-report/export-pdf', [AdminController::class, 'exportFinancialReportPDF'])->name('financial-report.export-pdf');
     Route::get('/export-report', [AdminController::class, 'exportReport'])->name('export.report');

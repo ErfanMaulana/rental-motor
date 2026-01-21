@@ -3,273 +3,172 @@
 @section('title', 'Kelola Pemesanan')
 
 @section('content')
-<!-- Content Header -->
-<div class="content-header">
-    <h1>Kelola Pemesanan</h1>
-    <p>Manajemen pemesanan motor dalam sistem rental</p>
+<div class="mb-6">
+    <h1 class="text-2xl font-semibold text-gray-900 flex items-center">
+        <i class="bi bi-calendar-check text-blue-600 mr-3"></i>
+        Kelola Pemesanan
+    </h1>
+    <p class="text-sm text-gray-500 mt-1 ml-11">Manajemen pemesanan motor dalam sistem rental</p>
 </div>
 
-<div class="row">
-    <div class="col-12">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white border-bottom">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-calendar-check me-2"></i>Daftar Pemesanan
-                    </h5>
-                    <div>
-                        <button class="btn btn-success me-2" onclick="exportBookings()">
-                            <i class="bi bi-file-pdf"></i> Export Bookings
-                        </button>
-                        <span class="badge bg-info fs-6">Total: {{ $bookings->total() }} Pemesanan</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card-body">
-                <!-- Filter dan Search -->
-                <form method="GET" action="{{ route('admin.bookings') }}">
-                    <div class="row mb-3">
-                        <div class="col-md-2">
-                            <label for="status_filter" class="form-label">Status</label>
-                            <select class="form-select" id="status_filter" name="status">
-                                <option value="">Semua Status</option>
-                                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                                    <option value="confirmed" {{ request('status') == 'confirmed' ? 'selected' : '' }}>Dikonfirmasi</option>
-                                    <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Sedang Berlangsung</option>
-                                    <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Selesai</option>
-                                    <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Dibatalkan</option>
-                                </select>
-                            </div>
-                            <div class="col-md-2">
-                                <label for="date_from" class="form-label">Dari Tanggal</label>
-                                <input type="date" class="form-control" id="date_from" name="date_from" value="{{ request('date_from') }}">
-                            </div>
-                            <div class="col-md-2">
-                                <label for="date_to" class="form-label">Sampai Tanggal</label>
-                                <input type="date" class="form-control" id="date_to" name="date_to" value="{{ request('date_to') }}">
-                            </div>
-                            <div class="col-md-4">
-                                <label for="search" class="form-label">Cari</label>
-                                <input type="text" class="form-control" id="search" name="search" 
-                                       placeholder="Nama penyewa, motor, atau kode booking..." value="{{ request('search') }}">
-                            </div>
-                            <div class="col-md-2">
-                                <label class="form-label">&nbsp;</label>
-                                <div class="d-grid">
-                                    <button type="submit" class="btn btn-outline-primary">
-                                        <i class="bi bi-search"></i> Filter
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </form>
+<div class="bg-white border border-gray-200 rounded-lg p-4 mb-6">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div class="text-center">
+            <p class="text-xs text-gray-500 mb-1">Total Pemesanan</p>
+            <p class="text-2xl font-semibold text-gray-900">{{ $bookings->total() }}</p>
+        </div>
+        <div class="text-center">
+            <p class="text-xs text-gray-500 mb-1">Pending</p>
+            <p class="text-2xl font-semibold text-yellow-600">{{ $stats['pending'] ?? 0 }}</p>
+        </div>
+        <div class="text-center">
+            <p class="text-xs text-gray-500 mb-1">Dikonfirmasi</p>
+            <p class="text-2xl font-semibold text-blue-600">{{ $stats['confirmed'] ?? 0 }}</p>
+        </div>
+        <div class="text-center">
+            <p class="text-xs text-gray-500 mb-1">Sedang Aktif</p>
+            <p class="text-2xl font-semibold text-green-600">{{ $stats['ongoing'] ?? 0 }}</p>
+        </div>
+    </div>
+</div>
 
-                <!-- Statistik Cepat -->
-                <div class="row mb-4">
-                <div class="col-md-3">
-                    <div class="card bg-warning text-white">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <h4>{{ $stats['pending'] ?? 0 }}</h4>
-                                    <p class="mb-0">Pending</p>
-                                </div>
-                                <i class="bi bi-clock-history fs-1"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card bg-primary text-white">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <h4>{{ $stats['confirmed'] ?? 0 }}</h4>
-                                    <p class="mb-0">Dikonfirmasi</p>
-                                </div>
-                                <i class="bi bi-check-circle fs-1"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card bg-info text-white">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between">
+<div class="bg-white border border-gray-200 rounded-lg p-4 mb-6">
+    <form method="GET" action="{{ route('admin.bookings') }}" class="flex flex-wrap gap-3">
+        <select class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500" name="status">
+            <option value="">Semua Status</option>
+            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+            <option value="confirmed" {{ request('status') == 'confirmed' ? 'selected' : '' }}>Dikonfirmasi</option>
+            <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Sedang Berlangsung</option>
+            <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Selesai</option>
+            <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Dibatalkan</option>
+        </select>
+        <input type="date" class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500" name="date_from" value="{{ request('date_from') }}">
+        <input type="date" class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500" name="date_to" value="{{ request('date_to') }}">
+        <input type="text" class="flex-1 min-w-[200px] px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500" name="search" value="{{ request('search') }}" placeholder="Nama penyewa, motor, atau plat nomor...">
+        <button class="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700" type="submit">
+            <i class="bi bi-search"></i>
+        </button>
+        <a href="{{ route('admin.bookings') }}" class="px-3 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50" title="Reset">
+            <i class="bi bi-arrow-clockwise"></i>
+        </a>
+    </form>
+</div>
                                 <div>
                                     <h4>{{ $stats['ongoing'] ?? 0 }}</h4>
                                     <p class="mb-0">Berlangsung</p>
                                 </div>
-                                <i class="bi bi-arrow-repeat fs-1"></i>
-                            </div>
-                        </div>
+<div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+    <table class="w-full">
+        <thead class="bg-gray-50 border-b border-gray-200">
+            <tr>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Kode Booking</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Penyewa</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Motor</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Tanggal Sewa</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Durasi</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Total Harga</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Status</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Aksi</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+            @forelse($bookings as $booking)
+            <tr class="hover:bg-gray-50">
+                <td class="px-4 py-3 text-sm">
+                    <div class="font-medium text-gray-900">{{ $booking->booking_code }}</div>
+                    <div class="text-xs text-gray-500">{{ $booking->created_at->format('d/m/Y H:i') }}</div>
+                </td>
+                <td class="px-4 py-3 text-sm">
+                    <div class="font-medium text-gray-900">{{ $booking->renter->name }}</div>
+                    <div class="text-xs text-gray-500">{{ $booking->renter->phone }}</div>
+                </td>
+                <td class="px-4 py-3 text-sm">
+                    <div class="font-medium text-gray-900">{{ $booking->motor->brand }} {{ $booking->motor->model }}</div>
+                    <div class="text-xs text-gray-500">{{ $booking->motor->plate_number }} - {{ $booking->motor->cc }}cc</div>
+                </td>
+                <td class="px-4 py-3 text-sm">
+                    <div class="font-medium text-gray-900">{{ \Carbon\Carbon::parse($booking->start_date)->format('d/m/Y') }}</div>
+                    <div class="text-xs text-gray-500">s/d {{ \Carbon\Carbon::parse($booking->end_date)->format('d/m/Y') }}</div>
+                </td>
+                <td class="px-4 py-3">
+                    <span class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">{{ $booking->duration }} hari</span>
+                </td>
+                <td class="px-4 py-3 text-sm font-medium text-gray-900">
+                    Rp {{ number_format($booking->price, 0, ',', '.') }}
+                </td>
+                <td class="px-4 py-3">
+                    <span class="px-2 py-1 text-xs rounded
+                        @if($booking->status == 'pending') bg-yellow-100 text-yellow-700
+                        @elseif($booking->status == 'confirmed') bg-blue-100 text-blue-700
+                        @elseif($booking->status == 'ongoing') bg-green-100 text-green-700
+                        @elseif($booking->status == 'completed') bg-gray-100 text-gray-700
+                        @else bg-red-100 text-red-700
+                        @endif">
+                        {{ ucfirst($booking->status) }}
+                    </span>
+                </td>
+                <td class="px-4 py-3">
+                    <div class="flex gap-1">
+                        <button onclick="viewBooking({{ $booking->id }})" 
+                                class="p-1.5 text-blue-600 hover:bg-blue-50 rounded" 
+                                title="Lihat Detail">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        @if($booking->status == 'pending')
+                        <button onclick="confirmBooking({{ $booking->id }})" 
+                                class="p-1.5 text-green-600 hover:bg-green-50 rounded" 
+                                title="Konfirmasi">
+                            <i class="bi bi-check"></i>
+                        </button>
+                        <button onclick="cancelBooking({{ $booking->id }})" 
+                                class="p-1.5 text-red-600 hover:bg-red-50 rounded" 
+                                title="Batalkan">
+                            <i class="bi bi-x"></i>
+                        </button>
+                        @elseif($booking->status == 'confirmed')
+                        <button onclick="startBooking({{ $booking->id }})" 
+                                class="p-1.5 text-blue-600 hover:bg-blue-50 rounded" 
+                                title="Mulai Sewa">
+                            <i class="bi bi-play"></i>
+                        </button>
+                        @elseif($booking->status == 'ongoing')
+                        <button onclick="completeBooking({{ $booking->id }})" 
+                                class="p-1.5 text-green-600 hover:bg-green-50 rounded" 
+                                title="Selesaikan">
+                            <i class="bi bi-check-all"></i>
+                        </button>
+                        @endif
                     </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card bg-success text-white">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <h4>{{ $stats['completed'] ?? 0 }}</h4>
-                                    <p class="mb-0">Selesai</p>
-                                </div>
-                                <i class="bi bi-check-all fs-1"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tabel Pemesanan -->
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Kode Booking</th>
-                                <th>Penyewa</th>
-                                <th>Motor</th>
-                                <th>Tanggal Sewa</th>
-                                <th>Durasi</th>
-                                <th>Total Harga</th>
-                                <th>Status</th>
-                                <th>Aksi</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($bookings as $booking)
-                                <tr>
-                                    <td>
-                                        <strong>{{ $booking->booking_code }}</strong><br>
-                                        <small class="text-muted">{{ $booking->created_at->format('d/m/Y H:i') }}</small>
-                                    </td>
-                                    <td>
-                                        <strong>{{ $booking->renter->name }}</strong><br>
-                                        <small class="text-muted">{{ $booking->renter->phone }}</small>
-                                    </td>
-                                    <td>
-                                        <strong>{{ $booking->motor->brand }} {{ $booking->motor->model }}</strong><br>
-                                        <small class="text-muted">{{ $booking->motor->plate_number }} - {{ $booking->motor->cc }}cc</small>
-                                    </td>
-                                    <td>
-                                        <strong>{{ \Carbon\Carbon::parse($booking->start_date)->format('d/m/Y') }}</strong><br>
-                                        <small class="text-muted">s/d {{ \Carbon\Carbon::parse($booking->end_date)->format('d/m/Y') }}</small>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-secondary">{{ $booking->duration }} hari</span>
-                                    </td>
-                                    <td>
-                                        <strong>Rp {{ number_format($booking->price, 0, ',', '.') }}</strong>
-                                    </td>
-                                    <td>
-                                        <span class="badge 
-                                            @if($booking->status == 'pending') bg-warning
-                                            @elseif($booking->status == 'confirmed') bg-primary
-                                            @elseif($booking->status == 'ongoing') bg-info
-                                            @elseif($booking->status == 'completed') bg-success
-                                            @else bg-danger
-                                            @endif">
-                                            {{ ucfirst($booking->status) }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <button type="button" class="btn btn-sm btn-outline-primary" 
-                                                    onclick="viewBooking({{ $booking->id }})" title="Lihat Detail">
-                                                <i class="bi bi-eye"></i>
-                                            </button>
-                                            @if($booking->status == 'pending')
-                                            <button type="button" class="btn btn-sm btn-outline-success" 
-                                                    onclick="confirmBooking({{ $booking->id }})" title="Konfirmasi">
-                                                <i class="bi bi-check"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-outline-danger" 
-                                                    onclick="cancelBooking({{ $booking->id }})" title="Batalkan">
-                                                <i class="bi bi-x"></i>
-                                            </button>
-                                            @elseif($booking->status == 'confirmed')
-                                            <button type="button" class="btn btn-sm btn-outline-info" 
-                                                    onclick="startBooking({{ $booking->id }})" title="Mulai Sewa">
-                                                <i class="bi bi-play"></i>
-                                            </button>
-                                            @elseif($booking->status == 'ongoing')
-                                            <button type="button" class="btn btn-sm btn-outline-success" 
-                                                    onclick="completeBooking({{ $booking->id }})" title="Selesaikan">
-                                                <i class="bi bi-check-all"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="8" class="text-center">Tidak ada pemesanan ditemukan</td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Pagination -->
-                    @if($bookings->hasPages())
-                    <div class="d-flex justify-content-center mt-4">
-                        {{ $bookings->links() }}
-                    </div>
-                    @endif
-                </div>
-            </div>
-        </div>
-    </div>
-@endsection
-
-<!-- Modal Detail Booking -->
-<div class="modal fade" id="viewBookingModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Detail Pemesanan</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="bookingDetailContent">
-                <!-- Content will be loaded via AJAX -->
-            </div>
-        </div>
-    </div>
+                </td>
+            </tr>
+            @empty
+            <tr>
+                <td colspan="8" class="px-4 py-8 text-center text-gray-500">
+                    <i class="bi bi-inbox text-4xl mb-2 block"></i>
+                    Tidak ada pemesanan ditemukan
+                </td>
+            </tr>
+            @endforelse
+        </tbody>
+    </table>
 </div>
+
+@if($bookings->hasPages())
+<div class="mt-4">
+    {{ $bookings->links() }}
+</div>
+@endif
+
+@endsection
 
 @push('scripts')
 <script>
 function viewBooking(bookingId) {
+    // Implement view booking with Tailwind modal or SweetAlert
     fetch(`/admin/bookings/${bookingId}`)
         .then(response => response.json())
         .then(data => {
-            document.getElementById('bookingDetailContent').innerHTML = `
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6>Informasi Penyewa</h6>
-                        <p><strong>Nama:</strong> ${data.renter.name}</p>
-                        <p><strong>Email:</strong> ${data.renter.email}</p>
-                        <p><strong>Telepon:</strong> ${data.renter.phone}</p>
-                        
-                        <h6 class="mt-4">Informasi Motor</h6>
-                        <p><strong>Motor:</strong> ${data.motor.brand} ${data.motor.model}</p>
-                        <p><strong>Plat Nomor:</strong> ${data.motor.plate_number}</p>
-                        <p><strong>CC:</strong> ${data.motor.cc}cc</p>
-                        <p><strong>Harga/Hari:</strong> Rp ${new Intl.NumberFormat('id-ID').format(data.motor.price_per_day)}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <h6>Detail Pemesanan</h6>
-                        <p><strong>Kode Booking:</strong> ${data.booking_code}</p>
-                        <p><strong>Tanggal Mulai:</strong> ${new Date(data.start_date).toLocaleDateString('id-ID')}</p>
-                        <p><strong>Tanggal Selesai:</strong> ${new Date(data.end_date).toLocaleDateString('id-ID')}</p>
-                        <p><strong>Durasi:</strong> ${data.duration} hari</p>
-                        <p><strong>Total Harga:</strong> Rp ${new Intl.NumberFormat('id-ID').format(data.price)}</p>
-                        <p><strong>Status:</strong> <span class="badge bg-primary">${data.status}</span></p>
-                        <p><strong>Dibuat:</strong> ${new Date(data.created_at).toLocaleDateString('id-ID')}</p>
-                    </div>
-                </div>
-            `;
-            new bootstrap.Modal(document.getElementById('viewBookingModal')).show();
+            alert(`Detail Pemesanan:\nKode: ${data.booking_code}\nPenyewa: ${data.renter.name}\nMotor: ${data.motor.brand} ${data.motor.model}\nTotal: Rp ${new Intl.NumberFormat('id-ID').format(data.price)}`);
         });
 }
 
@@ -315,11 +214,6 @@ function updateBookingStatus(bookingId, status) {
             alert('Gagal mengupdate status pemesanan');
         }
     });
-}
-
-function exportBookings() {
-    const params = new URLSearchParams(window.location.search);
-    window.open(`/admin/bookings/export?${params.toString()}`, '_blank');
 }
 </script>
 @endpush

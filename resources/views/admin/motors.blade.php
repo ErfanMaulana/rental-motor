@@ -7,215 +7,200 @@ use Illuminate\Support\Facades\Storage;
 @endphp
 
 @section('content')
-<!-- Content Header -->
-<div class="content-header">
-    <h1>Verifikasi Motor</h1>
-    <p>Kelola dan verifikasi motor yang didaftarkan pemilik</p>
+<div class="mb-6">
+    <h1 class="text-2xl font-semibold text-gray-900 flex items-center">
+        <i class="bi bi-motorcycle text-blue-600 mr-3"></i>
+        Verifikasi Motor
+    </h1>
+    <p class="text-sm text-gray-500 mt-1 ml-11">Kelola dan verifikasi motor yang didaftarkan pemilik</p>
 </div>
 
-<!-- Filter & Search -->
-<div class="row mb-4">
-    <div class="col-md-8">
-        <form method="GET" action="{{ route('admin.motors') }}" class="row g-3">
-            <div class="col-md-3">
-                <select class="form-select" name="status">
-                    <option value="">Semua Status</option>
-                    <option value="pending_verification" {{ request('status') == 'pending_verification' ? 'selected' : '' }}>Menunggu Verifikasi</option>
-                    <option value="available" {{ request('status') == 'available' ? 'selected' : '' }}>Tersedia</option>
-                    <option value="rented" {{ request('status') == 'rented' ? 'selected' : '' }}>Disewa</option>
-                    <option value="maintenance" {{ request('status') == 'maintenance' ? 'selected' : '' }}>Maintenance</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <select class="form-select" name="cc">
-                    <option value="">Semua CC</option>
-                    <option value="100" {{ request('cc') == '100' ? 'selected' : '' }}>100cc</option>
-                    <option value="125" {{ request('cc') == '125' ? 'selected' : '' }}>125cc</option>
-                    <option value="150" {{ request('cc') == '150' ? 'selected' : '' }}>150cc</option>
-                    <option value="250" {{ request('cc') == '250' ? 'selected' : '' }}>250cc</option>
-                    <option value="500" {{ request('cc') == '500' ? 'selected' : '' }}>500cc</option>
-                </select>
-            </div>
-            <div class="col-md-4">
-                <div class="input-group">
-                    <input type="text" class="form-control" name="search" value="{{ request('search') }}" placeholder="Cari brand atau plat nomor...">
-                    <button class="btn btn-outline-primary" type="submit">
-                        <i class="bi bi-search"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <a href="{{ route('admin.motors') }}" class="btn btn-outline-secondary w-100">Reset</a>
-            </div>
-        </form>
-    </div>
-    <div class="col-md-4">
-        <div class="row g-2">
-            <div class="col-6">
-                <div class="card bg-warning text-white">
-                    <div class="card-body py-2 text-center">
-                        <h6 class="mb-0">{{ $pendingCount ?? 0 }}</h6>
-                        <small>Perlu Verifikasi</small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-6">
-                <div class="card bg-success text-white">
-                    <div class="card-body py-2 text-center">
-                        <h6 class="mb-0">{{ $verifiedCount ?? 0 }}</h6>
-                        <small>Terverifikasi</small>
-                    </div>
-                </div>
-            </div>
+<div class="bg-white border border-gray-200 rounded-lg p-4 mb-6">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div class="text-center">
+            <p class="text-xs text-gray-500 mb-1">Total Motor</p>
+            <p class="text-2xl font-semibold text-gray-900">{{ $motors->total() }}</p>
+        </div>
+        <div class="text-center">
+            <p class="text-xs text-gray-500 mb-1">Perlu Verifikasi</p>
+            <p class="text-2xl font-semibold text-yellow-600">{{ $pendingCount ?? 0 }}</p>
+        </div>
+        <div class="text-center">
+            <p class="text-xs text-gray-500 mb-1">Terverifikasi</p>
+            <p class="text-2xl font-semibold text-green-600">{{ $verifiedCount ?? 0 }}</p>
+        </div>
+        <div class="text-center">
+            <p class="text-xs text-gray-500 mb-1">Tersedia</p>
+            <p class="text-2xl font-semibold text-blue-600">{{ $motors->where('status', 'available')->count() }}</p>
         </div>
     </div>
 </div>
 
+<div class="bg-white border border-gray-200 rounded-lg p-4 mb-6">
+    <form id="motorFilterForm" method="GET" action="{{ route('admin.motors') }}" class="flex flex-wrap gap-3">
+        <select onchange="document.getElementById('motorFilterForm').submit()" class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500" name="status">
+            <option value="">Semua Status</option>
+            <option value="pending_verification" {{ request('status') == 'pending_verification' ? 'selected' : '' }}>Menunggu Verifikasi</option>
+            <option value="available" {{ request('status') == 'available' ? 'selected' : '' }}>Tersedia</option>
+            <option value="rented" {{ request('status') == 'rented' ? 'selected' : '' }}>Disewa</option>
+            <option value="maintenance" {{ request('status') == 'maintenance' ? 'selected' : '' }}>Maintenance</option>
+        </select>
+        <select onchange="document.getElementById('motorFilterForm').submit()" class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500" name="cc">
+            <option value="">Semua CC</option>
+            <option value="100" {{ request('cc') == '100' ? 'selected' : '' }}>100cc</option>
+            <option value="125" {{ request('cc') == '125' ? 'selected' : '' }}>125cc</option>
+            <option value="150" {{ request('cc') == '150' ? 'selected' : '' }}>150cc</option>
+            <option value="250" {{ request('cc') == '250' ? 'selected' : '' }}>250cc</option>
+            <option value="500" {{ request('cc') == '500' ? 'selected' : '' }}>500cc</option>
+        </select>
+        <input type="text" class="flex-1 min-w-[200px] px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500" name="search" value="{{ request('search') }}" placeholder="Cari brand atau plat nomor...">
+        <button class="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700" type="submit">
+            <i class="bi bi-search"></i>
+        </button>
+        <a href="{{ route('admin.motors') }}" class="px-3 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50" title="Reset">
+            <i class="bi bi-arrow-clockwise"></i>
+        </a>
+    </form>
+</div>
+
 <!-- Motors Grid -->
-<div class="row">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     @if($motors->count() > 0)
         @foreach($motors as $motor)
-        <div class="col-lg-4 col-md-6 mb-4">
-            <div class="card h-100 border-0 shadow-sm motor-card" data-motor-id="{{ $motor->id }}">
-                <!-- Motor Image -->
-                <div class="position-relative">
-                    @if($motor->photo)
-                        <img src="{{ Storage::url($motor->photo) }}" 
-                             class="card-img-top" 
-                             alt="{{ $motor->brand }}" 
-                             style="height: 250px; object-fit: cover;">
-                    @else
-                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" 
-                             style="height: 250px;">
-                            <i class="bi bi-motorcycle text-muted" style="font-size: 4rem;"></i>
-                        </div>
-                    @endif
-                    
-                    <!-- Status Badge -->
-                    <div class="position-absolute top-0 end-0 m-3">
-                        @if($motor->status === 'pending_verification')
-                            <span class="badge bg-warning fs-6">
-                                <i class="bi bi-clock me-1"></i>Menunggu Verifikasi
-                            </span>
-                        @elseif($motor->status === 'available')
-                            <span class="badge bg-success fs-6">
-                                <i class="bi bi-check-circle me-1"></i>Tersedia
-                            </span>
-                        @elseif($motor->status === 'rented')
-                            <span class="badge bg-warning text-dark fs-6">
-                                <i class="bi bi-person-check me-1"></i>Sedang Disewa
-                            </span>
-                        @elseif($motor->status === 'maintenance')
-                            <span class="badge bg-secondary fs-6">
-                                <i class="bi bi-tools me-1"></i>Maintenance
-                            </span>
-                        @endif
+        <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden motor-card" data-motor-id="{{ $motor->id }}">
+            <!-- Motor Image -->
+            <div class="relative">
+                @if($motor->photo)
+                    <img src="{{ Storage::url($motor->photo) }}" 
+                         class="w-full h-64 object-cover" 
+                         alt="{{ $motor->brand }}">
+                @else
+                    <div class="w-full h-64 bg-gray-100 flex items-center justify-center">
+                        <i class="bi bi-motorcycle text-gray-400" style="font-size: 4rem;"></i>
                     </div>
-                </div>
-
-                <!-- Motor Info -->
-                <div class="card-body">
-                    <h5 class="card-title d-flex align-items-center">
-                        <i class="bi bi-motorcycle text-primary me-2"></i>
-                        {{ $motor->brand }}
-                    </h5>
-                    <p class="text-muted mb-2">
-                        <i class="bi bi-gear me-1"></i>{{ $motor->type_cc }}
-                        <span class="ms-3">
-                            <i class="bi bi-credit-card me-1"></i>{{ $motor->plate_number }}
+                @endif
+                
+                <!-- Status Badge -->
+                <div class="absolute top-0 right-0 m-3">
+                    @if($motor->status === 'pending_verification')
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-500 text-white">
+                            <i class="bi bi-clock mr-1"></i>Menunggu Verifikasi
                         </span>
-                    </p>
+                    @elseif($motor->status === 'available')
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-500 text-white">
+                            <i class="bi bi-check-circle mr-1"></i>Tersedia
+                        </span>
+                    @elseif($motor->status === 'rented')
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-600 text-white">
+                            <i class="bi bi-person-check mr-1"></i>Sedang Disewa
+                        </span>
+                    @elseif($motor->status === 'maintenance')
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-500 text-white">
+                            <i class="bi bi-tools mr-1"></i>Maintenance
+                        </span>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Motor Info -->
+            <div class="p-4">
+                <h5 class="text-lg font-semibold text-gray-900 flex items-center mb-2">
+                    <i class="bi bi-motorcycle text-blue-600 mr-2"></i>
+                    {{ $motor->brand }}
+                </h5>
+                <p class="text-gray-600 text-sm mb-3">
+                    <i class="bi bi-gear mr-1"></i>{{ $motor->type_cc }}
+                    <span class="ml-3">
+                        <i class="bi bi-credit-card mr-1"></i>{{ $motor->plate_number }}
+                    </span>
+                </p>
+                
+                <!-- Owner Info -->
+                <div class="mb-3 border-t border-gray-100 pt-3">
+                    <div class="flex items-center mb-2">
+                        <i class="bi bi-person-circle mr-2 text-gray-400"></i>
+                        <div>
+                            <div class="font-medium text-sm text-gray-900">{{ $motor->owner->name }}</div>
+                            <small class="text-gray-500 text-xs">{{ $motor->owner->email }}</small>
+                        </div>
+                    </div>
                     
-                    <!-- Owner Info -->
-                    <div class="mb-3">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-person-circle me-2 text-muted"></i>
+                    <!-- Document Photo -->
+                    @if($motor->document)
+                        <div class="flex items-center mt-2">
+                            <i class="bi bi-file-earmark-text mr-2 text-gray-400"></i>
                             <div>
-                                <div class="fw-bold">{{ $motor->owner->name }}</div>
-                                <small class="text-muted">{{ $motor->owner->email }}</small>
+                                <small class="text-gray-500 text-xs block">Dokumen Motor:</small>
+                                <img src="{{ Storage::url($motor->document) }}" 
+                                     alt="Dokumen Motor" 
+                                     class="rounded border border-gray-200 cursor-pointer hover:border-blue-500 transition"
+                                     style="width: 60px; height: 40px; object-fit: cover;"
+                                     onclick="showDocumentPreview('{{ Storage::url($motor->document) }}')"
+                                     title="Klik untuk memperbesar - {{ $motor->document }}"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                <small class="text-red-600 text-xs hidden">Error loading: {{ $motor->document }}</small>
                             </div>
                         </div>
-                        
-                        <!-- Document Photo -->
-                        @if($motor->document)
-                            <div class="mt-2">
-                                <div class="d-flex align-items-center">
-                                    <i class="bi bi-file-earmark-text me-2 text-muted"></i>
-                                    <div>
-                                        <small class="text-muted d-block">Dokumen Motor:</small>
-                                        <img src="{{ Storage::url($motor->document) }}" 
-                                             alt="Dokumen Motor" 
-                                             class="img-thumbnail cursor-pointer"
-                                             style="width: 60px; height: 40px; object-fit: cover;"
-                                             onclick="showDocumentPreview('{{ Storage::url($motor->document) }}')"
-                                             title="Klik untuk memperbesar - {{ $motor->document }}"
-                                             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                                        <small class="text-danger" style="display: none;">Error loading: {{ $motor->document }}</small>
-                                    </div>
-                                </div>
-                            </div>
-                        @else
-                            <div class="mt-2">
-                                <div class="d-flex align-items-center">
-                                    <i class="bi bi-file-earmark-x me-2 text-muted"></i>
-                                    <small class="text-muted">Dokumen belum diupload</small>
-                                </div>
-                            </div>
-                        @endif
-                    </div>
-
-                    <!-- Rental Rates -->
-                    @if($motor->rentalRate)
-                        <div class="mb-3">
-                            <div class="row text-center">
-                                <div class="col-4">
-                                    <small class="text-muted">Harian</small>
-                                    <div class="fw-bold text-primary small">Rp {{ number_format($motor->rentalRate->daily_rate, 0, ',', '.') }}</div>
-                                </div>
-                                <div class="col-4">
-                                    <small class="text-muted">Mingguan</small>
-                                    <div class="fw-bold text-primary small">Rp {{ number_format($motor->rentalRate->weekly_rate, 0, ',', '.') }}</div>
-                                </div>
-                                <div class="col-4">
-                                    <small class="text-muted">Bulanan</small>
-                                    <div class="fw-bold text-primary small">Rp {{ number_format($motor->rentalRate->monthly_rate, 0, ',', '.') }}</div>
-                                </div>
-                            </div>
+                    @else
+                        <div class="flex items-center mt-2">
+                            <i class="bi bi-file-earmark-x mr-2 text-gray-400"></i>
+                            <small class="text-gray-500 text-xs">Dokumen belum diupload</small>
                         </div>
                     @endif
                 </div>
 
-                <!-- Card Footer with Action Buttons -->
-                <div class="card-footer bg-light border-0">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <small class="text-muted">
-                            <i class="bi bi-calendar me-1"></i>
-                            {{ $motor->created_at->format('d M Y') }}
-                        </small>
-                        <div class="btn-group">
-                            <!-- Detail Button -->
-                            <button type="button" 
-                                    class="btn btn-sm btn-outline-primary"
-                                    data-action="show-detail"
-                                    data-motor-id="{{ $motor->id }}"
+                <!-- Rental Rates -->
+                @if($motor->rentalRate)
+                    <div class="mb-3 border-t border-gray-100 pt-3">
+                        <div class="grid grid-cols-3 gap-2 text-center">
+                            <div>
+                                <small class="text-gray-500 text-xs block">Harian</small>
+                                <div class="font-semibold text-blue-600 text-xs">Rp {{ number_format($motor->rentalRate->daily_rate, 0, ',', '.') }}</div>
+                            </div>
+                            <div>
+                                <small class="text-gray-500 text-xs block">Mingguan</small>
+                                <div class="font-semibold text-blue-600 text-xs">Rp {{ number_format($motor->rentalRate->weekly_rate, 0, ',', '.') }}</div>
+                            </div>
+                            <div>
+                                <small class="text-gray-500 text-xs block">Bulanan</small>
+                                <div class="font-semibold text-blue-600 text-xs">Rp {{ number_format($motor->rentalRate->monthly_rate, 0, ',', '.') }}</div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+            </div>
+
+            <!-- Card Footer with Action Buttons -->
+            <div class="bg-gray-50 px-4 py-3 border-t border-gray-100">
+                <div class="flex justify-between items-center">
+                    <small class="text-gray-500 text-xs">
+                        <i class="bi bi-calendar mr-1"></i>
+                        {{ $motor->created_at->format('d M Y') }}
+                    </small>
+                    <div class="flex gap-2">
+                        <!-- Detail Button -->
+                        <button type="button" 
+                                class="px-3 py-1.5 text-xs font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition"
+                                data-action="show-detail"
+                                data-motor-id="{{ $motor->id }}"
                                     onclick="showMotorDetail({{ $motor->id }})"
                                     title="Lihat Detail Motor">
-                                <i class="bi bi-eye me-1"></i>Detail
+                                <i class="bi bi-eye mr-1"></i>Detail
                             </button>
                             
                             <!-- Verification Button (only for pending motors) -->
                             @if($motor->status === 'pending_verification')
                                 <button type="button" 
-                                        class="btn btn-sm btn-success"
+                                        class="px-3 py-1.5 text-xs font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition"
                                         data-action="verify-motor"
                                         data-motor-id="{{ $motor->id }}"
                                         onclick="directVerifyMotor({{ $motor->id }})"
                                         title="Verifikasi Motor">
-                                    <i class="bi bi-check-circle me-1"></i>Verifikasi
+                                    <i class="bi bi-check-circle mr-1"></i>Verifikasi
                                 </button>
                             @else
-                                <span class="btn btn-sm btn-outline-success disabled">
-                                    <i class="bi bi-check-circle me-1"></i>Terverifikasi
+                                <span class="px-3 py-1.5 text-xs font-medium text-green-600 border border-green-600 rounded-lg opacity-50 cursor-not-allowed">
+                                    <i class="bi bi-check-circle mr-1"></i>Terverifikasi
                                 </span>
                             @endif
                             
@@ -232,7 +217,7 @@ use Illuminate\Support\Facades\Storage;
                             
                             @if($canDelete)
                                 <button type="button" 
-                                        class="btn btn-sm btn-danger"
+                                        class="px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition"
                                         data-action="delete-motor"
                                         data-motor-id="{{ $motor->id }}"
                                         data-motor-brand="{{ $motor->brand }}"
@@ -241,13 +226,13 @@ use Illuminate\Support\Facades\Storage;
                                         data-motor-owner="{{ $motor->owner->name }}"
                                         onclick="confirmDeleteMotor({{ $motor->id }}, '{{ $motor->brand }}', '{{ $motor->model }}', '{{ $motor->license_plate }}', '{{ $motor->owner->name }}')"
                                         title="Hapus Motor">
-                                    <i class="bi bi-trash me-1"></i>Hapus
+                                    <i class="bi bi-trash mr-1"></i>Hapus
                                 </button>
                             @else
                                 <button type="button" 
-                                        class="btn btn-sm btn-outline-danger disabled"
+                                        class="px-3 py-1.5 text-xs font-medium text-red-600 border border-red-600 rounded-lg opacity-50 cursor-not-allowed"
                                         title="{{ $hasActiveBookings ? 'Motor memiliki booking aktif' : 'Motor memiliki riwayat booking' }}">
-                                    <i class="bi bi-shield-exclamation me-1"></i>Tidak Dapat Dihapus
+                                    <i class="bi bi-shield-exclamation mr-1"></i>Tidak Dapat Dihapus
                                 </button>
                             @endif
                         </div>
@@ -257,136 +242,75 @@ use Illuminate\Support\Facades\Storage;
         </div>
         @endforeach
     @else
-        <div class="col-12">
-            <div class="text-center py-5">
-                <i class="bi bi-motorcycle text-muted" style="font-size: 5rem;"></i>
-                <h4 class="mt-3 text-muted">Tidak ada motor ditemukan</h4>
-                <p class="text-muted">Coba ubah filter pencarian Anda</p>
-            </div>
+        <div class="col-span-full flex flex-col items-center justify-center py-16">
+            <i class="bi bi-motorcycle text-gray-300" style="font-size: 5rem;"></i>
+            <h4 class="mt-4 text-lg font-medium text-gray-700">Tidak ada motor ditemukan</h4>
+            <p class="text-sm text-gray-500 mt-1">Coba ubah filter pencarian Anda</p>
         </div>
     @endif
 </div>
 
 <!-- Pagination -->
 @if($motors->hasPages())
-    <div class="row mt-5">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body py-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <!-- Info Pagination -->
-                        <div class="pagination-info">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-info-circle me-2 text-muted"></i>
-                                <div>
-                                    <small class="text-muted fw-medium">
-                                        Menampilkan {{ $motors->firstItem() ?? 0 }} - {{ $motors->lastItem() ?? 0 }} 
-                                        dari {{ $motors->total() }} motor
-                                    </small>
-                                    <div class="text-muted" style="font-size: 0.75rem;">
-                                        Halaman {{ $motors->currentPage() }} dari {{ $motors->lastPage() }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Pagination Links -->
-                        <div class="pagination-wrapper">
-                            <nav aria-label="Motor pagination">
-                                <ul class="pagination pagination-sm mb-0 custom-pagination">
-                                    {{-- Previous Page Link --}}
-                                    @if ($motors->onFirstPage())
-                                        <li class="page-item disabled">
-                                            <span class="page-link">
-                                                <i class="bi bi-chevron-left"></i>
-                                            </span>
-                                        </li>
-                                    @else
-                                        <li class="page-item">
-                                            <a class="page-link" href="{{ $motors->previousPageUrl() }}" rel="prev">
-                                                <i class="bi bi-chevron-left"></i>
-                                            </a>
-                                        </li>
-                                    @endif
-
-                                    {{-- Pagination Elements --}}
-                                    @foreach ($motors->getUrlRange(1, $motors->lastPage()) as $page => $url)
-                                        @if ($page == $motors->currentPage())
-                                            <li class="page-item active">
-                                                <span class="page-link">{{ $page }}</span>
-                                            </li>
-                                        @else
-                                            <li class="page-item">
-                                                <a class="page-link" href="{{ $url }}">{{ $page }}</a>
-                                            </li>
-                                        @endif
-                                    @endforeach
-
-                                    {{-- Next Page Link --}}
-                                    @if ($motors->hasMorePages())
-                                        <li class="page-item">
-                                            <a class="page-link" href="{{ $motors->nextPageUrl() }}" rel="next">
-                                                <i class="bi bi-chevron-right"></i>
-                                            </a>
-                                        </li>
-                                    @else
-                                        <li class="page-item disabled">
-                                            <span class="page-link">
-                                                <i class="bi bi-chevron-right"></i>
-                                            </span>
-                                        </li>
-                                    @endif
-                                </ul>
-                            </nav>
-                        </div>
-                        
-                        <!-- Quick Jump -->
-                        @if($motors->lastPage() > 5)
-                            <div class="quick-jump">
-                                <div class="input-group input-group-sm" style="width: 120px;">
-                                    <input type="number" 
-                                           class="form-control form-control-sm" 
-                                           id="pageJump" 
-                                           min="1" 
-                                           max="{{ $motors->lastPage() }}" 
-                                           value="{{ $motors->currentPage() }}"
-                                           placeholder="Page">
-                                    <button class="btn btn-outline-primary btn-sm" 
-                                            type="button" 
-                                            onclick="jumpToPage()">
-                                        <i class="bi bi-arrow-right"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="mt-6 flex justify-center">
+        {{ $motors->appends(request()->except('page'))->links() }}
     </div>
 @endif
 
 <!-- Motor Detail Modal -->
-<div class="modal fade" id="motorDetailModal" tabindex="-1" aria-labelledby="motorDetailModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header border-bottom-0 bg-primary text-white">
-                <h5 class="modal-title" id="motorDetailModalLabel">
-                    <i class="bi bi-motorcycle me-2"></i>Detail Motor
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+<div x-data="{ open: false }" 
+     x-show="open" 
+     @open-motor-detail.window="open = true"
+     @keydown.escape.window="open = false"
+     style="display: none;"
+     class="fixed inset-0 z-50 overflow-y-auto" 
+     id="motorDetailModal">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div x-show="open" 
+             x-transition:enter="ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
+             @click="open = false"></div>
+
+        <!-- Modal panel -->
+        <div x-show="open"
+             x-transition:enter="ease-out duration-300"
+             x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+             x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+             x-transition:leave="ease-in duration-200"
+             x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+             x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+             class="inline-block w-full max-w-6xl my-8 overflow-hidden text-left align-middle transition-all transform bg-white rounded-lg shadow-xl">
+            
+            <!-- Header -->
+            <div class="flex items-center justify-between px-6 py-4 bg-blue-600 text-white">
+                <h3 class="text-lg font-medium">
+                    <i class="bi bi-motorcycle mr-2"></i>Detail Motor
+                </h3>
+                <button @click="open = false" class="text-white hover:text-gray-200">
+                    <i class="bi bi-x-lg text-xl"></i>
+                </button>
             </div>
-            <div class="modal-body p-4">
+            
+            <!-- Body -->
+            <div class="px-6 py-4">
                 <div id="motorDetailContent">
                     <!-- Content will be loaded here by JavaScript -->
                 </div>
             </div>
-            <div class="modal-footer border-top-0 bg-light">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="bi bi-x-circle me-2"></i>Tutup
+            
+            <!-- Footer -->
+            <div class="flex justify-end gap-3 px-6 py-4 bg-gray-50">
+                <button @click="open = false" class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition">
+                    <i class="bi bi-x-circle mr-2"></i>Tutup
                 </button>
-                <button type="button" class="btn btn-success" id="verifyMotorFromModal" style="display: none;">
-                    <i class="bi bi-check-circle me-2"></i>Verifikasi Motor
+                <button type="button" class="px-4 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 transition hidden" id="verifyMotorFromModal">
+                    <i class="bi bi-check-circle mr-2"></i>Verifikasi Motor
                 </button>
             </div>
         </div>
@@ -394,25 +318,58 @@ use Illuminate\Support\Facades\Storage;
 </div>
 
 <!-- Document Preview Modal -->
-<div class="modal fade" id="documentPreviewModal" tabindex="-1" aria-labelledby="documentPreviewModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header border-bottom-0 bg-dark text-white">
-                <h5 class="modal-title" id="documentPreviewModalLabel">
-                    <i class="bi bi-file-earmark-text me-2"></i>Preview Dokumen Motor
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+<div x-data="{ open: false }" 
+     x-show="open" 
+     @open-document-preview.window="open = true"
+     @keydown.escape.window="open = false"
+     style="display: none;"
+     class="fixed inset-0 z-50 overflow-y-auto" 
+     id="documentPreviewModal">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div x-show="open" 
+             x-transition:enter="ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 transition-opacity bg-black bg-opacity-75"
+             @click="open = false"></div>
+
+        <!-- Modal panel -->
+        <div x-show="open"
+             x-transition:enter="ease-out duration-300"
+             x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+             x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+             x-transition:leave="ease-in duration-200"
+             x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+             x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+             class="inline-block w-full max-w-4xl my-8 overflow-hidden text-left align-middle transition-all transform bg-gray-900 rounded-lg shadow-xl">
+            
+            <!-- Header -->
+            <div class="flex items-center justify-between px-6 py-4 bg-gray-800 text-white">
+                <h3 class="text-lg font-medium">
+                    <i class="bi bi-file-earmark-text mr-2"></i>Preview Dokumen Motor
+                </h3>
+                <button @click="open = false" class="text-white hover:text-gray-300">
+                    <i class="bi bi-x-lg text-xl"></i>
+                </button>
             </div>
-            <div class="modal-body p-0 text-center bg-dark">
+            
+            <!-- Body -->
+            <div class="p-0 text-center bg-gray-900">
                 <img id="documentPreviewImage" 
                      src="" 
                      alt="Dokumen Motor" 
-                     class="img-fluid"
+                     class="w-full"
                      style="max-height: 80vh; object-fit: contain;">
             </div>
-            <div class="modal-footer border-top-0 bg-dark">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="bi bi-x-circle me-2"></i>Tutup
+            
+            <!-- Footer -->
+            <div class="flex justify-end px-6 py-4 bg-gray-800">
+                <button @click="open = false" class="px-4 py-2 text-white bg-gray-700 rounded-lg hover:bg-gray-600 transition">
+                    <i class="bi bi-x-circle mr-2"></i>Tutup
                 </button>
             </div>
         </div>
@@ -420,53 +377,86 @@ use Illuminate\Support\Facades\Storage;
 </div>
 
 <!-- Delete Motor Confirmation Modal -->
-<div class="modal fade" id="deleteMotorModal" tabindex="-1" aria-labelledby="deleteMotorModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header border-bottom-0 bg-danger text-white">
-                <h5 class="modal-title" id="deleteMotorModalLabel">
-                    <i class="bi bi-exclamation-triangle me-2"></i>Konfirmasi Hapus Motor
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+<div x-data="{ open: false }" 
+     x-show="open" 
+     @open-delete-motor.window="open = true"
+     @keydown.escape.window="open = false"
+     style="display: none;"
+     class="fixed inset-0 z-50 overflow-y-auto" 
+     id="deleteMotorModal">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div x-show="open" 
+             x-transition:enter="ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
+             @click="open = false"></div>
+
+        <!-- Modal panel -->
+        <div x-show="open"
+             x-transition:enter="ease-out duration-300"
+             x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+             x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+             x-transition:leave="ease-in duration-200"
+             x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+             x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+             class="inline-block w-full max-w-lg my-8 overflow-hidden text-left align-middle transition-all transform bg-white rounded-lg shadow-xl">
+            
+            <!-- Header -->
+            <div class="flex items-center justify-between px-6 py-4 bg-red-600 text-white">
+                <h3 class="text-lg font-medium">
+                    <i class="bi bi-exclamation-triangle mr-2"></i>Konfirmasi Hapus Motor
+                </h3>
+                <button @click="open = false" class="text-white hover:text-gray-200">
+                    <i class="bi bi-x-lg text-xl"></i>
+                </button>
             </div>
-            <div class="modal-body p-4">
-                <div class="text-center mb-3">
-                    <div class="text-danger mb-3">
-                        <i class="bi bi-trash display-1"></i>
+            
+            <!-- Body -->
+            <div class="px-6 py-4">
+                <div class="text-center mb-4">
+                    <div class="text-red-600 mb-3">
+                        <i class="bi bi-trash text-6xl"></i>
                     </div>
-                    <h6 class="fw-bold">Apakah Anda yakin ingin menghapus motor ini?</h6>
-                    <p class="text-muted mb-3">Tindakan ini tidak dapat dibatalkan dan akan menghapus:</p>
+                    <h6 class="font-bold text-lg">Apakah Anda yakin ingin menghapus motor ini?</h6>
+                    <p class="text-gray-600 mt-2 mb-3">Tindakan ini tidak dapat dibatalkan dan akan menghapus:</p>
                 </div>
                 
-                <div class="bg-light rounded p-3 mb-3">
-                    <div class="row">
-                        <div class="col-4 text-muted small">Brand/Model:</div>
-                        <div class="col-8 fw-bold" id="deleteMotorBrand">-</div>
+                <div class="bg-gray-100 rounded-lg p-4 mb-4">
+                    <div class="flex mb-2">
+                        <div class="w-1/3 text-gray-600 text-sm">Brand/Model:</div>
+                        <div class="w-2/3 font-bold" id="deleteMotorBrand">-</div>
                     </div>
-                    <div class="row">
-                        <div class="col-4 text-muted small">Plat Nomor:</div>
-                        <div class="col-8 fw-bold" id="deleteMotorPlate">-</div>
+                    <div class="flex mb-2">
+                        <div class="w-1/3 text-gray-600 text-sm">Plat Nomor:</div>
+                        <div class="w-2/3 font-bold" id="deleteMotorPlate">-</div>
                     </div>
-                    <div class="row">
-                        <div class="col-4 text-muted small">Pemilik:</div>
-                        <div class="col-8 fw-bold" id="deleteMotorOwner">-</div>
+                    <div class="flex">
+                        <div class="w-1/3 text-gray-600 text-sm">Pemilik:</div>
+                        <div class="w-2/3 font-bold" id="deleteMotorOwner">-</div>
                     </div>
                 </div>
                 
-                <div class="alert alert-warning border-0 bg-warning bg-opacity-10">
-                    <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                    <i class="bi bi-exclamation-triangle text-yellow-600 mr-2"></i>
                     <small>
                         <strong>Peringatan:</strong> Motor yang dihapus akan menghilangkan semua data terkait 
                         termasuk booking, pembayaran, dan riwayat lainnya.
                     </small>
                 </div>
             </div>
-            <div class="modal-footer border-top-0 bg-light">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="bi bi-x-circle me-1"></i>Batal
+            
+            <!-- Footer -->
+            <div class="flex justify-end gap-3 px-6 py-4 bg-gray-50">
+                <button @click="open = false" class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition">
+                    <i class="bi bi-x-circle mr-1"></i>Batal
                 </button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteMotor">
-                    <i class="bi bi-trash me-1"></i>Ya, Hapus Motor
+                <button type="button" class="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition" id="confirmDeleteMotor">
+                    <i class="bi bi-trash mr-1"></i>Ya, Hapus Motor
                 </button>
             </div>
         </div>
@@ -483,35 +473,6 @@ use Illuminate\Support\Facades\Storage;
 
 .motor-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
-}
-
-.btn-group .btn {
-    transition: all 0.2s ease;
-}
-
-.btn-group .btn:hover {
-    transform: scale(1.05);
-}
-
-.info-item {
-    transition: all 0.2s ease;
-}
-
-.info-item:hover {
-    background-color: #f8f9fa !important;
-}
-
-.badge {
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.card-img-top {
-    transition: all 0.3s ease;
-}
-
-.motor-card:hover .card-img-top {
-    transform: scale(1.02);
 }
 
 .cursor-pointer {
@@ -524,42 +485,9 @@ use Illuminate\Support\Facades\Storage;
     transition: all 0.2s ease;
 }
 
-#documentPreviewModal .modal-content {
-    background-color: #212529;
-}
-
 #documentPreviewImage {
     transition: all 0.3s ease;
 }
-
-/* Custom Pagination Styles */
-.custom-pagination {
-    --bs-pagination-padding-x: 0.75rem;
-    --bs-pagination-padding-y: 0.5rem;
-    --bs-pagination-font-size: 0.875rem;
-    --bs-pagination-color: #6c757d;
-    --bs-pagination-bg: #fff;
-    --bs-pagination-border-width: 1px;
-    --bs-pagination-border-color: #dee2e6;
-    --bs-pagination-border-radius: 0.375rem;
-    --bs-pagination-hover-color: #0d6efd;
-    --bs-pagination-hover-bg: #e9ecef;
-    --bs-pagination-hover-border-color: #dee2e6;
-    --bs-pagination-focus-color: #0d6efd;
-    --bs-pagination-focus-bg: #e9ecef;
-    --bs-pagination-focus-box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-    --bs-pagination-active-color: #fff;
-    --bs-pagination-active-bg: #0d6efd;
-    --bs-pagination-active-border-color: #0d6efd;
-    --bs-pagination-disabled-color: #6c757d;
-    --bs-pagination-disabled-bg: #fff;
-    --bs-pagination-disabled-border-color: #dee2e6;
-}
-
-.custom-pagination .page-link {
-    border-radius: 0.375rem !important;
-    margin: 0 2px;
-    font-weight: 500;
     transition: all 0.2s ease-in-out;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
@@ -622,73 +550,26 @@ use Illuminate\Support\Facades\Storage;
     transform: translateY(-1px);
 }
 
-/* Responsive pagination */
-@media (max-width: 768px) {
-    .pagination-info,
-    .quick-jump {
-        display: none;
-    }
-    
-    .pagination-wrapper {
-        justify-content: center;
-        width: 100%;
-    }
-    
-    .custom-pagination {
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-    
-    .custom-pagination .page-link {
-        padding: 0.5rem 0.65rem;
-        font-size: 0.8rem;
-        margin: 1px;
-    }
-}
-
-@media (max-width: 576px) {
-    .custom-pagination .page-item:not(.active):not(:first-child):not(:last-child) {
-        display: none;
-    }
-    
-    .custom-pagination .page-item:nth-child(2):not(.active),
-    .custom-pagination .page-item:nth-last-child(2):not(.active) {
-        display: inline-block;
-    }
-/* Loading state for pagination */
-.pagination-loading .page-link {
-    pointer-events: none;
-    opacity: 0.6;
-}
-
-.pagination-loading .spinner-border-sm {
-    width: 1rem;
-    height: 1rem;
-}
-
-/* Hover effects for cards */
 .motor-card {
     transition: all 0.3s ease;
 }
 
 .motor-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+    transform: translateY(-5px);
 }
 
-/* Smooth transitions */
-.card, .btn, .page-link {
-    transition: all 0.2s ease-in-out;
+.cursor-pointer {
+    cursor: pointer;
 }
 
-/* Pagination card styling */
-.pagination-wrapper .card {
-    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-    border: 1px solid rgba(0,0,0,0.08);
+.img-thumbnail:hover {
+    opacity: 0.8;
+    transform: scale(1.05);
+    transition: all 0.2s ease;
 }
 
-.pagination-wrapper .card:hover {
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+#documentPreviewImage {
+    transition: all 0.3s ease;
 }
 </style>
 @endpush
@@ -696,33 +577,12 @@ use Illuminate\Support\Facades\Storage;
 @push('scripts')
 <script>
 console.log('Motor admin page loaded');
-console.log('Bootstrap available:', typeof bootstrap !== 'undefined');
-console.log('CSRF token exists:', !!document.querySelector('meta[name="csrf-token"]'));
 
 // Function to show document preview
 function showDocumentPreview(imageUrl) {
-    const modal = new bootstrap.Modal(document.getElementById('documentPreviewModal'));
     const previewImage = document.getElementById('documentPreviewImage');
-    
     previewImage.src = imageUrl;
-    modal.show();
-}
-
-// Function for pagination quick jump
-function jumpToPage() {
-    const pageInput = document.getElementById('pageJump');
-    const pageNumber = parseInt(pageInput.value);
-    const maxPages = parseInt(pageInput.getAttribute('max'));
-    
-    if (pageNumber && pageNumber >= 1 && pageNumber <= maxPages) {
-        // Get current URL and update page parameter
-        const url = new URL(window.location.href);
-        url.searchParams.set('page', pageNumber);
-        window.location.href = url.toString();
-    } else {
-        alert(`Masukkan nomor halaman antara 1 - ${maxPages}`);
-        pageInput.focus();
-    }
+    window.dispatchEvent(new CustomEvent('open-document-preview'));
 }
 
 // Delete Motor Functions
@@ -736,9 +596,8 @@ function confirmDeleteMotor(motorId, brand, model, plate, owner) {
     document.getElementById('deleteMotorPlate').textContent = plate;
     document.getElementById('deleteMotorOwner').textContent = owner;
     
-    // Show modal
-    const modal = new bootstrap.Modal(document.getElementById('deleteMotorModal'));
-    modal.show();
+    // Show modal using Alpine.js
+    window.dispatchEvent(new CustomEvent('open-delete-motor'));
 }
 
 function deleteMotor(motorId) {
@@ -747,7 +606,7 @@ function deleteMotor(motorId) {
     
     // Show loading state
     confirmBtn.disabled = true;
-    confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Menghapus...';
+    confirmBtn.innerHTML = '<span class="inline-block animate-spin mr-2">⏳</span>Menghapus...';
     
     // Send delete request
     fetch(`{{ route('admin.motors') }}/${motorId}`, {
@@ -761,9 +620,6 @@ function deleteMotor(motorId) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Hide modal
-            bootstrap.Modal.getInstance(document.getElementById('deleteMotorModal')).hide();
-            
             // Show success message
             showAlert('success', 'Motor berhasil dihapus!');
             
@@ -788,18 +644,22 @@ function deleteMotor(motorId) {
 
 function showAlert(type, message) {
     // Remove existing alerts
-    const existingAlerts = document.querySelectorAll('.alert-dismissible');
+    const existingAlerts = document.querySelectorAll('.custom-alert');
     existingAlerts.forEach(alert => alert.remove());
     
     // Create alert element
-    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    const bgClass = type === 'success' ? 'bg-green-500' : 'bg-red-500';
     const iconClass = type === 'success' ? 'bi-check-circle' : 'bi-exclamation-triangle';
     
     const alertHtml = `
-        <div class="alert ${alertClass} alert-dismissible fade show position-fixed" 
-             style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;" role="alert">
-            <i class="${iconClass} me-2"></i>${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div class="custom-alert fixed top-5 right-5 z-[9999] min-w-[300px] ${bgClass} text-white px-6 py-4 rounded-lg shadow-lg flex items-center justify-between">
+            <div class="flex items-center">
+                <i class="${iconClass} mr-2"></i>
+                <span>${message}</span>
+            </div>
+            <button type="button" class="ml-4 text-white hover:text-gray-200" onclick="this.parentElement.remove()">
+                <i class="bi bi-x-lg"></i>
+            </button>
         </div>
     `;
     
@@ -808,10 +668,9 @@ function showAlert(type, message) {
     
     // Auto remove after 5 seconds
     setTimeout(() => {
-        const alert = document.querySelector('.alert-dismissible');
+        const alert = document.querySelector('.custom-alert');
         if (alert) {
-            const bsAlert = new bootstrap.Alert(alert);
-            bsAlert.close();
+            alert.remove();
         }
     }, 5000);
 }
@@ -836,32 +695,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Handle Enter key for page jump
-    const pageJumpInput = document.getElementById('pageJump');
-    if (pageJumpInput) {
-        pageJumpInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                jumpToPage();
-            }
-        });
-        
-        // Auto-select text when focused
-        pageJumpInput.addEventListener('focus', function() {
-            this.select();
-        });
-    }
-    
-    // Add smooth scroll to pagination
-    const paginationLinks = document.querySelectorAll('.custom-pagination .page-link');
-    paginationLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            // Add loading state
-            if (!this.closest('.page-item').classList.contains('disabled')) {
-                this.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Loading...</span></div>';
-            }
-        });
-    });
 });
 </script>
 <script src="{{ asset('js/simple-motor-verification.js') }}"></script>
