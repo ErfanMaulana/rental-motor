@@ -2,217 +2,307 @@
 
 @section('title', 'Detail Motor')
 
+@push('styles')
+<style>
+    /* Reset all potential Bootstrap conflicts */
+    * {
+        margin: revert;
+        padding: revert;
+    }
+    
+    /* Force Tailwind styles */
+    input[type="number"] {
+        -moz-appearance: textfield;
+        appearance: textfield;
+    }
+    
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    
+    /* Ensure form elements are styled */
+    form input, form button, form label, form span {
+        font-family: inherit;
+        line-height: inherit;
+    }
+</style>
+@endpush
+
 @section('content')
-<div class="content-header">
-    <h1><i class="bi bi-motorcycle me-3"></i>Detail Motor</h1>
-    <p>Informasi lengkap motor untuk verifikasi</p>
-</div>
-
-<div class="row">
-    <div class="col-lg-8">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Informasi Motor</h5>
-                <div>
-                    @if($motor->status === 'pending_verification')
-                        <span class="badge bg-warning fs-6">Menunggu Verifikasi</span>
-                    @elseif($motor->status === 'available')
-                        <span class="badge bg-success fs-6">Tersedia</span>
-                    @elseif($motor->status === 'rented')
-                        <span class="badge bg-warning text-dark fs-6">Disewa</span>
-                    @else
-                        <span class="badge bg-secondary fs-6">{{ ucfirst($motor->status) }}</span>
-                    @endif
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-5">
-                        @if($motor->photo)
-                            <img src="{{ Storage::url($motor->photo) }}" 
-                                 alt="{{ $motor->brand }} {{ $motor->model }}"
-                                 class="img-fluid rounded shadow-sm">
-                        @else
-                            <div class="bg-light rounded d-flex align-items-center justify-content-center shadow-sm" 
-                                 style="height: 300px;">
-                                <i class="bi bi-motorcycle text-muted" style="font-size: 4rem;"></i>
-                            </div>
-                        @endif
-                    </div>
-                    <div class="col-md-7">
-                        <h3 class="mb-3">{{ $motor->brand }} {{ $motor->model }}</h3>
-                        
-                        <div class="d-flex align-items-center mb-3">
-                            <span class="badge bg-primary me-2">{{ $motor->type_cc }}</span>
-                            @if($motor->status === 'available')
-                                <span class="badge bg-success">Tersedia</span>
-                            @else
-                                <span class="badge bg-warning">Tidak Tersedia</span>
-                            @endif
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-sm-6 mb-3">
-                                <h6><i class="bi bi-calendar me-2"></i>Tahun</h6>
-                                <p class="mb-0">{{ $motor->year }}</p>
-                            </div>
-                            <div class="col-sm-6 mb-3">
-                                <h6><i class="bi bi-palette me-2"></i>Warna</h6>
-                                <p class="mb-0">{{ $motor->color }}</p>
-                            </div>
-                            <div class="col-sm-6 mb-3">
-                                <h6><i class="bi bi-card-text me-2"></i>Plat Nomor</h6>
-                                <p class="mb-0">{{ $motor->plate_number }}</p>
-                            </div>
-                            <div class="col-sm-6 mb-3">
-                                <h6><i class="bi bi-person me-2"></i>Pemilik</h6>
-                                <p class="mb-0">{{ $motor->owner->name }}</p>
-                                <small class="text-muted">{{ $motor->owner->email }}</small>
-                            </div>
-                        </div>
-                        
-                        @if($motor->description)
-                            <div class="mt-4">
-                                <h6><i class="bi bi-chat-text me-2"></i>Deskripsi</h6>
-                                <p class="text-muted">{{ $motor->description }}</p>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        @if($motor->status === 'pending_verification')
-            <div class="card mt-4">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="bi bi-check-circle me-2"></i>Verifikasi Motor</h5>
-                </div>
-                <div class="card-body">
-                    <form action="{{ route('admin.motor.verify', $motor->id) }}" method="POST">
-                        @csrf
-                        @method('PATCH')
-                        
-                        <div class="mb-4">
-                            <label for="daily_rate" class="form-label">
-                                <i class="bi bi-currency-dollar me-2"></i>Tarif Sewa per Hari *
-                            </label>
-                            <div class="input-group">
-                                <span class="input-group-text">Rp</span>
-                                <input type="number" 
-                                       class="form-control" 
-                                       id="daily_rate" 
-                                       name="daily_rate" 
-                                       min="0" 
-                                       step="1000"
-                                       placeholder="50000"
-                                       required>
-                            </div>
-                            <div class="form-text">Masukkan tarif sewa per hari untuk motor ini</div>
-                        </div>
-
-                        <div class="mb-4">
-                            <label for="verification_notes" class="form-label">
-                                <i class="bi bi-chat-text me-2"></i>Catatan Verifikasi (Opsional)
-                            </label>
-                            <textarea class="form-control" 
-                                      id="verification_notes" 
-                                      name="verification_notes" 
-                                      rows="3"
-                                      placeholder="Tambahkan catatan verifikasi jika diperlukan..."></textarea>
-                        </div>
-
-                        <div class="d-flex justify-content-between">
-                            <a href="{{ route('admin.motors') }}" class="btn btn-secondary">
-                                <i class="bi bi-arrow-left me-1"></i>Kembali
-                            </a>
-                            <button type="submit" class="btn btn-success">
-                                <i class="bi bi-check-circle me-1"></i>Verifikasi & Setujui
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        @else
-            <div class="d-flex justify-content-start mt-4">
-                <a href="{{ route('admin.motors') }}" class="btn btn-secondary">
-                    <i class="bi bi-arrow-left me-1"></i>Kembali ke Daftar Motor
-                </a>
-            </div>
-        @endif
+<div class="max-w-7xl mx-auto px-4 py-6">
+    <!-- Header -->
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-gray-900 flex items-center">
+            <i class="bi bi-motorcycle mr-3"></i>Detail Motor
+        </h1>
+        <p class="text-sm text-gray-500 mt-1">Informasi lengkap motor untuk verifikasi</p>
     </div>
 
-    <div class="col-lg-4">
-        @if($motor->rentalRate)
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h6 class="mb-0"><i class="bi bi-currency-dollar me-2"></i>Harga Sewa</h6>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Main Content -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Motor Information Card -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                    <h5 class="text-lg font-semibold text-gray-900 flex items-center">
+                        <i class="bi bi-info-circle mr-2"></i>Informasi Motor
+                    </h5>
+                    <div>
+                        @if($motor->status === 'pending_verification')
+                            <span class="px-3 py-1 text-sm font-medium bg-yellow-100 text-yellow-800 rounded-full">Menunggu Verifikasi</span>
+                        @elseif($motor->status === 'available')
+                            <span class="px-3 py-1 text-sm font-medium bg-green-100 text-green-800 rounded-full">Tersedia</span>
+                        @elseif($motor->status === 'rented')
+                            <span class="px-3 py-1 text-sm font-medium bg-blue-100 text-blue-800 rounded-full">Disewa</span>
+                        @else
+                            <span class="px-3 py-1 text-sm font-medium bg-gray-100 text-gray-800 rounded-full">{{ ucfirst($motor->status) }}</span>
+                        @endif
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-12 mb-3">
-                            <div class="text-center">
-                                <h6>Harian</h6>
-                                <h4 class="text-primary">Rp {{ number_format((float)$motor->rentalRate->daily_rate, 0, ',', '.') }}</h4>
-                                <small class="text-muted">per hari</small>
-                            </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            @if($motor->photo)
+                                <img src="{{ Storage::url($motor->photo) }}" 
+                                     alt="{{ $motor->brand }} {{ $motor->model }}"
+                                     class="w-full h-64 object-cover rounded-lg shadow-sm">
+                            @else
+                                <div class="w-full h-64 bg-gray-100 rounded-lg flex items-center justify-center shadow-sm">
+                                    <i class="bi bi-motorcycle text-gray-400 text-6xl"></i>
+                                </div>
+                            @endif
                         </div>
-                        <div class="col-6">
-                            <div class="text-center">
-                                <h6>Mingguan</h6>
-                                <h5 class="text-info">Rp {{ number_format((float)$motor->rentalRate->daily_rate * 7 * 0.9, 0, ',', '.') }}</h5>
-                                <small class="text-muted">per minggu</small>
-                                <br><small class="text-success">Diskon 10%</small>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-3">{{ $motor->brand }} {{ $motor->model }}</h3>
+                            
+                            <div class="flex items-center gap-2 mb-4">
+                                <span class="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">{{ $motor->type_cc }}</span>
+                                @if($motor->status === 'available')
+                                    <span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded">Tersedia</span>
+                                @else
+                                    <span class="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded">Tidak Tersedia</span>
+                                @endif
                             </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="text-center">
-                                <h6>Bulanan</h6>
-                                <h5 class="text-warning">Rp {{ number_format((float)$motor->rentalRate->daily_rate * 30 * 0.8, 0, ',', '.') }}</h5>
-                                <small class="text-muted">per bulan</small>
-                                <br><small class="text-success">Diskon 20%</small>
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <h6 class="text-sm font-semibold text-gray-700 mb-1 flex items-center">
+                                        <i class="bi bi-calendar mr-2"></i>Tahun
+                                    </h6>
+                                    <p class="text-sm text-gray-900">{{ $motor->year }}</p>
+                                </div>
+                                <div>
+                                    <h6 class="text-sm font-semibold text-gray-700 mb-1 flex items-center">
+                                        <i class="bi bi-palette mr-2"></i>Warna
+                                    </h6>
+                                    <p class="text-sm text-gray-900">{{ $motor->color }}</p>
+                                </div>
+                                <div>
+                                    <h6 class="text-sm font-semibold text-gray-700 mb-1 flex items-center">
+                                        <i class="bi bi-card-text mr-2"></i>Plat Nomor
+                                    </h6>
+                                    <p class="text-sm text-gray-900">{{ $motor->plate_number }}</p>
+                                </div>
+                                <div>
+                                    <h6 class="text-sm font-semibold text-gray-700 mb-1 flex items-center">
+                                        <i class="bi bi-person mr-2"></i>Pemilik
+                                    </h6>
+                                    <p class="text-sm text-gray-900">{{ $motor->owner->name }}</p>
+                                    <small class="text-xs text-gray-500">{{ $motor->owner->email }}</small>
+                                </div>
                             </div>
+                            
+                            @if($motor->description)
+                                <div class="mt-4">
+                                    <h6 class="text-sm font-semibold text-gray-700 mb-1 flex items-center">
+                                        <i class="bi bi-chat-text mr-2"></i>Deskripsi
+                                    </h6>
+                                    <p class="text-sm text-gray-600">{{ $motor->description }}</p>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
             </div>
-        @endif
 
-        <div class="card">
-            <div class="card-header">
-                <h6 class="mb-0"><i class="bi bi-bar-chart me-2"></i>Statistik Motor</h6>
-            </div>
-            <div class="card-body">
-                @php
-                    $totalBookings = $motor->bookings()->count();
-                    $totalEarnings = $motor->bookings()->where('status', 'completed')->sum('price');
-                @endphp
-                
-                <div class="text-center">
-                    <h4 class="text-primary">{{ $totalBookings }}</h4>
-                    <small>Total Booking</small>
-                    <hr>
-                    <h4 class="text-success">Rp {{ number_format($totalEarnings, 0, ',', '.') }}</h4>
-                    <small>Total Earnings</small>
+            @if($motor->status === 'pending_verification')
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h5 class="text-lg font-semibold text-gray-900 flex items-center">
+                            <i class="bi bi-check-circle mr-2"></i>Verifikasi Motor
+                        </h5>
+                    </div>
+                    <div class="p-6">
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                            <div class="flex items-start">
+                                <i class="bi bi-info-circle text-blue-600 text-xl mr-3 mt-0.5"></i>
+                                <div>
+                                    <h6 class="font-semibold text-blue-900 mb-1">Perhatian:</h6>
+                                    <p class="text-sm text-blue-800">Setelah motor diverifikasi dan harga ditetapkan, motor akan tersedia untuk disewa oleh penyewa.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <form action="{{ route('admin.motor.verify', $motor->id) }}" method="POST" class="space-y-6" style="display: block;">
+                            @csrf
+                            @method('PATCH')
+                            
+                            <div style="margin-bottom: 1.5rem;">
+                                <label for="daily_rate" style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">
+                                    <i class="bi bi-currency-dollar" style="margin-right: 0.25rem;"></i>Tarif Harian *
+                                </label>
+                                <div style="display: flex; align-items: center;">
+                                    <span style="display: inline-flex; align-items: center; padding: 0.625rem 1rem; background-color: #f3f4f6; border: 1px solid #d1d5db; border-right: 0; border-top-left-radius: 0.5rem; border-bottom-left-radius: 0.5rem; font-size: 0.875rem; color: #374151;">Rp</span>
+                                    <input type="number" 
+                                           style="flex: 1; padding: 0.625rem 1rem; border: 1px solid #d1d5db; border-top-right-radius: 0.5rem; border-bottom-right-radius: 0.5rem; font-size: 0.875rem; outline: none;"
+                                           id="daily_rate" 
+                                           name="daily_rate" 
+                                           min="10000" 
+                                           max="1000000"
+                                           step="1000"
+                                           placeholder="450000"
+                                           required
+                                           onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 3px rgba(59, 130, 246, 0.1)';"
+                                           onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none';">
+                                </div>
+                                <p style="font-size: 0.75rem; color: #6b7280; margin-top: 0.5rem;">Minimal Rp 10.000 - Maksimal Rp 1.000.000</p>
+                            </div>
+
+                            <div style="margin-bottom: 1.5rem;">
+                                <label style="display: block; font-size: 0.875rem; font-weight: 500; color: #374151; margin-bottom: 0.5rem;">Tarif Mingguan</label>
+                                <div style="display: flex; align-items: center;">
+                                    <span style="display: inline-flex; align-items: center; padding: 0.625rem 1rem; background-color: #f3f4f6; border: 1px solid #d1d5db; border-radius: 0.5rem; font-size: 0.875rem; color: #6b7280;">Otomatis dengan diskon</span>
+                                </div>
+                                <p style="font-size: 0.75rem; color: #6b7280; margin-top: 0.5rem;">Auto: diskon 10% dari 7x tarif harian</p>
+                            </div>
+
+                            <div style="margin-bottom: 1.5rem;">
+                                <label style="display: block; font-size: 0.875rem; font-weight: 500; color: #374151; margin-bottom: 0.5rem;">Tarif Bulanan</label>
+                                <div style="display: flex; align-items: center;">
+                                    <span style="display: inline-flex; align-items: center; padding: 0.625rem 1rem; background-color: #f3f4f6; border: 1px solid #d1d5db; border-radius: 0.5rem; font-size: 0.875rem; color: #6b7280;">Otomatis dengan diskon</span>
+                                </div>
+                                <p style="font-size: 0.75rem; color: #6b7280; margin-top: 0.5rem;">Auto: diskon 20% dari 30x tarif harian</p>
+                            </div>
+
+                            <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem;">
+                                <h6 style="font-weight: 600; color: #374151; margin-bottom: 0.5rem; display: flex; align-items: center;">
+                                    <i class="bi bi-lightbulb" style="margin-right: 0.5rem; color: #eab308;"></i>Tips Penetapan Harga
+                                </h6>
+                                <ul style="font-size: 0.75rem; color: #6b7280; list-style: none; padding: 0; margin: 0;">
+                                    <li style="margin-bottom: 0.25rem;">• Motor 100cc-125cc: Rp 50.000 - 80.000/hari</li>
+                                    <li style="margin-bottom: 0.25rem;">• Motor 150cc: Rp 80.000 - 120.000/hari</li>
+                                    <li style="margin-bottom: 0.25rem;">• Motor 250cc+: Rp 120.000 - 200.000/hari</li>
+                                    <li style="margin-bottom: 0.25rem;">• Motor Premium/Sport: Rp 300.000 - 1.000.000/hari</li>
+                                    <li style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #d1d5db;">Pertimbangkan kondisi, umur, dan brand motor</li>
+                                </ul>
+                            </div>
+
+                            <p style="font-size: 0.75rem; color: #6b7280; font-style: italic; margin-bottom: 1.5rem;"><strong>Catatan:</strong> Tarif mingguan dan bulanan akan otomatis dihitung berdasarkan tarif harian (diskon 10% untuk mingguan, diskon 20% untuk bulanan).</p>
+
+                            <div style="display: flex; justify-content: space-between; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
+                                <a href="{{ route('admin.motors') }}" style="display: inline-flex; align-items: center; padding: 0.625rem 1.5rem; background-color: #f3f4f6; color: #374151; font-weight: 500; border-radius: 0.5rem; text-decoration: none; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#e5e7eb'" onmouseout="this.style.backgroundColor='#f3f4f6'">
+                                    <i class="bi bi-arrow-left" style="margin-right: 0.5rem;"></i>Batal
+                                </a>
+                                <button type="submit" style="display: inline-flex; align-items: center; padding: 0.625rem 1.5rem; background-color: #16a34a; color: white; font-weight: 500; border-radius: 0.5rem; border: none; cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#15803d'" onmouseout="this.style.backgroundColor='#16a34a'">
+                                    <i class="bi bi-check-circle" style="margin-right: 0.5rem;"></i>Verifikasi & Set Harga
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-            </div>
+            @else
+                <div class="flex justify-start">
+                    <a href="{{ route('admin.motors') }}" class="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition flex items-center">
+                        <i class="bi bi-arrow-left mr-2"></i>Kembali ke Daftar Motor
+                    </a>
+                </div>
+            @endif
         </div>
 
-        <div class="card mt-4">
-            <div class="card-header">
-                <h6 class="mb-0"><i class="bi bi-person me-2"></i>Informasi Pemilik</h6>
+        <!-- Sidebar -->
+        <div class="space-y-6">
+            @if($motor->rentalRate)
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h6 class="text-lg font-semibold text-gray-900 flex items-center">
+                            <i class="bi bi-currency-dollar mr-2"></i>Harga Sewa
+                        </h6>
+                    </div>
+                    <div class="p-6">
+                        <div class="space-y-4">
+                            <div class="text-center pb-4 border-b border-gray-200">
+                                <h6 class="text-sm font-medium text-gray-600 mb-2">Harian</h6>
+                                <h4 class="text-2xl font-bold text-blue-600">Rp {{ number_format((float)$motor->rentalRate->daily_rate, 0, ',', '.') }}</h4>
+                                <small class="text-xs text-gray-500">per hari</small>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="text-center">
+                                    <h6 class="text-sm font-medium text-gray-600 mb-2">Mingguan</h6>
+                                    <h5 class="text-lg font-bold text-blue-500">Rp {{ number_format((float)$motor->rentalRate->daily_rate * 7 * 0.9, 0, ',', '.') }}</h5>
+                                    <small class="text-xs text-gray-500">per minggu</small>
+                                    <br><small class="text-xs text-green-600 font-medium">Diskon 10%</small>
+                                </div>
+                                <div class="text-center">
+                                    <h6 class="text-sm font-medium text-gray-600 mb-2">Bulanan</h6>
+                                    <h5 class="text-lg font-bold text-blue-500">Rp {{ number_format((float)$motor->rentalRate->daily_rate * 30 * 0.8, 0, ',', '.') }}</h5>
+                                    <small class="text-xs text-gray-500">per bulan</small>
+                                    <br><small class="text-xs text-green-600 font-medium">Diskon 20%</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h6 class="text-lg font-semibold text-gray-900 flex items-center">
+                        <i class="bi bi-bar-chart mr-2"></i>Statistik Motor
+                    </h6>
+                </div>
+                <div class="p-6">
+                    @php
+                        $totalBookings = $motor->bookings()->count();
+                        $totalEarnings = $motor->bookings()->where('status', 'completed')->sum('price');
+                    @endphp
+                    
+                    <div class="space-y-4">
+                        <div class="text-center pb-4 border-b border-gray-200">
+                            <h4 class="text-3xl font-bold text-blue-600">{{ $totalBookings }}</h4>
+                            <small class="text-sm text-gray-600">Total Booking</small>
+                        </div>
+                        <div class="text-center">
+                            <h4 class="text-2xl font-bold text-green-600">Rp {{ number_format($totalEarnings, 0, ',', '.') }}</h4>
+                            <small class="text-sm text-gray-600">Total Earnings</small>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="text-center">
-                    <h6 class="mb-1">{{ $motor->owner->name }}</h6>
-                    <p class="text-muted mb-2">{{ $motor->owner->email }}</p>
-                    @if($motor->owner->phone)
-                        <p class="text-muted mb-2">
-                            <i class="bi bi-phone me-1"></i>{{ $motor->owner->phone }}
-                        </p>
-                    @endif
-                    <small class="text-muted">
-                        Bergabung: {{ $motor->owner->created_at->format('d M Y') }}
-                    </small>
+
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h6 class="text-lg font-semibold text-gray-900 flex items-center">
+                        <i class="bi bi-person mr-2"></i>Informasi Pemilik
+                    </h6>
+                </div>
+                <div class="p-6">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="bi bi-person-fill text-blue-600 text-2xl"></i>
+                        </div>
+                        <h6 class="font-semibold text-gray-900 mb-1">{{ $motor->owner->name }}</h6>
+                        <p class="text-sm text-gray-600 mb-2">{{ $motor->owner->email }}</p>
+                        @if($motor->owner->phone)
+                            <p class="text-sm text-gray-600 mb-2 flex items-center justify-center">
+                                <i class="bi bi-phone mr-1"></i>{{ $motor->owner->phone }}
+                            </p>
+                        @endif
+                        <small class="text-xs text-gray-500">
+                            Bergabung: {{ $motor->owner->created_at->format('d M Y') }}
+                        </small>
+                    </div>
                 </div>
             </div>
         </div>

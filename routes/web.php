@@ -97,7 +97,7 @@ Route::middleware(['auth', 'role:penyewa'])->prefix('penyewa')->name('penyewa.')
     // Payment routes
     Route::get('/payment/{bookingId}', [PenyewaController::class, 'paymentForm'])->name('payment.form');
     Route::post('/payment/{bookingId}', [PenyewaController::class, 'processPayment'])->name('payment.process');
-    Route::get('/payment-history', [PenyewaController::class, 'paymentHistory'])->name('payment.history');
+    Route::get('/payment-history', [PenyewaController::class, 'paymentHistory'])->name('payment-history');
     Route::get('/payments/{id}/detail', [PenyewaController::class, 'getPaymentDetailAjax'])->name('payment.detail.ajax');
     Route::get('/payments/{id}/invoice', [PenyewaController::class, 'paymentInvoice'])->name('payment.invoice');
     

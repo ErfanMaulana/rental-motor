@@ -11,11 +11,9 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:300,400,500,600,700,800&display=swap" rel="stylesheet" />
     
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    
-    <!-- Tailwind CSS -->
+    <!-- Tailwind CSS (includes Bootstrap Icons) -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
 </head>
 <body class="h-full font-sans antialiased bg-gray-50">
     <div class="flex h-full" x-data="{ sidebarOpen: false }">
@@ -100,7 +98,7 @@
                         </a>
                         <a href="{{ route('pemilik.motors') }}" 
                            class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition {{ str_starts_with($currentRoute, 'pemilik.motors') ? 'bg-white/20 text-white' : 'text-blue-100 hover:bg-white/10 hover:text-white' }}">
-                            <i class="bi bi-motorcycle mr-3 text-base"></i>
+                            <i class="bi bi-scooter mr-3 text-base"></i>
                             Motor Saya
                         </a>
                         <a href="{{ route('pemilik.bookings') }}" 
@@ -108,7 +106,7 @@
                             <i class="bi bi-calendar-check mr-3 text-base"></i>
                             Pemesanan
                         </a>
-                        <a href="{{ route('pemilik.revenue-report') }}" 
+                        <a href="{{ route('pemilik.revenue.report') }}" 
                            class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition {{ str_starts_with($currentRoute, 'pemilik.revenue') ? 'bg-white/20 text-white' : 'text-blue-100 hover:bg-white/10 hover:text-white' }}">
                             <i class="bi bi-file-earmark-bar-graph mr-3 text-base"></i>
                             Laporan Pendapatan
@@ -124,7 +122,7 @@
                         </a>
                         <a href="{{ route('penyewa.motors') }}" 
                            class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition {{ str_starts_with($currentRoute, 'penyewa.motors') ? 'bg-white/20 text-white' : 'text-blue-100 hover:bg-white/10 hover:text-white' }}">
-                            <i class="bi bi-motorcycle mr-3 text-base"></i>
+                            <i class="bi bi-scooter mr-3 text-base"></i>
                             Daftar Motor
                         </a>
                         <a href="{{ route('penyewa.bookings') }}" 

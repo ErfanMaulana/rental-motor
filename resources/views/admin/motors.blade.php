@@ -67,103 +67,106 @@ use Illuminate\Support\Facades\Storage;
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     @if($motors->count() > 0)
         @foreach($motors as $motor)
-        <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden motor-card" data-motor-id="{{ $motor->id }}">
+        <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-visible motor-card" data-motor-id="{{ $motor->id }}">
             <!-- Motor Image -->
-            <div class="relative">
+            <div class="relative overflow-hidden rounded-t-lg" style="aspect-ratio: 4/3;">
                 @if($motor->photo)
                     <img src="{{ Storage::url($motor->photo) }}" 
-                         class="w-full h-64 object-cover" 
+                         class="w-full h-full object-cover" 
                          alt="{{ $motor->brand }}">
                 @else
-                    <div class="w-full h-64 bg-gray-100 flex items-center justify-center">
-                        <i class="bi bi-motorcycle text-gray-400" style="font-size: 4rem;"></i>
+                    <div class="w-full h-full bg-gray-100 flex items-center justify-center">
+                        <i class="bi bi-motorcycle text-gray-400" style="font-size: 1.5rem;"></i>
                     </div>
                 @endif
                 
                 <!-- Status Badge -->
-                <div class="absolute top-0 right-0 m-3">
+                <div class="absolute top-0 right-0 m-2">
                     @if($motor->status === 'pending_verification')
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-500 text-white">
-                            <i class="bi bi-clock mr-1"></i>Menunggu Verifikasi
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-yellow-500 text-white">
+                            <i class="bi bi-clock mr-0.5 text-[10px]"></i>Menunggu Verifikasi
                         </span>
                     @elseif($motor->status === 'available')
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-500 text-white">
-                            <i class="bi bi-check-circle mr-1"></i>Tersedia
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-500 text-white">
+                            <i class="bi bi-check-circle mr-0.5 text-[10px]"></i>Tersedia
                         </span>
                     @elseif($motor->status === 'rented')
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-600 text-white">
-                            <i class="bi bi-person-check mr-1"></i>Sedang Disewa
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-yellow-600 text-white">
+                            <i class="bi bi-person-check mr-0.5 text-[10px]"></i>Sedang Disewa
                         </span>
                     @elseif($motor->status === 'maintenance')
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-500 text-white">
-                            <i class="bi bi-tools mr-1"></i>Maintenance
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-500 text-white">
+                            <i class="bi bi-tools mr-0.5 text-[10px]"></i>Maintenance
                         </span>
                     @endif
                 </div>
             </div>
 
             <!-- Motor Info -->
-            <div class="p-4">
-                <h5 class="text-lg font-semibold text-gray-900 flex items-center mb-2">
-                    <i class="bi bi-motorcycle text-blue-600 mr-2"></i>
+            <div class="p-2">
+                <h5 class="text-sm font-semibold text-gray-900 flex items-center mb-1">
+                    <i class="bi bi-motorcycle text-blue-600 mr-1 text-sm"></i>
                     {{ $motor->brand }}
                 </h5>
-                <p class="text-gray-600 text-sm mb-3">
-                    <i class="bi bi-gear mr-1"></i>{{ $motor->type_cc }}
-                    <span class="ml-3">
-                        <i class="bi bi-credit-card mr-1"></i>{{ $motor->plate_number }}
+                <p class="text-gray-600 text-[10px] mb-1.5">
+                    <i class="bi bi-gear mr-0.5 text-[10px]"></i>{{ $motor->type_cc }}
+                    <span class="ml-2">
+                        <i class="bi bi-credit-card mr-0.5 text-[10px]"></i>{{ $motor->plate_number }}
                     </span>
                 </p>
                 
                 <!-- Owner Info -->
-                <div class="mb-3 border-t border-gray-100 pt-3">
-                    <div class="flex items-center mb-2">
-                        <i class="bi bi-person-circle mr-2 text-gray-400"></i>
-                        <div>
-                            <div class="font-medium text-sm text-gray-900">{{ $motor->owner->name }}</div>
-                            <small class="text-gray-500 text-xs">{{ $motor->owner->email }}</small>
-                        </div>
-                    </div>
-                    
-                    <!-- Document Photo -->
-                    @if($motor->document)
-                        <div class="flex items-center mt-2">
-                            <i class="bi bi-file-earmark-text mr-2 text-gray-400"></i>
+                <div class="mb-1.5 border-t border-gray-100 pt-1.5">
+                    <div class="flex items-start justify-between gap-2">
+                        <!-- Owner Details -->
+                        <div class="flex items-center flex-1">
+                            <i class="bi bi-person-circle mr-1 text-gray-400 text-xs"></i>
                             <div>
-                                <small class="text-gray-500 text-xs block">Dokumen Motor:</small>
+                                <div class="font-medium text-[10px] text-gray-900">{{ $motor->owner->name }}</div>
+                                <small class="text-gray-500 text-[9px]">{{ $motor->owner->email }}</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Document Photo -->
+                        @if($motor->document)
+                            <div class="flex items-center gap-1">
+                                <div class="text-right">
+                                    <small class="text-gray-500 text-[9px] block">Dokumen:</small>
+                                    <i class="bi bi-file-earmark-text text-gray-400 text-[8px]"></i>
+                                </div>
                                 <img src="{{ Storage::url($motor->document) }}" 
                                      alt="Dokumen Motor" 
                                      class="rounded border border-gray-200 cursor-pointer hover:border-blue-500 transition"
-                                     style="width: 60px; height: 40px; object-fit: cover;"
+                                     style="width: 45px; height: 30px; object-fit: cover;"
                                      onclick="showDocumentPreview('{{ Storage::url($motor->document) }}')"
                                      title="Klik untuk memperbesar - {{ $motor->document }}"
                                      onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                                <small class="text-red-600 text-xs hidden">Error loading: {{ $motor->document }}</small>
+                                <small class="text-red-600 text-[9px] hidden">Error loading: {{ $motor->document }}</small>
                             </div>
-                        </div>
-                    @else
-                        <div class="flex items-center mt-2">
-                            <i class="bi bi-file-earmark-x mr-2 text-gray-400"></i>
-                            <small class="text-gray-500 text-xs">Dokumen belum diupload</small>
-                        </div>
-                    @endif
+                        @else
+                            <div class="flex items-center gap-1">
+                                <i class="bi bi-file-earmark-x text-gray-400 text-xs"></i>
+                                <small class="text-gray-500 text-[9px]">Tidak ada</small>
+                            </div>
+                        @endif
+                    </div>
                 </div>
 
                 <!-- Rental Rates -->
                 @if($motor->rentalRate)
-                    <div class="mb-3 border-t border-gray-100 pt-3">
-                        <div class="grid grid-cols-3 gap-2 text-center">
+                    <div class="mb-1.5 border-t border-gray-100 pt-1.5">
+                        <div class="grid grid-cols-3 gap-1 text-center">
                             <div>
-                                <small class="text-gray-500 text-xs block">Harian</small>
-                                <div class="font-semibold text-blue-600 text-xs">Rp {{ number_format($motor->rentalRate->daily_rate, 0, ',', '.') }}</div>
+                                <small class="text-gray-500 text-[9px] block">Harian</small>
+                                <div class="font-semibold text-blue-600 text-[10px]">Rp {{ number_format($motor->rentalRate->daily_rate, 0, ',', '.') }}</div>
                             </div>
                             <div>
-                                <small class="text-gray-500 text-xs block">Mingguan</small>
-                                <div class="font-semibold text-blue-600 text-xs">Rp {{ number_format($motor->rentalRate->weekly_rate, 0, ',', '.') }}</div>
+                                <small class="text-gray-500 text-[9px] block">Mingguan</small>
+                                <div class="font-semibold text-blue-600 text-[10px]">Rp {{ number_format($motor->rentalRate->weekly_rate, 0, ',', '.') }}</div>
                             </div>
                             <div>
-                                <small class="text-gray-500 text-xs block">Bulanan</small>
-                                <div class="font-semibold text-blue-600 text-xs">Rp {{ number_format($motor->rentalRate->monthly_rate, 0, ',', '.') }}</div>
+                                <small class="text-gray-500 text-[9px] block">Bulanan</small>
+                                <div class="font-semibold text-blue-600 text-[10px]">Rp {{ number_format($motor->rentalRate->monthly_rate, 0, ',', '.') }}</div>
                             </div>
                         </div>
                     </div>
@@ -171,40 +174,57 @@ use Illuminate\Support\Facades\Storage;
             </div>
 
             <!-- Card Footer with Action Buttons -->
-            <div class="bg-gray-50 px-4 py-3 border-t border-gray-100">
+            <div class="bg-gray-50 px-2 py-1.5 border-t border-gray-100">
                 <div class="flex justify-between items-center">
-                    <small class="text-gray-500 text-xs">
-                        <i class="bi bi-calendar mr-1"></i>
+                    <small class="text-gray-500 text-[9px]">
+                        <i class="bi bi-calendar mr-0.5 text-[9px]"></i>
                         {{ $motor->created_at->format('d M Y') }}
                     </small>
-                    <div class="flex gap-2">
-                        <!-- Detail Button -->
-                        <button type="button" 
-                                class="px-3 py-1.5 text-xs font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition"
-                                data-action="show-detail"
-                                data-motor-id="{{ $motor->id }}"
-                                    onclick="showMotorDetail({{ $motor->id }})"
-                                    title="Lihat Detail Motor">
-                                <i class="bi bi-eye mr-1"></i>Detail
+                    
+                    <!-- Three Dot Menu -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" 
+                                @click.away="open = false"
+                                class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded-full transition"
+                                title="Menu Aksi">
+                            <i class="bi bi-three-dots-vertical text-lg"></i>
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div x-show="open" 
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="transform opacity-0 scale-95"
+                             x-transition:enter-end="transform opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="transform opacity-100 scale-100"
+                             x-transition:leave-end="transform opacity-0 scale-95"
+                             style="display: none;"
+                             class="absolute right-0 bottom-16 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-[100] origin-bottom-right">
+                            
+                            <!-- Detail Option -->
+                            <button type="button" 
+                                    @click="open = false; showMotorDetail({{ $motor->id }})"
+                                    class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 flex items-center transition rounded-t-lg">
+                                <i class="bi bi-eye mr-2"></i>
+                                Lihat Detail
                             </button>
                             
-                            <!-- Verification Button (only for pending motors) -->
+                            <!-- Verification Option -->
                             @if($motor->status === 'pending_verification')
                                 <button type="button" 
-                                        class="px-3 py-1.5 text-xs font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition"
-                                        data-action="verify-motor"
-                                        data-motor-id="{{ $motor->id }}"
-                                        onclick="directVerifyMotor({{ $motor->id }})"
-                                        title="Verifikasi Motor">
-                                    <i class="bi bi-check-circle mr-1"></i>Verifikasi
+                                        @click="open = false; showVerifyModal({{ $motor->id }}, '{{ $motor->brand }} {{ $motor->model }}', {{ $motor->rentalRate ? $motor->rentalRate->daily_rate : 0 }}, {{ $motor->rentalRate ? $motor->rentalRate->weekly_rate : 0 }}, {{ $motor->rentalRate ? $motor->rentalRate->monthly_rate : 0 }})"
+                                        class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 flex items-center transition">
+                                    <i class="bi bi-check-circle mr-2"></i>
+                                    Verifikasi Motor
                                 </button>
                             @else
-                                <span class="px-3 py-1.5 text-xs font-medium text-green-600 border border-green-600 rounded-lg opacity-50 cursor-not-allowed">
-                                    <i class="bi bi-check-circle mr-1"></i>Terverifikasi
-                                </span>
+                                <div class="px-4 py-2 text-sm text-green-600 flex items-center opacity-50 cursor-not-allowed">
+                                    <i class="bi bi-check-circle mr-2"></i>
+                                    Sudah Terverifikasi
+                                </div>
                             @endif
                             
-                            <!-- Delete Button -->
+                            <!-- Delete Option -->
                             @php
                                 $hasActiveBookings = $motor->bookings()
                                     ->whereIn('status', ['pending', 'confirmed', 'ongoing'])
@@ -217,23 +237,17 @@ use Illuminate\Support\Facades\Storage;
                             
                             @if($canDelete)
                                 <button type="button" 
-                                        class="px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition"
-                                        data-action="delete-motor"
-                                        data-motor-id="{{ $motor->id }}"
-                                        data-motor-brand="{{ $motor->brand }}"
-                                        data-motor-model="{{ $motor->model }}"
-                                        data-motor-plate="{{ $motor->license_plate }}"
-                                        data-motor-owner="{{ $motor->owner->name }}"
-                                        onclick="confirmDeleteMotor({{ $motor->id }}, '{{ $motor->brand }}', '{{ $motor->model }}', '{{ $motor->license_plate }}', '{{ $motor->owner->name }}')"
-                                        title="Hapus Motor">
-                                    <i class="bi bi-trash mr-1"></i>Hapus
+                                        @click="open = false; confirmDeleteMotor({{ $motor->id }}, '{{ $motor->brand }}', '{{ $motor->model ?? '' }}', '{{ $motor->plate_number }}', '{{ $motor->owner->name }}')"
+                                        class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 flex items-center transition border-t border-gray-100 rounded-b-lg">
+                                    <i class="bi bi-trash mr-2"></i>
+                                    Hapus Motor
                                 </button>
                             @else
-                                <button type="button" 
-                                        class="px-3 py-1.5 text-xs font-medium text-red-600 border border-red-600 rounded-lg opacity-50 cursor-not-allowed"
-                                        title="{{ $hasActiveBookings ? 'Motor memiliki booking aktif' : 'Motor memiliki riwayat booking' }}">
-                                    <i class="bi bi-shield-exclamation mr-1"></i>Tidak Dapat Dihapus
-                                </button>
+                                <div class="px-4 py-2 text-sm text-red-600 flex items-center opacity-50 cursor-not-allowed border-t border-gray-100 rounded-b-lg"
+                                     title="{{ $hasActiveBookings ? 'Motor memiliki booking aktif' : 'Motor memiliki riwayat booking' }}">
+                                    <i class="bi bi-shield-exclamation mr-2"></i>
+                                    Tidak Dapat Dihapus
+                                </div>
                             @endif
                         </div>
                     </div>
@@ -285,32 +299,27 @@ use Illuminate\Support\Facades\Storage;
              x-transition:leave="ease-in duration-200"
              x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
              x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-             class="inline-block w-full max-w-6xl my-8 overflow-hidden text-left align-middle transition-all transform bg-white rounded-lg shadow-xl">
+             class="inline-block w-[600px] my-2 overflow-hidden text-left align-middle transition-all transform bg-white rounded shadow-xl">
             
             <!-- Header -->
-            <div class="flex items-center justify-between px-6 py-4 bg-blue-600 text-white">
-                <h3 class="text-lg font-medium">
-                    <i class="bi bi-motorcycle mr-2"></i>Detail Motor
+            <div class="flex items-center justify-between px-2.5 py-1.5 bg-blue-600 text-white">
+                <h3 class="text-[11px] font-semibold">
+                    <i class="bi bi-motorcycle mr-1 text-[10px]"></i>Detail Motor
                 </h3>
                 <button @click="open = false" class="text-white hover:text-gray-200">
-                    <i class="bi bi-x-lg text-xl"></i>
+                    <i class="bi bi-x-lg text-[10px]"></i>
                 </button>
             </div>
             
             <!-- Body -->
-            <div class="px-6 py-4">
-                <div id="motorDetailContent">
-                    <!-- Content will be loaded here by JavaScript -->
-                </div>
+            <div id="motorDetailContent" class="p-2.5 max-h-[320px] overflow-y-auto text-xs">
+                <!-- Content will be loaded here by JavaScript -->
             </div>
             
             <!-- Footer -->
-            <div class="flex justify-end gap-3 px-6 py-4 bg-gray-50">
-                <button @click="open = false" class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition">
-                    <i class="bi bi-x-circle mr-2"></i>Tutup
-                </button>
-                <button type="button" class="px-4 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 transition hidden" id="verifyMotorFromModal">
-                    <i class="bi bi-check-circle mr-2"></i>Verifikasi Motor
+            <div class="px-2.5 py-1.5 bg-gray-50 border-t border-gray-200">
+                <button @click="open = false" class="w-full px-2.5 py-1 text-[10px] font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 transition">
+                    <i class="bi bi-x-circle mr-0.5 text-[9px]"></i>Tutup
                 </button>
             </div>
         </div>
@@ -380,6 +389,7 @@ use Illuminate\Support\Facades\Storage;
 <div x-data="{ open: false }" 
      x-show="open" 
      @open-delete-motor.window="open = true"
+     @close-delete-motor.window="open = false"
      @keydown.escape.window="open = false"
      style="display: none;"
      class="fixed inset-0 z-50 overflow-y-auto" 
@@ -441,6 +451,128 @@ use Illuminate\Support\Facades\Storage;
                     </div>
                 </div>
                 
+                <div class="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800">
+                    <i class="bi bi-exclamation-circle mr-1"></i>
+                    Perhatian: Data motor, foto, dokumen, dan semua informasi terkait akan dihapus permanen!
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Verify Motor Modal -->
+<div x-data="{ open: false, motorId: null, motorName: '', dailyRate: 0, weeklyRate: 0, monthlyRate: 0 }" 
+     x-show="open" 
+     @open-verify-motor.window="open = true; motorId = $event.detail.motorId; motorName = $event.detail.motorName; dailyRate = $event.detail.dailyRate; weeklyRate = $event.detail.weeklyRate; monthlyRate = $event.detail.monthlyRate"
+     @keydown.escape.window="open = false"
+     style="display: none;"
+     class="fixed inset-0 z-50 overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div x-show="open" 
+             x-transition:enter="ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
+             @click="open = false"></div>
+
+        <!-- Modal panel -->
+        <div x-show="open"
+             x-transition:enter="ease-out duration-300"
+             x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+             x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+             x-transition:leave="ease-in duration-200"
+             x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+             x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+             class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            
+            <form :action="`/admin/motors/${motorId}/verify`" method="POST">
+                @csrf
+                @method('PATCH')
+                
+                <div class="bg-white px-6 pt-5 pb-4">
+                    <div class="flex items-center mb-4">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+                            <i class="bi bi-check-circle text-green-600 text-2xl"></i>
+                        </div>
+                    </div>
+                    <div class="text-center mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Verifikasi Motor</h3>
+                        <p class="text-sm text-gray-600" x-text="motorName"></p>
+                        <p class="text-xs text-gray-500 mt-2">Setelah motor diverifikasi dan harga ditetapkan, motor akan tersedia untuk disewa oleh penyewa.</p>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Tarif Harian <span class="text-red-600">*</span>
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-2 text-gray-500">Rp</span>
+                                <input type="number" 
+                                       id="dailyRateInput"
+                                       name="daily_rate" 
+                                       :value="dailyRate"
+                                       min="10000"
+                                       class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                       placeholder="Contoh: 50000"
+                                       @input="calculateRates"
+                                       required>
+                            </div>
+                            <small class="text-gray-500 text-xs">Minimal Rp 10.000</small>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tarif Mingguan</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-2 text-gray-500">Rp</span>
+                                <input type="number" 
+                                       id="weeklyRateInput"
+                                       name="weekly_rate" 
+                                       :value="weeklyRate"
+                                       min="50000"
+                                       class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                       placeholder="Otomatis dari tarif harian"
+                                       readonly>
+                            </div>
+                            <small class="text-gray-500 text-xs">Auto: diskon 10% dari 7x tarif harian</small>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tarif Bulanan</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-2 text-gray-500">Rp</span>
+                                <input type="number" 
+                                       id="monthlyRateInput"
+                                       name="monthly_rate" 
+                                       :value="monthlyRate"
+                                       min="200000"
+                                       class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                       placeholder="Otomatis dari tarif harian"
+                                       readonly>
+                            </div>
+                            <small class="text-gray-500 text-xs">Auto: diskon 20% dari 30x tarif harian</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 px-6 py-3 flex gap-3">
+                    <button type="button" 
+                            @click="open = false"
+                            class="flex-1 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
+                        <i class="bi bi-x-lg mr-1"></i>Batal
+                    </button>
+                    <button type="submit" 
+                            class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                        <i class="bi bi-check-circle mr-1"></i>Verifikasi Motor
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+                
                 <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
                     <i class="bi bi-exclamation-triangle text-yellow-600 mr-2"></i>
                     <small>
@@ -448,16 +580,6 @@ use Illuminate\Support\Facades\Storage;
                         termasuk booking, pembayaran, dan riwayat lainnya.
                     </small>
                 </div>
-            </div>
-            
-            <!-- Footer -->
-            <div class="flex justify-end gap-3 px-6 py-4 bg-gray-50">
-                <button @click="open = false" class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition">
-                    <i class="bi bi-x-circle mr-1"></i>Batal
-                </button>
-                <button type="button" class="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition" id="confirmDeleteMotor">
-                    <i class="bi bi-trash mr-1"></i>Ya, Hapus Motor
-                </button>
             </div>
         </div>
     </div>
@@ -585,6 +707,47 @@ function showDocumentPreview(imageUrl) {
     window.dispatchEvent(new CustomEvent('open-document-preview'));
 }
 
+// Function to show verify modal
+function showVerifyModal(motorId, motorName, dailyRate, weeklyRate, monthlyRate) {
+    window.dispatchEvent(new CustomEvent('open-verify-motor', {
+        detail: { motorId, motorName, dailyRate, weeklyRate, monthlyRate }
+    }));
+    
+    // Wait for modal to be rendered, then attach event listener
+    setTimeout(() => {
+        const dailyRateInput = document.getElementById('dailyRateInput');
+        if (dailyRateInput) {
+            // Trigger calculation on initial load
+            calculateRatesFromDaily(dailyRateInput.value);
+            
+            // Add event listener for real-time calculation
+            dailyRateInput.addEventListener('input', function(e) {
+                calculateRatesFromDaily(e.target.value);
+            });
+        }
+    }, 100);
+}
+
+// Function to calculate weekly and monthly rates based on daily rate
+function calculateRatesFromDaily(dailyRate) {
+    const daily = parseFloat(dailyRate) || 0;
+    
+    if (daily > 0) {
+        // Calculate weekly rate: 7 days with 10% discount
+        const weeklyRate = Math.round(daily * 7 * 0.9);
+        
+        // Calculate monthly rate: 30 days with 20% discount
+        const monthlyRate = Math.round(daily * 30 * 0.8);
+        
+        // Update the input fields
+        const weeklyInput = document.getElementById('weeklyRateInput');
+        const monthlyInput = document.getElementById('monthlyRateInput');
+        
+        if (weeklyInput) weeklyInput.value = weeklyRate;
+        if (monthlyInput) monthlyInput.value = monthlyRate;
+    }
+}
+
 // Delete Motor Functions
 let motorToDelete = null;
 
@@ -609,7 +772,7 @@ function deleteMotor(motorId) {
     confirmBtn.innerHTML = '<span class="inline-block animate-spin mr-2">⏳</span>Menghapus...';
     
     // Send delete request
-    fetch(`{{ route('admin.motors') }}/${motorId}`, {
+    fetch(`/admin/motors/${motorId}`, {
         method: 'DELETE',
         headers: {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
@@ -617,11 +780,19 @@ function deleteMotor(motorId) {
             'Accept': 'application/json'
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             // Show success message
             showAlert('success', 'Motor berhasil dihapus!');
+            
+            // Close modal
+            window.dispatchEvent(new CustomEvent('close-delete-motor'));
             
             // Reload page after short delay
             setTimeout(() => {
@@ -629,14 +800,13 @@ function deleteMotor(motorId) {
             }, 1500);
         } else {
             showAlert('error', data.message || 'Gagal menghapus motor!');
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = originalText;
         }
     })
     .catch(error => {
         console.error('Error:', error);
         showAlert('error', 'Terjadi kesalahan saat menghapus motor!');
-    })
-    .finally(() => {
-        // Reset button state
         confirmBtn.disabled = false;
         confirmBtn.innerHTML = originalText;
     });

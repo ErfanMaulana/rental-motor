@@ -440,7 +440,7 @@ class AdminController extends Controller
         $motor = Motor::with(['owner', 'rentalRate', 'bookings.user'])
             ->findOrFail($id);
 
-        return view('admin.motor-detail', compact('motor'));
+        return view('admin.motor-detail-new', compact('motor'));
     }
 
     /**
@@ -519,6 +519,15 @@ class AdminController extends Controller
                 'monthly_rate' => $monthlyRate
             ]
         );
+        
+        // Check if request is AJAX
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Motor berhasil diverifikasi dan harga sewa telah ditetapkan',
+                'motor' => $motor->fresh(['rentalRate'])
+            ]);
+        }
         
         return redirect()->back()->with('success', 'Motor berhasil diverifikasi dan harga sewa telah ditetapkan');
     }

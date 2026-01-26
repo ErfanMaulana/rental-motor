@@ -4,301 +4,187 @@
 
 @section('content')
 <!-- Content Header -->
-<div class="content-header">
-    <h1>
-        <i class="bi bi-calendar-check me-3"></i>Riwayat Pemesanan
-    </h1>
-    <p>Kelola dan pantau semua pemesanan motor Anda</p>
+<div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-900">Riwayat Pemesanan</h1>
+    <p class="text-gray-600 mt-1">Kelola dan pantau semua pemesanan motor Anda</p>
 </div>
 
-<div class="row">
-    <div class="col-lg-12">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Daftar Pemesanan</h5>
-                <a href="{{ route('penyewa.motors') }}" class="btn btn-primary">
-                    <i class="bi bi-plus-circle me-1"></i>Sewa Motor Baru
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div class="flex justify-between items-center">
+            <div>
+                <h3 class="text-2xl font-bold text-gray-900">{{ $bookings->total() }}</h3>
+                <p class="text-gray-500 text-sm mt-1">Total Booking</p>
+            </div>
+            <i class="bi bi-calendar-check text-4xl text-gray-300"></i>
+        </div>
+    </div>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div class="flex justify-between items-center">
+            <div>
+                <h3 class="text-2xl font-bold text-yellow-600">{{ $bookings->where('status', 'pending')->count() }}</h3>
+                <p class="text-gray-500 text-sm mt-1">Menunggu</p>
+            </div>
+            <i class="bi bi-clock text-4xl text-gray-300"></i>
+        </div>
+    </div>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div class="flex justify-between items-center">
+            <div>
+                <h3 class="text-2xl font-bold text-green-600">{{ $bookings->where('status', 'active')->count() }}</h3>
+                <p class="text-gray-500 text-sm mt-1">Aktif</p>
+            </div>
+            <i class="bi bi-play-circle text-4xl text-gray-300"></i>
+        </div>
+    </div>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div class="flex justify-between items-center">
+            <div>
+                <h3 class="text-2xl font-bold text-blue-600">{{ $bookings->where('status', 'completed')->count() }}</h3>
+                <p class="text-gray-500 text-sm mt-1">Selesai</p>
+            </div>
+            <i class="bi bi-check-circle text-4xl text-gray-300"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Main Card -->
+<div class="bg-white rounded-lg shadow-sm">
+    <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+        <h5 class="text-lg font-semibold text-gray-900">Daftar Pemesanan</h5>
+        <a href="{{ route('penyewa.motors') }}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+            <i class="bi bi-plus-circle mr-1"></i>Sewa Motor Baru
+        </a>
+    </div>
+    <div class="p-6">
+        @if($bookings->count() > 0)
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Motor</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paket</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Sewa</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durasi</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Harga</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @foreach($bookings as $booking)
+                            <tr class="hover:bg-gray-50 transition">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center">
+                                        @if($booking->motor->photo)
+                                            <img src="{{ Storage::url($booking->motor->photo) }}" 
+                                                 alt="{{ $booking->motor->brand }}"
+                                                 class="w-12 h-12 rounded object-cover mr-3">
+                                        @else
+                                            <div class="w-12 h-12 bg-gray-100 rounded flex items-center justify-center mr-3">
+                                                <i class="bi bi-scooter text-gray-400"></i>
+                                            </div>
+                                        @endif
+                                        <div>
+                                            <div class="font-semibold text-gray-900">{{ $booking->motor->brand }} {{ $booking->motor->model }}</div>
+                                            <div class="text-xs text-gray-500">{{ $booking->motor->type_cc }} • {{ $booking->motor->year }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    @php
+                                        $packageLabels = [
+                                            'daily' => 'Harian',
+                                            'weekly' => 'Mingguan', 
+                                            'monthly' => 'Bulanan'
+                                        ];
+                                        $packageColors = [
+                                            'daily' => 'bg-blue-100 text-blue-800',
+                                            'weekly' => 'bg-green-100 text-green-800',
+                                            'monthly' => 'bg-yellow-100 text-yellow-800'
+                                        ];
+                                    @endphp
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $packageColors[$booking->package_type ?? 'daily'] }}">
+                                        {{ $packageLabels[$booking->package_type ?? 'daily'] }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm font-medium text-gray-900">{{ $booking->start_date->format('d M Y') }}</div>
+                                    <div class="text-xs text-gray-500">s/d {{ $booking->end_date->format('d M Y') }}</div>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-900">
+                                    @php
+                                        $days = $booking->start_date->diffInDays($booking->end_date) + 1;
+                                    @endphp
+                                    {{ $days }} hari
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="font-bold text-gray-900">Rp {{ number_format((float)($booking->price ?? 0), 0, ',', '.') }}</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    @switch($booking->status)
+                                        @case('pending')
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Menunggu Konfirmasi</span>
+                                            @break
+                                        @case('confirmed')
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Dikonfirmasi</span>
+                                            @break
+                                        @case('active')
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Aktif</span>
+                                            @break
+                                        @case('completed')
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">Selesai</span>
+                                            @break
+                                        @case('cancelled')
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Dibatalkan</span>
+                                            @break
+                                        @default
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">{{ ucfirst($booking->status) }}</span>
+                                    @endswitch
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center space-x-2">
+                                        <a href="{{ route('penyewa.booking.detail', $booking->id) }}" 
+                                           class="px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        @if($booking->status === 'pending')
+                                            <button onclick="if(confirm('Batalkan pemesanan ini?')) document.getElementById('cancel-form-{{ $booking->id }}').submit();"
+                                                    class="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded-lg transition">
+                                                <i class="bi bi-x-circle"></i>
+                                            </button>
+                                            <form id="cancel-form-{{ $booking->id }}" 
+                                                  action="{{ route('penyewa.booking.cancel', $booking->id) }}" 
+                                                  method="POST" class="hidden">
+                                                @csrf
+                                                @method('PATCH')
+                                            </form>
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @else
+            <div class="text-center py-12">
+                <i class="bi bi-calendar-x text-gray-300 text-6xl"></i>
+                <h4 class="mt-4 text-xl font-semibold text-gray-600">Belum ada pemesanan</h4>
+                <p class="text-gray-500 mt-2">Mulai sewa motor untuk melihat riwayat pemesanan Anda</p>
+                <a href="{{ route('penyewa.motors') }}" class="inline-block mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                    <i class="bi bi-plus-circle mr-1"></i>Sewa Motor Sekarang
                 </a>
             </div>
-            <div class="card-body">
-                @if($bookings->count() > 0)
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Motor</th>
-                                    <th>Paket</th>
-                                    <th>Tanggal Sewa</th>
-                                    <th>Durasi</th>
-                                    <th>Total Harga</th>
-                                    <th>Status</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($bookings as $booking)
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                @if($booking->motor->photo)
-                                                    <img src="{{ Storage::url($booking->motor->photo) }}" 
-                                                         alt="{{ $booking->motor->brand }}"
-                                                         class="rounded me-2"
-                                                         style="width: 50px; height: 50px; object-fit: cover;">
-                                                @else
-                                                    <div class="bg-light rounded me-2 d-flex align-items-center justify-content-center"
-                                                         style="width: 50px; height: 50px;">
-                                                        <i class="bi bi-motorcycle text-muted"></i>
-                                                    </div>
-                                                @endif
-                                                <div>
-                                                    <div class="fw-semibold">{{ $booking->motor->brand }} {{ $booking->motor->model }}</div>
-                                                    <small class="text-muted">{{ $booking->motor->type_cc }} • {{ $booking->motor->year }}</small>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            @php
-                                                $packageLabels = [
-                                                    'daily' => 'Harian',
-                                                    'weekly' => 'Mingguan', 
-                                                    'monthly' => 'Bulanan'
-                                                ];
-                                                $packageColors = [
-                                                    'daily' => 'primary',
-                                                    'weekly' => 'success',
-                                                    'monthly' => 'warning'
-                                                ];
-                                            @endphp
-                                            <span class="badge bg-{{ $packageColors[$booking->package_type ?? 'daily'] }}">
-                                                {{ $packageLabels[$booking->package_type ?? 'daily'] }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div>{{ $booking->start_date->format('d M Y') }}</div>
-                                            <small class="text-muted">s/d {{ $booking->end_date->format('d M Y') }}</small>
-                                        </td>
-                                        <td>
-                                            @php
-                                                $days = $booking->start_date->diffInDays($booking->end_date) + 1;
-                                            @endphp
-                                            {{ $days }} hari
-                                        </td>
-                                        <td>
-                                            <strong>Rp {{ number_format((float)($booking->price ?? 0), 0, ',', '.') }}</strong>
-                                        </td>
-                                        <td>
-                                            @switch($booking->status)
-                                                @case('pending')
-                                                    <span class="badge bg-warning">Menunggu Konfirmasi</span>
-                                                    @break
-                                                @case('confirmed')
-                                                    <span class="badge bg-info">Dikonfirmasi</span>
-                                                    @break
-                                                @case('active')
-                                                    <span class="badge bg-success">Aktif</span>
-                                                    @break
-                                                @case('completed')
-                                                    <span class="badge bg-primary">Selesai</span>
-                                                    @break
-                                                @case('cancelled')
-                                                    <span class="badge bg-danger">Dibatalkan</span>
-                                                    @break
-                                                @default
-                                                    <span class="badge bg-secondary">{{ ucfirst($booking->status) }}</span>
-                                            @endswitch
-                                        </td>
-                                        <td>
-                                            <div class="btn-group" role="group">
-                                                <button type="button" class="btn btn-outline-primary btn-sm"
-                                                        onclick="showBookingDetail({{ $booking->id }})"
-                                                        data-bs-toggle="tooltip" title="Lihat Detail">
-                                                    <i class="bi bi-eye"></i>
-                                                </button>
-                                                
-                                                @if($booking->status === 'pending')
-                                                    <a href="{{ route('penyewa.payment.form', $booking->id) }}" 
-                                                       class="btn btn-success btn-sm"
-                                                       data-bs-toggle="tooltip" title="Bayar">
-                                                        <i class="bi bi-credit-card"></i>
-                                                    </a>
-                                                    
-                                                    <form action="{{ route('penyewa.booking.cancel', $booking->id) }}" 
-                                                          method="POST" 
-                                                          class="d-inline"
-                                                          onsubmit="return confirm('Yakin ingin membatalkan booking ini?')">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="btn btn-outline-danger btn-sm"
-                                                                data-bs-toggle="tooltip" title="Batalkan">
-                                                            <i class="bi bi-x-circle"></i>
-                                                        </button>
-                                                    </form>
-                                                @endif
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <div class="d-flex justify-content-center">
-                        {{ $bookings->links() }}
-                    </div>
-                @else
-                    <div class="text-center py-5">
-                        <i class="bi bi-calendar-x text-muted" style="font-size: 4rem;"></i>
-                        <h5 class="mt-3 text-muted">Belum Ada Pemesanan</h5>
-                        <p class="text-muted">Anda belum pernah melakukan pemesanan motor.</p>
-                        <a href="{{ route('penyewa.motors') }}" class="btn btn-primary">
-                            <i class="bi bi-motorcycle me-1"></i>Sewa Motor Sekarang
-                        </a>
-                    </div>
-                @endif
-            </div>
-        </div>
+        @endif
     </div>
 </div>
 
-<!-- Modal Detail Booking -->
-<div class="modal fade" id="bookingDetailModal" tabindex="-1" aria-labelledby="bookingDetailModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="bookingDetailModalLabel">
-                    <i class="bi bi-calendar-check me-2"></i>Detail Pemesanan
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body" id="bookingDetailContent">
-                <div class="text-center">
-                    <div class="spinner-border" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                </div>
-            </div>
-        </div>
+<!-- Pagination -->
+@if($bookings->hasPages())
+    <div class="flex justify-center mt-6">
+        {{ $bookings->links() }}
     </div>
-</div>
-
+@endif
 @endsection
-
-@push('scripts')
-<script>
-    // Initialize tooltips
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl)
-    })
-
-    function showBookingDetail(bookingId) {
-        const modal = new bootstrap.Modal(document.getElementById('bookingDetailModal'));
-        const content = document.getElementById('bookingDetailContent');
-        
-        // Show loading
-        content.innerHTML = `
-            <div class="text-center">
-                <div class="spinner-border" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-            </div>
-        `;
-        
-        modal.show();
-        
-        // Fetch booking detail
-        fetch(`/penyewa/bookings/${bookingId}/detail`)
-        .then(response => response.json())
-        .then(data => {
-            const booking = data.booking;
-            const motor = booking.motor;
-            
-            content.innerHTML = `
-                <div class="row">
-                    <div class="col-md-4">
-                        <img src="${motor.photo ? '/storage/' + motor.photo : '/images/default-motor.jpg'}" 
-                             alt="${motor.brand} ${motor.model}"
-                             class="img-fluid rounded">
-                    </div>
-                    <div class="col-md-8">
-                        <h5>${motor.brand} ${motor.model}</h5>
-                        <p class="text-muted">${motor.type_cc} • ${motor.year}</p>
-                        
-                        <div class="row">
-                            <div class="col-sm-6">
-                                <strong>Tanggal Mulai:</strong><br>
-                                ${new Date(booking.start_date).toLocaleDateString('id-ID', {
-                                    day: 'numeric',
-                                    month: 'long', 
-                                    year: 'numeric'
-                                })}
-                            </div>
-                            <div class="col-sm-6">
-                                <strong>Tanggal Selesai:</strong><br>
-                                ${new Date(booking.end_date).toLocaleDateString('id-ID', {
-                                    day: 'numeric',
-                                    month: 'long',
-                                    year: 'numeric'
-                                })}
-                            </div>
-                        </div>
-                        
-                        <hr>
-                        
-                        <div class="row">
-                            <div class="col-sm-6">
-                                <strong>Total Harga:</strong><br>
-                                <span class="h5 text-primary">Rp ${new Intl.NumberFormat('id-ID').format(booking.price)}</span>
-                            </div>
-                            <div class="col-sm-6">
-                                <strong>Status:</strong><br>
-                                <span class="badge bg-${getStatusColor(booking.status)} fs-6">
-                                    ${getStatusText(booking.status)}
-                                </span>
-                            </div>
-                        </div>
-                        
-                        ${booking.notes ? `
-                            <hr>
-                            <strong>Catatan:</strong><br>
-                            <p class="text-muted">${booking.notes}</p>
-                        ` : ''}
-                    </div>
-                </div>
-            `;
-        })
-        .catch(error => {
-            console.error('Error fetching booking detail:', error);
-            content.innerHTML = `
-                <div class="alert alert-danger">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
-                    Gagal memuat detail pemesanan.
-                </div>
-            `;
-        });
-    }
-    
-    function getStatusColor(status) {
-        switch(status) {
-            case 'pending': return 'warning';
-            case 'confirmed': return 'info';
-            case 'active': return 'success';
-            case 'completed': return 'primary';
-            case 'cancelled': return 'danger';
-            default: return 'secondary';
-        }
-    }
-    
-    function getStatusText(status) {
-        switch(status) {
-            case 'pending': return 'Menunggu Konfirmasi';
-            case 'confirmed': return 'Dikonfirmasi';
-            case 'active': return 'Aktif';
-            case 'completed': return 'Selesai';
-            case 'cancelled': return 'Dibatalkan';
-            default: return status;
-        }
-    }
-</script>
-@endpush

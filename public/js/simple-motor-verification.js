@@ -4,11 +4,11 @@ console.log('Simple motor verification loaded');
 // Helper functions for status badge
 function getStatusBadgeClass(status) {
     switch(status) {
-        case 'pending_verification': return 'bg-warning';
-        case 'available': return 'bg-success';
-        case 'rented': return 'bg-info';
-        case 'maintenance': return 'bg-secondary';
-        default: return 'bg-secondary';
+        case 'pending_verification': return 'bg-yellow-100 text-yellow-800';
+        case 'available': return 'bg-green-100 text-green-800';
+        case 'rented': return 'bg-blue-100 text-blue-800';
+        case 'maintenance': return 'bg-gray-100 text-gray-800';
+        default: return 'bg-gray-100 text-gray-800';
     }
 }
 
@@ -25,9 +25,18 @@ function getStatusText(status) {
 function showMotorDetail(motorId) {
     console.log('showMotorDetail called with ID:', motorId);
     
-    // Get modal
-    const modal = new bootstrap.Modal(document.getElementById('motorDetailModal'));
+    if (!motorId) {
+        console.error('Motor ID is required');
+        showAlert('error', 'ID motor tidak valid');
+        return;
+    }
+    
+    // Get content div
     const content = document.getElementById('motorDetailContent');
+    if (!content) {
+        console.error('motorDetailContent not found');
+        return;
+    }
     
     // Show loading
     content.innerHTML = `
@@ -39,15 +48,13 @@ function showMotorDetail(motorId) {
         </div>
     `;
     
-    // Show modal
-    modal.show();
+    // Trigger Alpine.js event to open modal
+    window.dispatchEvent(new CustomEvent('open-motor-detail'));
     
     // Fetch data
     fetch(`/admin/motors/${motorId}/ajax`)
         .then(response => {
             console.log('Response status:', response.status);
-            console.log('Response headers:', response.headers);
-            console.log('Response ok:', response.ok);
             
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -68,130 +75,80 @@ function showMotorDetail(motorId) {
             const photoUrl = motor.photo ? `/storage/${motor.photo}` : null;
             
             content.innerHTML = `
-                <div class="row">
-                    <div class="col-md-6">
-                        ${photoUrl ? 
-                            `<img src="${photoUrl}" class="img-fluid rounded" alt="${motor.brand} ${motor.model || ''}" style="height: 300px; width: 100%; object-fit: cover;">` :
-                            `<div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 300px;">
-                                <i class="bi bi-motorcycle text-muted" style="font-size: 4rem;"></i>
-                            </div>`
-                        }
+                ${photoUrl ? 
+                    `<img src="${photoUrl}" class="w-full rounded-lg mb-2" alt="${motor.brand} ${motor.model || ''}" style="height: 160px; object-fit: cover;">` :
+                    `<div class="bg-gray-100 rounded-lg flex items-center justify-center mb-2" style="height: 160px;">
+                        <i class="bi bi-motorcycle text-gray-400 text-4xl"></i>
+                    </div>`
+                }
+                
+                <div class="space-y-1">
+                    <div>
+                        <h3 class="text-sm font-bold text-gray-900 leading-tight">${motor.brand} ${motor.model || ''}</h3>
+                        <div class="flex gap-1 mt-1">
+                            <span class="px-2 py-0.5 text-[10px] bg-blue-100 text-blue-700 rounded">${motor.type_cc}</span>
+                            <span class="px-2 py-0.5 text-[10px] ${getStatusBadgeClass(motor.status)} rounded">${getStatusText(motor.status)}</span>
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <h3>${motor.brand} ${motor.model || ''}</h3>
-                        <div class="mb-3">
-                            <span class="badge bg-primary me-2">${motor.type_cc}</span>
-                            <span class="badge ${getStatusBadgeClass(motor.status)}">${getStatusText(motor.status)}</span>
-                        </div>
-                        
-                        <div class="row mb-3">
-                            <div class="col-6">
-                                <strong>Tahun:</strong><br>
-                                <span class="text-muted">${motor.year || '-'}</span>
-                            </div>
-                            <div class="col-6">
-                                <strong>Warna:</strong><br>
-                                <span class="text-muted">${motor.color || '-'}</span>
-                            </div>
-                        </div>
-                        
-                        <div class="row mb-3">
-                            <div class="col-6">
-                                <strong>Plat Nomor:</strong><br>
-                                <span class="text-muted">${motor.plate_number}</span>
-                            </div>
-                            <div class="col-6">
-                                <strong>Pemilik:</strong><br>
-                                <span class="text-muted">${motor.owner.name}</span>
-                            </div>
-                        </div>
-                        
-                        ${motor.description ? `
-                            <div class="mb-3">
-                                <strong>Deskripsi:</strong><br>
-                                <p class="text-muted mb-0">${motor.description}</p>
-                            </div>
-                        ` : ''}
+                    
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div><span class="text-gray-500">Tahun:</span> <span class="font-semibold">${motor.year || '-'}</span></div>
+                        <div><span class="text-gray-500">Warna:</span> <span class="font-semibold">${motor.color || '-'}</span></div>
+                        <div><span class="text-gray-500">Plat:</span> <span class="font-semibold">${motor.plate_number}</span></div>
+                        <div><span class="text-gray-500">Pemilik:</span> <span class="font-semibold">${motor.owner.name}</span></div>
                     </div>
+                    
+                    ${motor.description ? `
+                        <div class="border-t border-gray-200 pt-1.5">
+                            <p class="text-[10px] text-gray-500 mb-0.5">Deskripsi</p>
+                            <p class="text-xs text-gray-700">${motor.description}</p>
+                        </div>
+                    ` : ''}
                 </div>
                 
                 ${motor.rental_rate ? `
-                    <div class="mt-4">
-                        <h5><i class="bi bi-currency-dollar me-2"></i>Harga Sewa</h5>
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <div class="card">
-                                    <div class="card-body text-center">
-                                        <h6 class="card-title">Harian</h6>
-                                        <div class="h5 text-primary">Rp ${new Intl.NumberFormat('id-ID').format(motor.rental_rate.daily_rate)}</div>
-                                        <small class="text-muted">per hari</small>
-                                    </div>
-                                </div>
+                    <div class="mt-2 border-t border-gray-200 pt-2">
+                        <p class="text-xs text-gray-500 mb-1"><i class="bi bi-cash-stack mr-1"></i>Harga Sewa</p>
+                        <div class="flex gap-2 text-xs">
+                            <div class="flex-1 bg-blue-50 rounded px-2 py-1.5 text-center">
+                                <p class="text-[10px] text-gray-600 mb-0.5">Harian</p>
+                                <p class="text-sm font-bold text-blue-600">Rp ${new Intl.NumberFormat('id-ID').format(motor.rental_rate.daily_rate)}</p>
                             </div>
-                            <div class="col-md-4 mb-3">
-                                <div class="card">
-                                    <div class="card-body text-center">
-                                        <h6 class="card-title">Mingguan</h6>
-                                        <div class="h5 text-primary">Rp ${new Intl.NumberFormat('id-ID').format(motor.rental_rate.weekly_rate)}</div>
-                                        <small class="text-muted">per minggu</small>
-                                    </div>
-                                </div>
+                            <div class="flex-1 bg-blue-50 rounded px-2 py-1.5 text-center">
+                                <p class="text-[10px] text-gray-600 mb-0.5">Mingguan</p>
+                                <p class="text-sm font-bold text-blue-600">Rp ${new Intl.NumberFormat('id-ID').format(motor.rental_rate.weekly_rate)}</p>
                             </div>
-                            <div class="col-md-4 mb-3">
-                                <div class="card">
-                                    <div class="card-body text-center">
-                                        <h6 class="card-title">Bulanan</h6>
-                                        <div class="h5 text-primary">Rp ${new Intl.NumberFormat('id-ID').format(motor.rental_rate.monthly_rate)}</div>
-                                        <small class="text-muted">per bulan</small>
-                                    </div>
-                                </div>
+                            <div class="flex-1 bg-blue-50 rounded px-2 py-1.5 text-center">
+                                <p class="text-[10px] text-gray-600 mb-0.5">Bulanan</p>
+                                <p class="text-sm font-bold text-blue-600">Rp ${new Intl.NumberFormat('id-ID').format(motor.rental_rate.monthly_rate)}</p>
                             </div>
                         </div>
                     </div>
                 ` : `
-                    <div class="mt-4">
-                        <div class="alert alert-warning">
-                            <i class="bi bi-exclamation-triangle me-2"></i>
-                            Harga sewa belum ditetapkan untuk motor ini.
-                        </div>
+                    <div class="mt-2 bg-yellow-50 border border-yellow-200 rounded px-3 py-2">
+                        <span class="text-xs text-yellow-800"><i class="bi bi-exclamation-triangle mr-1"></i>Harga sewa belum ditetapkan</span>
                     </div>
                 `}
                 
                 ${data.stats ? `
-                    <div class="mt-4">
-                        <h5><i class="bi bi-bar-chart me-2"></i>Statistik Motor</h5>
-                        <div class="row">
-                            <div class="col-md-3 mb-3">
-                                <div class="card bg-info text-white">
-                                    <div class="card-body text-center">
-                                        <h4>${data.stats.total_bookings}</h4>
-                                        <small>Total Booking</small>
-                                    </div>
-                                </div>
+                    <div class="mt-2 border-t border-gray-200 pt-2">
+                        <p class="text-xs text-gray-500 mb-1"><i class="bi bi-graph-up mr-1"></i>Statistik</p>
+                        <div class="flex gap-2">
+                            <div class="flex-1 bg-blue-500 text-white rounded px-2 py-2 text-center">
+                                <p class="text-base font-bold leading-none">${data.stats.total_bookings}</p>
+                                <p class="text-[10px] mt-1">Total</p>
                             </div>
-                            <div class="col-md-3 mb-3">
-                                <div class="card bg-warning text-white">
-                                    <div class="card-body text-center">
-                                        <h4>${data.stats.active_bookings}</h4>
-                                        <small>Aktif</small>
-                                    </div>
-                                </div>
+                            <div class="flex-1 bg-yellow-500 text-white rounded px-2 py-2 text-center">
+                                <p class="text-base font-bold leading-none">${data.stats.active_bookings}</p>
+                                <p class="text-[10px] mt-1">Aktif</p>
                             </div>
-                            <div class="col-md-3 mb-3">
-                                <div class="card bg-success text-white">
-                                    <div class="card-body text-center">
-                                        <h4>${data.stats.completed_bookings}</h4>
-                                        <small>Selesai</small>
-                                    </div>
-                                </div>
+                            <div class="flex-1 bg-green-500 text-white rounded px-2 py-2 text-center">
+                                <p class="text-base font-bold leading-none">${data.stats.completed_bookings}</p>
+                                <p class="text-[10px] mt-1">Selesai</p>
                             </div>
-                            <div class="col-md-3 mb-3">
-                                <div class="card bg-primary text-white">
-                                    <div class="card-body text-center">
-                                        <h4>Rp ${new Intl.NumberFormat('id-ID').format(data.stats.total_earnings)}</h4>
-                                        <small>Total Earnings</small>
-                                    </div>
-                                </div>
+                            <div class="flex-1 bg-purple-500 text-white rounded px-2 py-2 text-center">
+                                <p class="text-xs font-bold leading-none">Rp ${(data.stats.total_earnings / 1000).toFixed(0)}k</p>
+                                <p class="text-[10px] mt-1">Revenue</p>
                             </div>
                         </div>
                     </div>
@@ -214,7 +171,13 @@ function showMotorDetail(motorId) {
 function directVerifyMotor(motorId) {
     console.log('directVerifyMotor called with ID:', motorId);
     
-    // Show pricing modal instead of simple confirm
+    if (!motorId) {
+        console.error('Motor ID is required');
+        showAlert('error', 'ID motor tidak valid');
+        return;
+    }
+    
+    // Show pricing modal
     showPricingModal(motorId);
 }
 
@@ -229,7 +192,7 @@ function showPricingModal(motorId) {
                         </h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
-                    <form id="verifyPricingForm" action="/admin/motors/${motorId}/verify" method="POST">
+                    <form id="verifyPricingForm">
                         <div class="modal-body">
                             <div class="alert alert-info">
                                 <i class="bi bi-info-circle me-2"></i>
@@ -310,13 +273,10 @@ function showPricingModal(motorId) {
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                                 <i class="bi bi-x-circle me-2"></i>Batal
                             </button>
-                            <button type="submit" class="btn btn-success">
+                            <button type="submit" class="btn btn-success" id="submitVerifyBtn">
                                 <i class="bi bi-check-circle me-2"></i>Verifikasi & Set Harga
                             </button>
                         </div>
-                        
-                        <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').getAttribute('content')}">
-                        <input type="hidden" name="_method" value="PATCH">
                     </form>
                 </div>
             </div>
@@ -335,14 +295,125 @@ function showPricingModal(motorId) {
     // Setup auto calculation
     setupPricingCalculation();
     
+    // Setup form submission
+    const form = document.getElementById('verifyPricingForm');
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        submitVerification(motorId);
+    });
+    
     // Show modal
-    const modal = new bootstrap.Modal(document.getElementById('pricingModal'));
+    const modalElement = document.getElementById('pricingModal');
+    const modal = new bootstrap.Modal(modalElement);
     modal.show();
     
     // Remove modal from DOM after hide
-    modal._element.addEventListener('hidden.bs.modal', () => {
-        modal._element.remove();
+    modalElement.addEventListener('hidden.bs.modal', () => {
+        modalElement.remove();
     });
+}
+
+function submitVerification(motorId) {
+    const form = document.getElementById('verifyPricingForm');
+    const submitBtn = document.getElementById('submitVerifyBtn');
+    const originalBtnText = submitBtn.innerHTML;
+    
+    // Disable button and show loading
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memproses...';
+    
+    // Get form data
+    const formData = new FormData(form);
+    const data = {
+        daily_rate: formData.get('daily_rate'),
+        weekly_rate: formData.get('weekly_rate'),
+        monthly_rate: formData.get('monthly_rate'),
+        _method: 'PATCH'
+    };
+    
+    // Get CSRF token
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    if (!csrfToken) {
+        console.error('CSRF token not found');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
+        showAlert('error', 'CSRF token tidak ditemukan');
+        return;
+    }
+    
+    // Send request
+    fetch(`/admin/motors/${motorId}/verify`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Verification success:', data);
+        
+        // Close modal
+        const modalElement = document.getElementById('pricingModal');
+        const modal = bootstrap.Modal.getInstance(modalElement);
+        if (modal) {
+            modal.hide();
+        }
+        
+        // Show success message
+        showAlert('success', 'Motor berhasil diverifikasi dan harga sewa telah ditetapkan!');
+        
+        // Reload page after short delay
+        setTimeout(() => {
+            window.location.reload();
+        }, 1500);
+    })
+    .catch(error => {
+        console.error('Verification error:', error);
+        showAlert('error', 'Gagal memverifikasi motor: ' + error.message);
+        
+        // Re-enable button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
+    });
+}
+
+function showAlert(type, message) {
+    // Remove existing alerts
+    const existingAlerts = document.querySelectorAll('.custom-alert');
+    existingAlerts.forEach(alert => alert.remove());
+    
+    // Create alert element
+    const bgClass = type === 'success' ? 'bg-success' : 'bg-danger';
+    const iconClass = type === 'success' ? 'bi-check-circle' : 'bi-exclamation-triangle';
+    
+    const alertHtml = `
+        <div class="custom-alert position-fixed top-0 end-0 m-3 ${bgClass} text-white px-4 py-3 rounded shadow-lg d-flex align-items-center justify-content-between" style="z-index: 9999; min-width: 300px;">
+            <div class="d-flex align-items-center">
+                <i class="bi ${iconClass} me-2"></i>
+                <span>${message}</span>
+            </div>
+            <button type="button" class="btn-close btn-close-white ms-3" onclick="this.parentElement.remove()"></button>
+        </div>
+    `;
+    
+    // Add to body
+    document.body.insertAdjacentHTML('beforeend', alertHtml);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        const alert = document.querySelector('.custom-alert');
+        if (alert) {
+            alert.remove();
+        }
+    }, 5000);
 }
 
 function setupPricingCalculation() {

@@ -50,30 +50,30 @@
                         <div class="promo-poster">
                             <div class="poster-bg p-4 rounded-4 shadow-lg">
                                 <div class="text-center mb-3">
-                                    <h2 class="fw-bold text-primary mb-2">🏍️ PROMO SPESIAL!</h2>
+                                    <h2 class="fw-bold text-primary mb-2">PROMO SPESIAL!</h2>
                                     <div class="badge bg-danger fs-6 px-3 py-2 mb-3">HEMAT HINGGA 30%</div>
                                 </div>
                                 
                                 <div class="row g-3">
                                     <div class="col-6">
                                         <div class="promo-item bg-light p-3 rounded-3 text-center">
-                                            <i class="bi bi-bicycle text-primary mb-2" style="font-size: 2rem;"></i>
+                                            <i class="text-primary mb-2" style="font-size: 2rem;"></i>
                                             <h6 class="fw-semibold">Motor Matic</h6>
                                             <small class="text-muted">Mulai dari</small>
                                             <div class="price">
-                                                <span class="text-decoration-line-through text-muted">Rp 70K</span>
-                                                <strong class="text-success d-block">Rp 50K/hari</strong>
+                                                <span class="text-decoration-line-through text-muted">Rp 100K</span>
+                                                <strong class="text-success d-block">Rp 75K/hari</strong>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="col-6">
                                         <div class="promo-item bg-light p-3 rounded-3 text-center">
-                                            <i class="bi bi-bicycle text-success mb-2" style="font-size: 2rem;"></i>
+                                            <i class="text-success mb-2" style="font-size: 2rem;"></i>
                                             <h6 class="fw-semibold">Motor Sport</h6>
                                             <small class="text-muted">Mulai dari</small>
                                             <div class="price">
-                                                <span class="text-decoration-line-through text-muted">Rp 100K</span>
-                                                <strong class="text-success d-block">Rp 75K/hari</strong>
+                                                <span class="text-decoration-line-through text-muted">Rp 200K</span>
+                                                <strong class="text-success d-block">Rp 150K/hari</strong>
                                             </div>
                                         </div>
                                     </div>

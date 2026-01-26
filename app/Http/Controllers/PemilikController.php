@@ -97,7 +97,7 @@ class PemilikController extends Controller
             ->with('rentalRate');
 
         // Filter berdasarkan status
-        if ($request->has('status') && $request->status !== '') {
+        if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
@@ -366,16 +366,42 @@ class PemilikController extends Controller
     {
         $query = Booking::whereHas('motor', function($q) {
             $q->where('owner_id', Auth::id());
-        })->with(['motor', 'user', 'payment']);
+        })->with(['motor', 'renter', 'payment']);
 
         // Filter berdasarkan status
-        if ($request->has('status') && $request->status !== '') {
+        if ($request->filled('status')) {
             $query->where('status', $request->status);
+        }
+
+        // Filter berdasarkan tanggal
+        if ($request->filled('start_date')) {
+            $query->whereDate('created_at', '>=', $request->start_date);
+        }
+
+        if ($request->filled('end_date')) {
+            $query->whereDate('created_at', '<=', $request->end_date);
         }
 
         $bookings = $query->orderBy('created_at', 'desc')->paginate(10);
 
-        return view('pemilik.bookings', compact('bookings'));
+        // Stats untuk cards
+        $totalBookings = Booking::whereHas('motor', function($q) {
+            $q->where('owner_id', Auth::id());
+        })->count();
+
+        $activeBookings = Booking::whereHas('motor', function($q) {
+            $q->where('owner_id', Auth::id());
+        })->where('status', 'active')->count();
+
+        $pendingBookings = Booking::whereHas('motor', function($q) {
+            $q->where('owner_id', Auth::id());
+        })->where('status', 'pending')->count();
+
+        $completedBookings = Booking::whereHas('motor', function($q) {
+            $q->where('owner_id', Auth::id());
+        })->where('status', 'completed')->count();
+
+        return view('pemilik.bookings', compact('bookings', 'totalBookings', 'activeBookings', 'pendingBookings', 'completedBookings'));
     }
 
     /**
