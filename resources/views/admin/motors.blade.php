@@ -82,19 +82,23 @@ use Illuminate\Support\Facades\Storage;
                 
                 <!-- Status Badge -->
                 <div class="absolute top-0 right-0 m-2">
-                    @if($motor->status === 'pending_verification')
+                    @php
+                        $currentStatus = $motor->getCurrentStatus();
+                    @endphp
+                    
+                    @if($currentStatus === 'pending_verification')
                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-yellow-500 text-white">
                             <i class="bi bi-clock mr-0.5 text-[10px]"></i>Menunggu Verifikasi
                         </span>
-                    @elseif($motor->status === 'available')
+                    @elseif($currentStatus === 'rented')
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-orange-500 text-white">
+                            <i class="bi bi-person-check mr-0.5 text-[10px]"></i>Disewa
+                        </span>
+                    @elseif($currentStatus === 'available')
                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-500 text-white">
                             <i class="bi bi-check-circle mr-0.5 text-[10px]"></i>Tersedia
                         </span>
-                    @elseif($motor->status === 'rented')
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-yellow-600 text-white">
-                            <i class="bi bi-person-check mr-0.5 text-[10px]"></i>Sedang Disewa
-                        </span>
-                    @elseif($motor->status === 'maintenance')
+                    @elseif($currentStatus === 'maintenance')
                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-500 text-white">
                             <i class="bi bi-tools mr-0.5 text-[10px]"></i>Maintenance
                         </span>
@@ -106,12 +110,15 @@ use Illuminate\Support\Facades\Storage;
             <div class="p-2">
                 <h5 class="text-sm font-semibold text-gray-900 flex items-center mb-1">
                     <i class="bi bi-motorcycle text-blue-600 mr-1 text-sm"></i>
-                    {{ $motor->brand }}
+                    {{ $motor->model }}
                 </h5>
                 <p class="text-gray-600 text-[10px] mb-1.5">
-                    <i class="bi bi-gear mr-0.5 text-[10px]"></i>{{ $motor->type_cc }}
+                    <i class="bi bi-tag mr-0.5 text-[10px]"></i>{{ $motor->brand }}
                     <span class="ml-2">
                         <i class="bi bi-credit-card mr-0.5 text-[10px]"></i>{{ $motor->plate_number }}
+                    </span>
+                    <span class="ml-2">
+                        <i class="bi bi-gear mr-0.5 text-[10px]"></i>{{ $motor->type_cc }}
                     </span>
                 </p>
                 

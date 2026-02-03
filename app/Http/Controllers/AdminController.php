@@ -476,7 +476,28 @@ class AdminController extends Controller
 
         // Filter by status
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $status = $request->status;
+            
+            if ($status === 'rented') {
+                // Motor sedang disewa: punya booking dengan status confirmed dan tanggal sedang berlangsung
+                $query->whereHas('bookings', function($q) {
+                    $q->where('status', 'confirmed')
+                      ->where('start_date', '<=', now()->format('Y-m-d'))
+                      ->where('end_date', '>=', now()->format('Y-m-d'));
+                });
+            } else {
+                // Status lainnya: pending_verification, available, maintenance
+                $query->where('status', $status);
+                
+                // Untuk available, pastikan tidak sedang disewa
+                if ($status === 'available') {
+                    $query->whereDoesntHave('bookings', function($q) {
+                        $q->where('status', 'confirmed')
+                          ->where('start_date', '<=', now()->format('Y-m-d'))
+                          ->where('end_date', '>=', now()->format('Y-m-d'));
+                    });
+                }
+            }
         }
 
         // Filter by CC
@@ -485,11 +506,12 @@ class AdminController extends Controller
             $query->where('type_cc', $ccValue);
         }
 
-        // Search by brand or plate number
+        // Search by brand, model, or plate number
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('brand', 'like', "%{$search}%")
+                  ->orWhere('model', 'like', "%{$search}%")
                   ->orWhere('plate_number', 'like', "%{$search}%");
             });
         }
@@ -501,7 +523,16 @@ class AdminController extends Controller
 
         // Count statistics for badges
         $pendingCount = Motor::where('status', 'pending_verification')->count();
-        $verifiedCount = Motor::whereIn('status', ['available', 'rented', 'maintenance'])->count();
+        
+        // Count verified motors (available yang tidak sedang disewa + maintenance)
+        $verifiedCount = Motor::where(function($q) {
+            $q->where('status', 'available')
+              ->whereDoesntHave('bookings', function($q2) {
+                  $q2->where('status', 'confirmed')
+                     ->where('start_date', '<=', now()->format('Y-m-d'))
+                     ->where('end_date', '>=', now()->format('Y-m-d'));
+              });
+        })->orWhere('status', 'maintenance')->count();
 
         return view('admin.motors', compact('motors', 'pendingCount', 'verifiedCount'));
     }

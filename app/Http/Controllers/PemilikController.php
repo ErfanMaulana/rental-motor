@@ -96,9 +96,40 @@ class PemilikController extends Controller
         $query = Motor::where('owner_id', Auth::id())
             ->with('rentalRate');
 
+        // Filter berdasarkan search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('brand', 'like', "%{$search}%")
+                  ->orWhere('model', 'like', "%{$search}%")
+                  ->orWhere('plate_number', 'like', "%{$search}%");
+            });
+        }
+
         // Filter berdasarkan status
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $status = $request->status;
+            
+            if ($status === 'rented') {
+                // Motor sedang disewa: punya booking dengan status confirmed dan tanggal sedang berlangsung
+                $query->whereHas('bookings', function($q) {
+                    $q->where('status', 'confirmed')
+                      ->where('start_date', '<=', now()->format('Y-m-d'))
+                      ->where('end_date', '>=', now()->format('Y-m-d'));
+                });
+            } else {
+                // Status lainnya: pending_verification, available, maintenance
+                $query->where('status', $status);
+                
+                // Untuk available, pastikan tidak sedang disewa
+                if ($status === 'available') {
+                    $query->whereDoesntHave('bookings', function($q) {
+                        $q->where('status', 'confirmed')
+                          ->where('start_date', '<=', now()->format('Y-m-d'))
+                          ->where('end_date', '>=', now()->format('Y-m-d'));
+                    });
+                }
+            }
         }
 
         $motors = $query->orderBy('created_at', 'desc')->paginate(10);

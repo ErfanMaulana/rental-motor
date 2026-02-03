@@ -87,10 +87,10 @@ class PenyewaController extends Controller
      */
     public function motors(Request $request)
     {
-        // Hanya tampilkan motor yang sudah diverifikasi admin
-        $query = Motor::where('status', 'available')
+        // Hanya tampilkan motor yang sudah diverifikasi admin dan available
+        $query = Motor::whereIn('status', ['available', 'maintenance'])
             ->whereNotNull('verified_at')
-            ->with(['rentalRate', 'owner'])
+            ->with(['rentalRate', 'owner', 'bookings'])
             ->orderBy('verified_at', 'desc');
 
         // Filter by brand
@@ -130,9 +130,9 @@ class PenyewaController extends Controller
     public function motorDetail($id)
     {
         // Hanya tampilkan motor yang sudah diverifikasi admin
-        $motor = Motor::where('status', 'available')
+        $motor = Motor::whereIn('status', ['available', 'maintenance'])
             ->whereNotNull('verified_at')
-            ->with(['rentalRate', 'owner'])
+            ->with(['rentalRate', 'owner', 'bookings'])
             ->findOrFail($id);
 
         return view('penyewa.motor-detail', compact('motor'));

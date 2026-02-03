@@ -192,11 +192,15 @@
                     @endif
                     
                     <div class="p-4">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-2">{{ $booking->motor->name }}</h3>
+                        <h3 class="text-xl font-bold text-gray-900 mb-1">{{ $booking->motor->model }}</h3>
                         <div class="space-y-2 text-sm">
                             <div class="flex items-center text-gray-600">
                                 <i class="bi bi-tag mr-2"></i>
-                                <span>{{ $booking->motor->category->name ?? 'N/A' }}</span>
+                                <span>{{ $booking->motor->brand }}</span>
+                            </div>
+                            <div class="flex items-center text-gray-600">
+                                <i class="bi bi-gear mr-2"></i>
+                                <span>{{ $booking->motor->type_cc }}</span>
                             </div>
                             <div class="flex items-center text-gray-600">
                                 <i class="bi bi-palette mr-2"></i>
@@ -204,7 +208,7 @@
                             </div>
                             <div class="flex items-center text-gray-600">
                                 <i class="bi bi-card-text mr-2"></i>
-                                <span>{{ $booking->motor->plat_number }}</span>
+                                <span>{{ $booking->motor->plate_number }}</span>
                             </div>
                         </div>
                     </div>

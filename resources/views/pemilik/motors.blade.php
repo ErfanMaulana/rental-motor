@@ -131,7 +131,7 @@
                         </span>
                     @elseif($currentStatus === 'rented')
                         <span class="px-3 py-1 bg-orange-500 text-white text-xs font-semibold rounded-full shadow">
-                            Sedang Disewa
+                            Disewa
                         </span>
                     @elseif($currentStatus === 'available')
                         <span class="px-3 py-1 bg-green-500 text-white text-xs font-semibold rounded-full shadow">
@@ -147,10 +147,13 @@
 
             <!-- Motor Info -->
             <div class="p-5 flex-1 flex flex-col">
-                <!-- Brand & Plate -->
+                <!-- Model Motor (Nama Utama) -->
                 <div class="mb-3">
-                    <h3 class="text-lg font-bold text-gray-900 mb-1">{{ $motor->brand }}</h3>
+                    <h3 class="text-lg font-bold text-gray-900 mb-1">{{ $motor->model }}</h3>
                     <div class="flex items-center text-sm text-gray-600">
+                        <i class="bi bi-tag mr-1"></i>
+                        <span>{{ $motor->brand }}</span>
+                        <span class="mx-2">•</span>
                         <i class="bi bi-credit-card mr-1"></i>
                         <span>{{ $motor->plate_number }}</span>
                         <span class="mx-2">•</span>

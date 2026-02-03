@@ -144,23 +144,48 @@
                                     @endswitch
                                 </td>
                                 <td class="px-6 py-4">
-                                    <div class="flex items-center space-x-2">
-                                        <a href="{{ route('penyewa.booking.detail', $booking->id) }}" 
-                                           class="px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-                                        @if($booking->status === 'pending')
-                                            <button onclick="if(confirm('Batalkan pemesanan ini?')) document.getElementById('cancel-form-{{ $booking->id }}').submit();"
-                                                    class="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded-lg transition">
-                                                <i class="bi bi-x-circle"></i>
-                                            </button>
-                                            <form id="cancel-form-{{ $booking->id }}" 
-                                                  action="{{ route('penyewa.booking.cancel', $booking->id) }}" 
-                                                  method="POST" class="hidden">
-                                                @csrf
-                                                @method('PATCH')
-                                            </form>
-                                        @endif
+                                    <div class="relative" x-data="{ open: false }">
+                                        <button @click="open = !open" 
+                                                @click.away="open = false"
+                                                class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition"
+                                                title="Menu Aksi">
+                                            <i class="bi bi-three-dots-vertical text-lg"></i>
+                                        </button>
+                                        
+                                        <!-- Dropdown Menu -->
+                                        <div x-show="open" 
+                                             x-transition:enter="transition ease-out duration-100"
+                                             x-transition:enter-start="transform opacity-0 scale-95"
+                                             x-transition:enter-end="transform opacity-100 scale-100"
+                                             x-transition:leave="transition ease-in duration-75"
+                                             x-transition:leave-start="transform opacity-100 scale-100"
+                                             x-transition:leave-end="transform opacity-0 scale-95"
+                                             style="display: none;"
+                                             class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+                                            
+                                            <!-- Lihat Detail -->
+                                            <a href="{{ route('penyewa.booking.detail', $booking->id) }}" 
+                                               class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition rounded-t-lg">
+                                                <i class="bi bi-eye mr-2"></i>
+                                                Lihat Detail
+                                            </a>
+                                            
+                                            <!-- Batalkan Booking (jika status pending) -->
+                                            @if($booking->status === 'pending')
+                                                <button type="button"
+                                                        onclick="if(confirm('Batalkan pemesanan ini?')) document.getElementById('cancel-form-{{ $booking->id }}').submit();"
+                                                        class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition rounded-b-lg">
+                                                    <i class="bi bi-x-circle mr-2"></i>
+                                                    Batalkan Pesanan
+                                                </button>
+                                                <form id="cancel-form-{{ $booking->id }}" 
+                                                      action="{{ route('penyewa.booking.cancel', $booking->id) }}" 
+                                                      method="POST" class="hidden">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                </form>
+                                            @endif
+                                        </div>
                                     </div>
                                 </td>
                             </tr>

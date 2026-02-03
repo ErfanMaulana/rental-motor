@@ -86,7 +86,18 @@
                 <!-- Badges -->
                 <div class="absolute top-2 left-2 flex gap-1">
                     <span class="px-2 py-0.5 text-xs font-semibold bg-blue-600 text-white rounded">{{ $motor->type_cc }}</span>
-                    <span class="px-2 py-0.5 text-xs font-semibold bg-green-600 text-white rounded">{{ ucfirst($motor->status) }}</span>
+                    
+                    @php
+                        $currentStatus = $motor->getCurrentStatus();
+                        $statusConfig = [
+                            'pending_verification' => ['bg' => 'bg-yellow-500', 'label' => 'Menunggu Verifikasi'],
+                            'available' => ['bg' => 'bg-green-600', 'label' => 'Tersedia'],
+                            'rented' => ['bg' => 'bg-orange-500', 'label' => 'Disewa'],
+                            'maintenance' => ['bg' => 'bg-gray-500', 'label' => 'Maintenance']
+                        ];
+                        $statusInfo = $statusConfig[$currentStatus] ?? ['bg' => 'bg-gray-600', 'label' => ucfirst($currentStatus)];
+                    @endphp
+                    <span class="px-2 py-0.5 text-xs font-semibold {{ $statusInfo['bg'] }} text-white rounded">{{ $statusInfo['label'] }}</span>
                 </div>
             </div>
 
