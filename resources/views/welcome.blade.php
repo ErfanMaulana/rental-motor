@@ -147,134 +147,95 @@
     </div>
 </section>
 
-<!-- Motor Categories Section -->
+<!-- Motor Available Section -->
 <section id="kategori-motor" class="py-5" style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);">
     <div class="container">
         <div class="row mb-5">
             <div class="col-12 text-center">
-                <h2 class="fw-bold mb-3">Kategori Motor Terbaru</h2>
-                <p class="text-muted mb-5">Pilih motor sesuai kebutuhan perjalanan Anda</p>
+                <h2 class="fw-bold mb-3">Motor Tersedia</h2>
+                <p class="text-muted mb-5">Lihat koleksi motor yang sudah terverifikasi dan siap disewa</p>
             </div>
         </div>
         
-        <div class="row g-4 justify-content-center">
-            <!-- Motor Matic -->
-            <div class="col-lg-4 col-md-6 col-sm-8">
-                <div class="motor-category-card">
-                    <div class="card border-0 shadow-lg h-100 position-relative overflow-hidden">
-                        <div class="card-header bg-gradient-primary text-white text-center py-4">
-                            <div class="category-badge">
-                                <i class="bi bi-star-fill me-1"></i>POPULER
+        @if($motors->count() > 0)
+        <div class="row g-4">
+            @foreach($motors as $motor)
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100 border-0 shadow-sm hover:shadow-lg transition-all">
+                    <!-- Badge Status -->
+                    <div class="position-absolute top-0 start-0 m-3 z-1">
+                        <span class="badge bg-success">Tersedia</span>
+                    </div>
+                    
+                    <!-- Motor Image -->
+                    <div class="position-relative" style="height: 250px; overflow: hidden;">
+                        @if($motor->photo)
+                            <img src="{{ Storage::url($motor->photo) }}" 
+                                 class="card-img-top w-100 h-100 object-fit-cover" 
+                                 alt="{{ $motor->brand }} {{ $motor->model }}"
+                                 style="object-fit: cover;">
+                        @else
+                            <div class="w-100 h-100 bg-light d-flex align-items-center justify-content-center">
+                                <i class="bi bi-image text-muted" style="font-size: 4rem;"></i>
                             </div>
-                            <h4 class="fw-bold mb-1">Motor Matic</h4>
-                            <p class="mb-0 opacity-75">Perfect untuk dalam kota</p>
+                        @endif
+                    </div>
+                    
+                    <div class="card-body">
+                        <!-- Brand & Model -->
+                        <h5 class="card-title fw-bold mb-2">{{ $motor->brand }}</h5>
+                        <div class="d-flex align-items-center gap-2 mb-3 text-muted small">
+                            <span><i class="bi bi-tag me-1"></i>{{ $motor->model }}</span>
+                            <span>•</span>
+                            <span><i class="bi bi-speedometer me-1"></i>{{ $motor->type_cc }}</span>
                         </div>
-                        <div class="card-body p-4 d-flex flex-column">
-                            <div class="text-center mb-4">
-                                <div class="motor-icon">
-                                    <i class="bi bi-bicycle text-primary" style="font-size: 4rem;"></i>
-                                </div>
+                        
+                        <!-- Description -->
+                        @if($motor->description)
+                        <p class="card-text text-muted small mb-3" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                            {{ $motor->description }}
+                        </p>
+                        @else
+                        <p class="card-text text-muted small mb-3">Motor masih bagus</p>
+                        @endif
+                        
+                        <!-- Pricing Section -->
+                        @if($motor->rentalRate)
+                        <div class="border-top pt-3 mb-3">
+                            <div class="small text-muted mb-2">HARGA SEWA</div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted small">Harian</span>
+                                <span class="fw-semibold text-primary">Rp {{ number_format($motor->rentalRate->daily_rate, 0, ',', '.') }}</span>
                             </div>
-                            
-                            <ul class="list-unstyled mb-4 flex-grow-1">
-                                <li class="mb-2"><i class="bi bi-check2 text-success me-2"></i>Honda Vario, Beat, Scoopy</li>
-                                <li class="mb-2"><i class="bi bi-check2 text-success me-2"></i>Yamaha Nmax, Mio, Soul</li>
-                                <li class="mb-2"><i class="bi bi-check2 text-success me-2"></i>Irit BBM & mudah dikendarai</li>
-                                <li class="mb-2"><i class="bi bi-check2 text-success me-2"></i>Ideal untuk pemula</li>
-                            </ul>
-                            
-                            <div class="price-section text-center mt-auto">
-                                <div class="old-price">
-                                    <small class="text-muted text-decoration-line-through">Rp 70.000</small>
-                                </div>
-                                <div class="current-price">
-                                    <h3 class="fw-bold text-primary mb-1">Rp 50.000</h3>
-                                    <small class="text-muted">per hari</small>
-                                </div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted small">Mingguan</span>
+                                <span class="fw-semibold text-success">Rp {{ number_format($motor->rentalRate->weekly_rate, 0, ',', '.') }}</span>
                             </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted small">Bulanan</span>
+                                <span class="fw-semibold text-info">Rp {{ number_format($motor->rentalRate->monthly_rate, 0, ',', '.') }}</span>
+                            </div>
+                        </div>
+                        @endif
+                        
+                        <!-- Verified Badge -->
+                        <div class="text-center mt-3">
+                            <small class="text-success">
+                                <i class="bi bi-patch-check-fill me-1"></i>
+                                Diverifikasi {{ $motor->verified_at->diffForHumans() }}
+                            </small>
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- Motor Sport -->
-            <div class="col-lg-4 col-md-6 col-sm-8">
-                <div class="motor-category-card">
-                    <div class="card border-0 shadow-lg h-100 position-relative overflow-hidden">
-                        <div class="card-header bg-gradient-success text-white text-center py-4">
-                            <div class="category-badge">
-                                <i class="bi bi-lightning-fill me-1"></i>PERFORMA
-                            </div>
-                            <h4 class="fw-bold mb-1">Motor Sport</h4>
-                            <p class="mb-0 opacity-75">Untuk perjalanan jauh</p>
-                        </div>
-                        <div class="card-body p-4 d-flex flex-column">
-                            <div class="text-center mb-4">
-                                <div class="motor-icon">
-                                    <i class="bi bi-bicycle text-success" style="font-size: 4rem;"></i>
-                                </div>
-                            </div>
-                            
-                            <ul class="list-unstyled mb-4 flex-grow-1">
-                                <li class="mb-2"><i class="bi bi-check2 text-success me-2"></i>Honda CBR, CB150R, Sonic</li>
-                                <li class="mb-2"><i class="bi bi-check2 text-success me-2"></i>Yamaha R15, Vixion, Fz</li>
-                                <li class="mb-2"><i class="bi bi-check2 text-success me-2"></i>Tenaga besar & handling bagus</li>
-                                <li class="mb-2"><i class="bi bi-check2 text-success me-2"></i>Cocok untuk touring</li>
-                            </ul>
-                            
-                            <div class="price-section text-center mt-auto">
-                                <div class="old-price">
-                                    <small class="text-muted text-decoration-line-through">Rp 100.000</small>
-                                </div>
-                                <div class="current-price">
-                                    <h3 class="fw-bold text-success mb-1">Rp 75.000</h3>
-                                    <small class="text-muted">per hari</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Motor Premium -->
-            <div class="col-lg-4 col-md-6 col-sm-8">
-                <div class="motor-category-card">
-                    <div class="card border-0 shadow-lg h-100 position-relative overflow-hidden">
-                        <div class="card-header bg-gradient-warning text-white text-center py-4">
-                            <div class="category-badge">
-                                <i class="bi bi-gem me-1"></i>PREMIUM
-                            </div>
-                            <h4 class="fw-bold mb-1">Motor Premium</h4>
-                            <p class="mb-0 opacity-75">Kelas atas & mewah</p>
-                        </div>
-                        <div class="card-body p-4 d-flex flex-column">
-                            <div class="text-center mb-4">
-                                <div class="motor-icon">
-                                    <i class="bi bi-bicycle text-warning" style="font-size: 4rem;"></i>
-                                </div>
-                            </div>
-                            
-                            <ul class="list-unstyled mb-4 flex-grow-1">
-                                <li class="mb-2"><i class="bi bi-check2 text-success me-2"></i>Honda PCX, Forza, ADV</li>
-                                <li class="mb-2"><i class="bi bi-check2 text-success me-2"></i>Yamaha Aerox, Lexi, Xmax</li>
-                                <li class="mb-2"><i class="bi bi-check2 text-success me-2"></i>Fitur lengkap & modern</li>
-                                <li class="mb-2"><i class="bi bi-check2 text-success me-2"></i>Kenyamanan maksimal</li>
-                            </ul>
-                            
-                            <div class="price-section text-center mt-auto">
-                                <div class="old-price">
-                                    <small class="text-muted text-decoration-line-through">Rp 130.000</small>
-                                </div>
-                                <div class="current-price">
-                                    <h3 class="fw-bold text-warning mb-1">Rp 100.000</h3>
-                                    <small class="text-muted">per hari</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            @endforeach
         </div>
+        @else
+        <div class="text-center py-5">
+            <i class="bi bi-inbox text-muted mb-3" style="font-size: 4rem;"></i>
+            <p class="text-muted">Belum ada motor yang tersedia saat ini</p>
+        </div>
+        @endif
     </div>
 </section>
 @endsection

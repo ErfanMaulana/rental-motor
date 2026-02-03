@@ -76,7 +76,7 @@
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
                         <div class="p-3 rounded-lg bg-cyan-100">
-                            <i class="bi bi-motorcycle text-2xl text-cyan-600"></i>
+                            <i class="bi bi-scooter text-2xl text-cyan-600"></i>
                         </div>
                     </div>
                     <div class="ml-5 w-0 flex-1">

@@ -227,32 +227,32 @@
              x-transition:leave="ease-in duration-200"
              x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
              x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-             class="inline-block w-full max-w-5xl my-8 overflow-hidden text-left align-middle transition-all transform bg-white rounded-lg shadow-xl">
+             class="inline-block w-[600px] my-2 overflow-hidden text-left align-middle transition-all transform bg-white rounded shadow-xl">
             
             <!-- Header -->
-            <div class="flex items-center justify-between px-6 py-4 bg-blue-600 text-white">
-                <h3 class="text-lg font-medium flex items-center">
-                    <i class="bi bi-scooter mr-2"></i>Detail Motor
+            <div class="flex items-center justify-between px-2.5 py-1.5 bg-blue-600 text-white">
+                <h3 class="text-[11px] font-semibold">
+                    <i class="bi bi-motorcycle mr-1 text-[10px]"></i>Detail Motor
                 </h3>
-                <button @click="open = false" class="text-white hover:text-gray-200 transition">
-                    <i class="bi bi-x-lg text-xl"></i>
+                <button @click="open = false" class="text-white hover:text-gray-200">
+                    <i class="bi bi-x-lg text-[10px]"></i>
                 </button>
             </div>
             
             <!-- Body -->
-            <div id="motorDetailContent" class="px-6 py-4">
-                <div class="flex justify-center py-12">
+            <div id="motorDetailContent" class="p-2.5 max-h-[320px] overflow-y-auto text-xs">
+                <div class="flex justify-center py-6">
                     <div class="text-center">
-                        <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
-                        <p class="mt-4 text-gray-600">Memuat detail motor...</p>
+                        <div class="inline-block animate-spin rounded-full h-6 w-6 border-4 border-blue-600 border-t-transparent"></div>
+                        <p class="mt-2 text-gray-600 text-xs">Memuat...</p>
                     </div>
                 </div>
             </div>
 
             <!-- Footer -->
-            <div class="flex items-center justify-end px-6 py-4 bg-gray-50 border-t border-gray-200 space-x-2">
-                <button @click="open = false" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
-                    <i class="bi bi-x-lg mr-1"></i>Tutup
+            <div class="px-2.5 py-1.5 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+                <button @click="open = false" class="px-2.5 py-1 text-[10px] font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 transition">
+                    <i class="bi bi-x-circle mr-0.5 text-[9px]"></i>Tutup
                 </button>
                 <div id="bookingButtonContainer"></div>
             </div>
@@ -320,10 +320,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Show motor detail in modal
 function showMotorDetail(motorId) {
+    console.log('showMotorDetail called with ID:', motorId);
+    
     const content = document.getElementById('motorDetailContent');
     const bookingContainer = document.getElementById('bookingButtonContainer');
     
-    // Reset content with Tailwind loading
+    // Reset content with loading state
     content.innerHTML = `
         <div class="flex justify-center py-12">
             <div class="text-center">
@@ -346,112 +348,128 @@ function showMotorDetail(motorId) {
             return response.json();
         })
         .then(data => {
+            console.log('Motor data received:', data);
             const motor = data.motor;
             
-            // Build motor detail HTML with Tailwind
-            let rentalRateHtml = '';
-            if (motor.rental_rate) {
-                rentalRateHtml = `
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                        <h6 class="text-sm font-medium text-gray-700 mb-2">Tarif Sewa Harian</h6>
-                        <div class="text-2xl font-bold text-blue-600">Rp ${new Intl.NumberFormat('id-ID').format(motor.rental_rate.daily_rate)}</div>
-                        <small class="text-gray-500">per hari</small>
-                    </div>
-                `;
-            }
-            
+            // Build content HTML with compact style like admin
             content.innerHTML = `
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-2 gap-1.5 text-[10px]">
+                    <!-- Left Column: Image -->
                     <div>
                         ${motor.photo ? 
-                            `<img src="/storage/${motor.photo}" class="w-full rounded-lg shadow-sm" alt="${motor.brand} ${motor.model}">` :
-                            `<div class="w-full h-64 bg-gray-100 rounded-lg flex items-center justify-center">
-                                <i class="bi bi-scooter text-gray-300 text-6xl"></i>
+                            `<img src="/storage/${motor.photo}" class="w-full h-[180px] object-cover rounded border border-gray-200" alt="${motor.brand} ${motor.model}">` :
+                            `<div class="w-full h-[180px] bg-gray-100 rounded flex items-center justify-center border border-gray-200">
+                                <i class="bi bi-scooter text-gray-300 text-3xl"></i>
                              </div>`
                         }
                     </div>
-                    <div>
-                        <h3 class="text-2xl font-bold text-gray-900 mb-3">${motor.brand} ${motor.model}</h3>
-                        <div class="flex gap-2 mb-4">
-                            <span class="px-3 py-1 text-sm font-semibold rounded-full bg-blue-100 text-blue-800">${motor.type_cc}</span>
-                            <span class="px-3 py-1 text-sm font-semibold rounded-full bg-green-100 text-green-800">
-                                <i class="bi bi-check-circle mr-1"></i>Tersedia
-                            </span>
-                        </div>
-                        
-                        <div class="grid grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <strong class="text-gray-700">Tahun:</strong><br>
-                                <span class="text-gray-600">${motor.year}</span>
-                            </div>
-                            <div>
-                                <strong class="text-gray-700">Warna:</strong><br>
-                                <span class="text-gray-600">${motor.color}</span>
+                    
+                    <!-- Right Column: Info -->
+                    <div class="space-y-1">
+                        <!-- Motor Name & Badges -->
+                        <div class="bg-gradient-to-r from-blue-50 to-blue-100 p-1 rounded">
+                            <h4 class="text-[11px] font-bold text-gray-900 mb-0.5">${motor.brand} ${motor.model}</h4>
+                            <div class="flex gap-0.5 flex-wrap">
+                                <span class="px-1 py-0.5 text-[8px] font-semibold rounded-full bg-blue-600 text-white">${motor.type_cc}</span>
+                                <span class="px-1 py-0.5 text-[8px] font-semibold rounded-full ${motor.status === 'available' ? 'bg-green-600' : 'bg-gray-400'} text-white">
+                                    ${motor.status === 'available' ? 'Tersedia' : motor.status}
+                                </span>
                             </div>
                         </div>
                         
-                        <div class="grid grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <strong class="text-gray-700">Plat Nomor:</strong><br>
-                                <span class="text-gray-600">${motor.plate_number}</span>
+                        <!-- Basic Info Grid -->
+                        <div class="grid grid-cols-2 gap-1.5 text-[10px]">
+                            <div class="bg-gray-50 p-1.5 rounded">
+                                <div class="text-gray-500">Tahun</div>
+                                <div class="font-semibold text-gray-900">${motor.year}</div>
                             </div>
-                            <div>
-                                <strong class="text-gray-700">Pemilik:</strong><br>
-                                <span class="text-gray-600">${motor.owner.name}</span>
+                            <div class="bg-gray-50 p-1.5 rounded">
+                                <div class="text-gray-500">Warna</div>
+                                <div class="font-semibold text-gray-900">${motor.color}</div>
+                            </div>
+                            <div class="bg-gray-50 p-1.5 rounded">
+                                <div class="text-gray-500">Plat Nomor</div>
+                                <div class="font-semibold text-gray-900">${motor.plate_number}</div>
+                            </div>
+                            <div class="bg-gray-50 p-1.5 rounded">
+                                <div class="text-gray-500">Pemilik</div>
+                                <div class="font-semibold text-gray-900">${motor.owner.name}</div>
                             </div>
                         </div>
                         
+                        <!-- Description -->
                         ${motor.description ? `
-                            <div class="mb-4">
-                                <strong class="text-gray-700">Deskripsi:</strong><br>
-                                <p class="text-gray-600 mt-1">${motor.description}</p>
+                            <div class="bg-gray-50 p-1.5 rounded text-[10px]">
+                                <div class="text-gray-500 mb-0.5">Deskripsi</div>
+                                <div class="text-gray-700">${motor.description}</div>
                             </div>
                         ` : ''}
+                        
+                        <!-- Rental Rates -->
+                        ${motor.rental_rate ? `
+                            <div class="bg-blue-50 border border-blue-200 rounded-md p-1.5">
+                                <div class="text-[9px] font-semibold text-blue-800 mb-1">HARGA SEWA</div>
+                                <div class="grid grid-cols-3 gap-1 text-[10px]">
+                                    <div class="text-center">
+                                        <div class="text-gray-500">Harian</div>
+                                        <div class="font-bold text-blue-600">Rp ${new Intl.NumberFormat('id-ID').format(motor.rental_rate.daily_rate)}</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="text-gray-500">Mingguan</div>
+                                        <div class="font-bold text-blue-600">Rp ${new Intl.NumberFormat('id-ID').format(motor.rental_rate.weekly_rate)}</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="text-gray-500">Bulanan</div>
+                                        <div class="font-bold text-blue-600">Rp ${new Intl.NumberFormat('id-ID').format(motor.rental_rate.monthly_rate)}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        ` : `
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-md p-1.5 text-center text-[10px]">
+                                <i class="bi bi-exclamation-circle text-yellow-600"></i>
+                                <div class="text-yellow-800 mt-0.5">Harga sewa belum tersedia</div>
+                            </div>
+                        `}
                     </div>
                 </div>
                 
-                ${rentalRateHtml ? `
-                    <div class="mt-6">
-                        <h5 class="text-lg font-semibold text-gray-900 mb-3">Harga Sewa</h5>
-                        ${rentalRateHtml}
-                    </div>
-                ` : `
-                    <div class="mt-6">
-                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
-                            <i class="bi bi-exclamation-circle text-yellow-600 text-xl"></i>
-                            <p class="text-yellow-800 mt-2">Harga sewa belum tersedia. Silakan hubungi pemilik motor.</p>
+                <!-- Documents Section -->
+                ${motor.stnk_photo || motor.registration_doc ? `
+                    <div class="mt-2 border-t border-gray-200 pt-2">
+                        <div class="text-[10px] font-semibold text-gray-700 mb-1">DOKUMEN KENDARAAN</div>
+                        <div class="grid grid-cols-2 gap-1">
+                            ${motor.stnk_photo ? `
+                                <button onclick="showDocumentPreview('/storage/${motor.stnk_photo}')" 
+                                        class="bg-gray-50 border border-gray-200 rounded p-1.5 hover:bg-gray-100 transition text-[10px] text-left">
+                                    <i class="bi bi-file-earmark-text text-blue-600 mr-1"></i>
+                                    <span class="font-medium">STNK</span>
+                                </button>
+                            ` : ''}
+                            ${motor.registration_doc ? `
+                                <button onclick="showDocumentPreview('/storage/${motor.registration_doc}')" 
+                                        class="bg-gray-50 border border-gray-200 rounded p-1.5 hover:bg-gray-100 transition text-[10px] text-left">
+                                    <i class="bi bi-file-earmark-text text-blue-600 mr-1"></i>
+                                    <span class="font-medium">Dokumen Registrasi</span>
+                                </button>
+                            ` : ''}
                         </div>
                     </div>
-                `}
-                
-                <!-- Rating Section -->
-                <div class="mt-6">
-                    <h5 class="text-lg font-semibold text-gray-900 mb-3">Rating & Ulasan</h5>
-                    <div id="ratingsSection">
-                        <div class="text-center text-gray-500 py-8">
-                            <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent"></div>
-                            <p class="mt-2">Loading ratings...</p>
-                        </div>
-                    </div>
-                </div>
+                ` : ''}
             `;
-            
-            // Load ratings for this motor
-            loadMotorRatings(motor.id);
             
             // Update booking button
             if (motor.rental_rate) {
-                @if(!$isVerified)
+                @if($isVerified)
                 bookingContainer.innerHTML = `
-                    <button class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg cursor-not-allowed" disabled>
-                        <i class="bi bi-lock mr-1"></i>Perlu Verifikasi
-                    </button>
+                    <a href="/penyewa/booking/${motor.id}" class="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+                        <i class="bi bi-calendar-plus mr-0.5 text-[10px]"></i>Sewa
+                    </a>
                 `;
                 @else
                 bookingContainer.innerHTML = `
-                    <a href="/penyewa/booking/${motor.id}" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition inline-block">
-                        <i class="bi bi-calendar-plus mr-1"></i>Sewa Sekarang
-                    </a>
+                    <button class="px-2 py-1 text-xs bg-gray-300 text-gray-700 rounded cursor-not-allowed" disabled>`
+                        <i class="bi bi-lock mr-1"></i>Perlu Verifikasi
+                    </button>
                 `;
                 @endif
             }
@@ -459,13 +477,11 @@ function showMotorDetail(motorId) {
         .catch(error => {
             console.error('Error fetching motor detail:', error);
             content.innerHTML = `
-                <div class="bg-red-50 border border-red-200 rounded-lg p-6">
-                    <div class="flex items-center text-red-800 mb-3">
-                        <i class="bi bi-exclamation-triangle text-xl mr-2"></i>
-                        <h6 class="font-semibold">Error</h6>
-                    </div>
-                    <p class="text-red-700 mb-4">Gagal memuat detail motor.</p>
-                    <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition" onclick="showMotorDetail(${motorId})">
+                <div class="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+                    <i class="bi bi-exclamation-triangle text-red-600 text-4xl mb-3"></i>
+                    <h6 class="text-red-800 font-semibold mb-2">Error</h6>
+                    <p class="text-red-600 mb-4">Gagal memuat detail motor.</p>
+                    <button onclick="showMotorDetail(${motorId})" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
                         <i class="bi bi-arrow-clockwise mr-1"></i>Coba Lagi
                     </button>
                 </div>
@@ -473,107 +489,26 @@ function showMotorDetail(motorId) {
         });
 }
 
-// Function to load motor ratings
-function loadMotorRatings(motorId) {
-    fetch(`/penyewa/ratings/${motorId}`)
-        .then(response => response.json())
-        .then(data => {
-            const ratingsSection = document.getElementById('ratingsSection');
-            
-            if (data.ratings.data.length === 0) {
-                ratingsSection.innerHTML = `
-                    <div class="text-center text-muted py-3">
-                        <i class="bi bi-star me-1"></i>
-                        Belum ada rating untuk motor ini
-                    </div>
-                `;
-                return;
-            }
-            
-            // Display average rating
-            let averageDisplay = '';
-            if (data.average_rating > 0) {
-                averageDisplay = `
-                    <div class="d-flex align-items-center justify-content-between mb-3 p-3 bg-light rounded">
-                        <div>
-                            <h6 class="mb-1">Rating Rata-rata</h6>
-                            <div class="d-flex align-items-center">
-                                ${generateStarRating(data.average_rating)}
-                                <span class="ms-2 fw-bold">${data.average_rating.toFixed(1)}</span>
-                                <span class="ms-1 text-muted">(${data.total_ratings} ulasan)</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-            
-            // Display individual ratings
-            let ratingsHtml = data.ratings.data.map(rating => `
-                <div class="border-bottom pb-3 mb-3">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div class="flex-grow-1">
-                            <div class="d-flex align-items-center mb-2">
-                                <strong class="me-2">${rating.user.name}</strong>
-                                ${generateStarRating(rating.rating)}
-                                <small class="ms-2 text-muted">${new Date(rating.created_at).toLocaleDateString('id-ID')}</small>
-                            </div>
-                            ${rating.review ? `<p class="mb-0 text-muted">${rating.review}</p>` : ''}
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-            
-            ratingsSection.innerHTML = averageDisplay + ratingsHtml;
-        })
-        .catch(error => {
-            console.error('Error loading ratings:', error);
-            document.getElementById('ratingsSection').innerHTML = `
-                <div class="text-center text-danger py-3">
-                    <i class="bi bi-exclamation-triangle me-1"></i>
-                    Gagal memuat rating
-                </div>
-            `;
-        });
-}
-
-// Function to generate star rating display
-function generateStarRating(rating) {
-    let starsHtml = '';
-    for (let i = 1; i <= 5; i++) {
-        if (i <= rating) {
-            starsHtml += '<i class="bi bi-star-fill text-warning"></i>';
-        } else if (i - 0.5 <= rating) {
-            starsHtml += '<i class="bi bi-star-half text-warning"></i>';
-        } else {
-            starsHtml += '<i class="bi bi-star text-muted"></i>';
+// Function to show document preview
+function showDocumentPreview(imageUrl) {
+    // Create modal for image preview
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-75';
+    modal.innerHTML = `
+        <div class="relative max-w-4xl max-h-[90vh] p-4">
+            <button onclick="this.closest('.fixed').remove()" 
+                    class="absolute top-6 right-6 text-white hover:text-gray-300 text-2xl z-10">
+                <i class="bi bi-x-lg"></i>
+            </button>
+            <img src="${imageUrl}" class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl">
+        </div>
+    `;
+    modal.onclick = function(e) {
+        if (e.target === modal) {
+            modal.remove();
         }
-    }
-    return starsHtml;
-}
-                `}
-            `;
-            
-            // Add booking button if rates available
-            if (motor.rental_rate) {
-                bookingContainer.innerHTML = `
-                    <a href="/penyewa/booking/${motor.id}" class="btn btn-primary">
-                        <i class="bi bi-calendar-plus me-1"></i>Sewa Sekarang
-                    </a>
-                `;
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching motor detail:', error);
-            content.innerHTML = `
-                <div class="alert alert-danger">
-                    <h6><i class="bi bi-exclamation-triangle me-2"></i>Error</h6>
-                    <p class="mt-2 text-danger">Gagal memuat detail motor.</p>
-                    <button class="btn btn-outline-primary btn-sm" onclick="showMotorDetail(${motorId})">
-                        <i class="bi bi-arrow-clockwise me-1"></i>Coba Lagi
-                    </button>
-                </div>
-            `;
-        });
+    };
+    document.body.appendChild(modal);
 }
 </script>
 @endpush

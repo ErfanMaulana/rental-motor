@@ -19,6 +19,7 @@ class Booking extends Model
         'end_date',
         'duration_type',
         'price',
+        'payment_method',
         'status',
         'confirmed_at',
         'confirmed_by',
@@ -88,5 +89,17 @@ class Booking extends Model
     public function isCompleted()
     {
         return $this->status === 'completed';
+    }
+
+    public function getPaymentMethodName()
+    {
+        $methods = [
+            'dana' => 'DANA',
+            'gopay' => 'GoPay',
+            'bank' => 'Bank Transfer',
+            'shopeepay' => 'ShopeePay'
+        ];
+
+        return $methods[$this->payment_method] ?? $this->payment_method;
     }
 }

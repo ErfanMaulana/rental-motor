@@ -26,6 +26,7 @@
                     <input type="hidden" name="start_date" id="hidden_start_date">
                     <input type="hidden" name="end_date" id="hidden_end_date">
                     <input type="hidden" name="package_type" id="hidden_package_type">
+                    <input type="hidden" name="payment_method" id="hidden_payment_method">
                     
                     <!-- Step 1: Pilih Paket -->
                     <div class="mb-6" id="step-package">
@@ -152,6 +153,58 @@
                         
                         <div id="summary-content" class="bg-gray-50 rounded-lg p-4 mb-4"></div>
                         
+                        <!-- Metode Pembayaran -->
+                        <div class="mb-6">
+                            <h6 class="text-md font-semibold text-gray-900 mb-3">Pilih Metode Pembayaran</h6>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <!-- Dana -->
+                                <div class="payment-card border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-blue-500 transition text-center" data-payment="dana">
+                                    <div class="mb-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-12 h-12 mx-auto">
+                                            <rect width="24" height="24" rx="6" fill="#118EEA"/>
+                                            <path d="M7 8h10v8H7z" fill="white"/>
+                                            <text x="12" y="15" text-anchor="middle" fill="#118EEA" font-size="8" font-weight="bold">DANA</text>
+                                        </svg>
+                                    </div>
+                                    <span class="text-sm font-semibold text-gray-900">DANA</span>
+                                </div>
+                                
+                                <!-- GoPay -->
+                                <div class="payment-card border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-green-500 transition text-center" data-payment="gopay">
+                                    <div class="mb-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-12 h-12 mx-auto">
+                                            <rect width="24" height="24" rx="6" fill="#00AA13"/>
+                                            <circle cx="12" cy="12" r="6" fill="white"/>
+                                            <text x="12" y="14" text-anchor="middle" fill="#00AA13" font-size="6" font-weight="bold">GO</text>
+                                        </svg>
+                                    </div>
+                                    <span class="text-sm font-semibold text-gray-900">GoPay</span>
+                                </div>
+                                
+                                <!-- Bank -->
+                                <div class="payment-card border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-purple-500 transition text-center" data-payment="bank">
+                                    <div class="mb-2">
+                                        <i class="bi bi-bank text-purple-600 text-4xl"></i>
+                                    </div>
+                                    <span class="text-sm font-semibold text-gray-900">Transfer Bank</span>
+                                </div>
+                                
+                                <!-- ShopeePay -->
+                                <div class="payment-card border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-orange-500 transition text-center" data-payment="shopeepay">
+                                    <div class="mb-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-12 h-12 mx-auto">
+                                            <rect width="24" height="24" rx="6" fill="#EE4D2D"/>
+                                            <text x="12" y="15" text-anchor="middle" fill="white" font-size="7" font-weight="bold">S-Pay</text>
+                                        </svg>
+                                    </div>
+                                    <span class="text-sm font-semibold text-gray-900">ShopeePay</span>
+                                </div>
+                            </div>
+                            <div id="payment-error" class="text-red-600 text-sm mt-2 hidden">
+                                <i class="bi bi-exclamation-circle mr-1"></i>Silakan pilih metode pembayaran
+                            </div>
+                        </div>
+                        
                         <div class="flex gap-3">
                             <button type="button" 
                                     class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition" 
@@ -237,6 +290,7 @@
 let selectedPackage = null;
 let selectedDuration = 1;
 let currentStep = 1;
+let selectedPayment = null;
 const motorId = {{ $motor->id }};
 
 @if($motor->rentalRate)
@@ -268,6 +322,44 @@ document.addEventListener('DOMContentLoaded', function() {
             // Show step 2
             setTimeout(() => goToStep(2), 300);
         });
+    });
+    
+    // Payment method selection
+    document.querySelectorAll('.payment-card').forEach(card => {
+        card.addEventListener('click', function() {
+            document.querySelectorAll('.payment-card').forEach(c => {
+                c.classList.remove('border-blue-600', 'bg-blue-50', 'border-green-600', 'bg-green-50', 'border-purple-600', 'bg-purple-50', 'border-orange-600', 'bg-orange-50');
+                c.classList.add('border-gray-200');
+            });
+            
+            const payment = this.dataset.payment;
+            this.classList.remove('border-gray-200');
+            
+            // Set color based on payment method
+            if (payment === 'dana') {
+                this.classList.add('border-blue-600', 'bg-blue-50');
+            } else if (payment === 'gopay') {
+                this.classList.add('border-green-600', 'bg-green-50');
+            } else if (payment === 'bank') {
+                this.classList.add('border-purple-600', 'bg-purple-50');
+            } else if (payment === 'shopeepay') {
+                this.classList.add('border-orange-600', 'bg-orange-50');
+            }
+            
+            selectedPayment = payment;
+            document.getElementById('hidden_payment_method').value = payment;
+            document.getElementById('payment-error').classList.add('hidden');
+        });
+    });
+    
+    // Form submit validation
+    document.getElementById('bookingForm').addEventListener('submit', function(e) {
+        if (!selectedPayment) {
+            e.preventDefault();
+            document.getElementById('payment-error').classList.remove('hidden');
+            document.getElementById('payment-error').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return false;
+        }
     });
     
     // Date change

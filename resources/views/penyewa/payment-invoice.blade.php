@@ -229,7 +229,7 @@
                     <div class="card-footer bg-light no-print">
                         <div class="row">
                             <div class="col-md-6">
-                                <a href="{{ route('penyewa.payment.history') }}" class="btn btn-secondary">
+                                <a href="{{ route('penyewa.payment-history') }}" class="btn btn-secondary">
                                     <i class="bi bi-arrow-left me-1"></i>Kembali ke Riwayat
                                 </a>
                             </div>
@@ -237,9 +237,9 @@
                                 <button onclick="window.print()" class="btn btn-primary">
                                     <i class="bi bi-printer me-1"></i>Cetak Invoice
                                 </button>
-                                <button onclick="downloadPDF()" class="btn btn-success ms-2">
+                                <a href="{{ route('penyewa.payment.download-pdf', $payment->id) }}" class="btn btn-success ms-2">
                                     <i class="bi bi-download me-1"></i>Download PDF
-                                </button>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -250,9 +250,27 @@
     
     <script>
         function downloadPDF() {
-            // Simple PDF download simulation
+            // Set document title for PDF filename
+            const originalTitle = document.title;
+            document.title = 'Invoice_#{{ $payment->id }}_{{ $payment->booking->renter->name }}_{{ now()->format("Y-m-d") }}';
+            
+            // Trigger print dialog
             window.print();
+            
+            // Restore original title
+            setTimeout(() => {
+                document.title = originalTitle;
+            }, 1000);
         }
+        
+        // Auto-set filename on print
+        window.onbeforeprint = function() {
+            document.title = 'Invoice_#{{ $payment->id }}_{{ str_replace(" ", "_", $payment->booking->renter->name) }}_{{ now()->format("Ymd") }}';
+        };
+        
+        window.onafterprint = function() {
+            document.title = 'Invoice #{{ $payment->id }} - FannRental';
+        };
     </script>
 </body>
 </html>

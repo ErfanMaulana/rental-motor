@@ -1,9 +1,10 @@
 @echo off
-REM Script untuk menjalankan update motor status secara otomatis
-REM Simpan script ini dan tambahkan ke Windows Task Scheduler untuk berjalan setiap hari jam 00:01
+REM Script untuk menjalankan Laravel Scheduler
+REM Jalankan script ini terus menerus untuk auto-update status booking
 
-cd /d "C:\laragon\www\ujikom-2025-erfan"
-php artisan motor:update-status
+cd /d "%~dp0"
 
-REM Log hasil ke file
-echo %date% %time% - Motor status updated >> logs\scheduler.log
+:loop
+php artisan schedule:run >> storage\logs\scheduler.log 2>&1
+timeout /t 60 /nobreak > nul
+goto loop

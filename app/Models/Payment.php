@@ -76,6 +76,19 @@ class Payment extends Model
 
     public function getFormattedPaymentMethodAttribute()
     {
+        // Prioritas: gunakan payment_method dulu (dana, gopay, shopeepay, bank)
+        // Fallback ke method (bank_transfer, e_wallet, cash, credit_card)
+        if ($this->payment_method) {
+            $methods = [
+                'dana' => 'DANA',
+                'gopay' => 'GoPay',
+                'shopeepay' => 'ShopeePay',
+                'bank' => 'Transfer Bank'
+            ];
+            return $methods[$this->payment_method] ?? ucwords($this->payment_method);
+        }
+        
+        // Fallback untuk payment lama
         $methods = [
             'bank_transfer' => 'Transfer Bank',
             'transfer_bank' => 'Transfer Bank',
@@ -84,9 +97,7 @@ class Payment extends Model
             'credit_card' => 'Kartu Kredit'
         ];
         
-        // Use 'method' field as primary, fallback to 'payment_method'
-        $paymentMethod = $this->method ?? $this->payment_method;
-        return $methods[$paymentMethod] ?? ucwords(str_replace('_', ' ', $paymentMethod));
+        return $methods[$this->method] ?? ucwords(str_replace('_', ' ', $this->method));
     }
 
     public function getPaymentProofUrlAttribute()

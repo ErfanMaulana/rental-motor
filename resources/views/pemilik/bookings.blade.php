@@ -163,38 +163,23 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="relative" x-data="{ open: false }">
-                                <button @click="open = !open" @click.away="open = false" class="px-3 py-1 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition">
-                                    Aksi <i class="bi bi-chevron-down ml-1"></i>
+                                <button @click="open = !open" class="p-1.5 text-gray-600 hover:bg-gray-100 rounded" title="Menu Aksi">
+                                    <i class="bi bi-three-dots-vertical"></i>
                                 </button>
-                                <div x-show="open" 
-                                     x-transition:enter="transition ease-out duration-100"
-                                     x-transition:enter-start="transform opacity-0 scale-95"
-                                     x-transition:enter-end="transform opacity-100 scale-100"
-                                     x-transition:leave="transition ease-in duration-75"
-                                     x-transition:leave-start="transform opacity-100 scale-100"
-                                     x-transition:leave-end="transform opacity-0 scale-95"
-                                     style="display: none;"
-                                     class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-10">
-                                    <a href="#" onclick="viewBookingDetail({{ $booking->id }})" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-t-lg">
-                                        <i class="bi bi-eye mr-2"></i>Detail
-                                    </a>
+                                <div x-show="open" @click.away="open = false"
+                                     class="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10"
+                                     style="display: none;">
+                                    <button onclick="viewBookingDetail({{ $booking->id }})" class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 rounded-t-lg">
+                                        <i class="bi bi-eye text-blue-600"></i>Detail
+                                    </button>
                                     @if($booking->status === 'pending')
-                                        <a href="#" onclick="confirmBooking({{ $booking->id }})" class="block px-4 py-2 text-sm text-green-600 hover:bg-green-50">
-                                            <i class="bi bi-check-circle mr-2"></i>Terima
-                                        </a>
-                                        <a href="#" onclick="cancelBooking({{ $booking->id }})" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-b-lg">
-                                            <i class="bi bi-x-circle mr-2"></i>Tolak
-                                        </a>
-                                    @endif
-                                    @if($booking->status === 'confirmed')
-                                        <a href="#" onclick="activateBooking({{ $booking->id }})" class="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-b-lg">
-                                            <i class="bi bi-play-circle mr-2"></i>Mulai Sewa
-                                        </a>
-                                    @endif
-                                    @if($booking->status === 'active')
-                                        <a href="#" onclick="completeBooking({{ $booking->id }})" class="block px-4 py-2 text-sm text-purple-600 hover:bg-purple-50 rounded-b-lg">
-                                            <i class="bi bi-check-circle-fill mr-2"></i>Selesaikan
-                                        </a>
+                                        <div class="border-t border-gray-200"></div>
+                                        <button onclick="confirmBooking({{ $booking->id }})" class="w-full px-4 py-2 text-left text-sm text-green-600 hover:bg-green-50 flex items-center gap-2">
+                                            <i class="bi bi-check-circle"></i>Terima
+                                        </button>
+                                        <button onclick="cancelBooking({{ $booking->id }})" class="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 rounded-b-lg">
+                                            <i class="bi bi-x-circle"></i>Tolak
+                                        </button>
                                     @endif
                                 </div>
                             </div>
@@ -247,18 +232,18 @@
              x-transition:leave="ease-in duration-200"
              x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
              x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-             class="inline-block w-full max-w-3xl my-8 overflow-hidden text-left align-middle transition-all transform bg-white rounded-lg shadow-xl">
+             class="inline-block w-full max-w-lg my-8 overflow-hidden text-left align-middle transition-all transform bg-white rounded-lg shadow-xl">
             
             <!-- Header -->
-            <div class="flex items-center justify-between px-6 py-4 bg-blue-600 text-white">
+            <div class="flex items-center justify-between px-4 py-3 bg-blue-600 text-white">
                 <h3 class="text-lg font-medium">Detail Pemesanan</h3>
                 <button @click="open = false" class="text-white hover:text-gray-200">
-                    <i class="bi bi-x-lg text-xl"></i>
+                    <i class="bi bi-x-lg"></i>
                 </button>
             </div>
             
             <!-- Body -->
-            <div id="bookingDetailContent" class="px-6 py-4">
+            <div id="bookingDetailContent" class="px-4 py-3">
                 <!-- Content will be loaded here -->
             </div>
         </div>

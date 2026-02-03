@@ -322,6 +322,71 @@ class AdminController extends Controller
         return response()->json($booking);
     }
 
+    /**
+     * Get booking detail for AJAX modal
+     */
+    public function getBookingDetailAjax($id)
+    {
+        try {
+            $booking = Booking::with([
+                'renter',
+                'motor',
+                'motor.owner',
+                'payment'
+            ])->findOrFail($id);
+
+            $statusBadges = [
+                'pending' => '<span class="inline-flex px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded">Pending</span>',
+                'confirmed' => '<span class="inline-flex px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">Confirmed</span>',
+                'active' => '<span class="inline-flex px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded">Active</span>',
+                'completed' => '<span class="inline-flex px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded">Completed</span>',
+                'cancelled' => '<span class="inline-flex px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded">Cancelled</span>'
+            ];
+
+            $paymentMethodLabels = [
+                'dana' => 'DANA',
+                'gopay' => 'GoPay',
+                'bank' => 'Transfer Bank',
+                'shopeepay' => 'ShopeePay'
+            ];
+
+            return response()->json([
+                'success' => true,
+                'booking' => [
+                    'id' => $booking->id,
+                    'status' => $booking->status,
+                    'status_badge' => $statusBadges[$booking->status] ?? '',
+                    'duration' => $booking->duration,
+                    'total_cost' => $booking->total_cost,
+                    'formatted_total_cost' => number_format($booking->total_cost, 0, ',', '.'),
+                    'formatted_rental_period' => $booking->start_date->format('d M Y') . ' - ' . $booking->end_date->format('d M Y'),
+                    'formatted_created_at' => $booking->created_at->format('d M Y H:i'),
+                    'payment_method' => $booking->payment_method,
+                    'formatted_payment_method' => $paymentMethodLabels[$booking->payment_method] ?? '-',
+                    'payment_status' => $booking->payment ? ($booking->payment->status === 'paid' ? 'Lunas' : 'Pending') : null,
+                    'notes' => $booking->notes,
+                    'renter' => [
+                        'name' => $booking->renter->name,
+                        'email' => $booking->renter->email,
+                        'phone' => $booking->renter->phone ?? '-'
+                    ],
+                    'motor' => [
+                        'brand' => $booking->motor->brand,
+                        'model' => $booking->motor->model,
+                        'type_cc' => $booking->motor->type_cc,
+                        'plate_number' => $booking->motor->plate_number,
+                        'owner' => [
+                            'name' => $booking->motor->owner->name
+                        ]
+                    ]
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error("Error getting booking detail: " . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Terjadi kesalahan saat mengambil data booking.'], 500);
+        }
+    }
+
     public function updateBookingStatus(Request $request, $id)
     {
         $booking = Booking::findOrFail($id);
@@ -330,9 +395,18 @@ class AdminController extends Controller
             'status' => 'required|in:pending,confirmed,active,completed,cancelled'
         ]);
 
+        $oldStatus = $booking->status;
         $booking->update(['status' => $request->status]);
 
-        return response()->json(['success' => true, 'message' => 'Status pemesanan berhasil diupdate']);
+        $statusMessages = [
+            'confirmed' => 'Booking berhasil dikonfirmasi',
+            'cancelled' => 'Booking berhasil dibatalkan',
+            'active' => 'Rental berhasil diaktifkan',
+            'completed' => 'Rental berhasil diselesaikan'
+        ];
+
+        return redirect()->route('admin.bookings')
+            ->with('success', $statusMessages[$request->status] ?? 'Status booking berhasil diupdate');
     }
 
     public function reports(Request $request)
@@ -532,6 +606,45 @@ class AdminController extends Controller
         return redirect()->back()->with('success', 'Motor berhasil diverifikasi dan harga sewa telah ditetapkan');
     }
 
+    /**
+     * Update motor rental price
+     */
+    public function updateMotorPrice(Request $request, $id)
+    {
+        try {
+            $motor = Motor::findOrFail($id);
+            
+            // Validate pricing
+            $request->validate([
+                'daily_rate' => 'required|numeric|min:10000',
+                'weekly_rate' => 'required|numeric|min:50000',
+                'monthly_rate' => 'required|numeric|min:200000'
+            ]);
+
+            // Update rental rate
+            $motor->rentalRate()->updateOrCreate(
+                ['motor_id' => $motor->id],
+                [
+                    'daily_rate' => $request->daily_rate,
+                    'weekly_rate' => $request->weekly_rate,
+                    'monthly_rate' => $request->monthly_rate
+                ]
+            );
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Harga sewa motor berhasil diperbarui',
+                'motor' => $motor->fresh(['rentalRate'])
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memperbarui harga sewa: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function financialReport(Request $request)
     {
         // Base query untuk revenue sharing yang sudah dibuat (payment sudah diverifikasi)
@@ -540,34 +653,49 @@ class AdminController extends Controller
             ->whereHas('owner')
             ->whereIn('status', ['pending', 'paid']); // Include both approved payments and completed rentals
 
-        // Filter berdasarkan tanggal jika ada (berdasarkan created_at dari revenue sharing)
-        if ($request->filled('date_from')) {
-            $query->where('created_at', '>=', $request->date_from);
-        }
-        if ($request->filled('date_to')) {
-            $query->where('created_at', '<=', $request->date_to . ' 23:59:59');
+        // Filter berdasarkan bulan jika ada
+        if ($request->filled('month')) {
+            $month = $request->month;
+            $year = now()->year; // Tahun sekarang
+            $query->whereMonth('created_at', $month)
+                  ->whereYear('created_at', $year);
         }
 
         // Get transactions dengan pagination
         $transactions = $query->orderBy('created_at', 'desc')->paginate(15);
         $transactions->appends($request->query());
 
-        // Hitung summary dari semua revenue sharing yang sudah dibuat
-        $allRevenueSharing = RevenueSharing::whereIn('status', ['pending', 'paid'])->get();
-        $totalRevenue = $allRevenueSharing->sum('total_amount');
-        $adminCommission = $allRevenueSharing->sum('admin_commission');
-        $ownerShare = $allRevenueSharing->sum('owner_amount');
+        // Hitung summary menggunakan aggregate functions (lebih cepat dari get()->sum())
+        $summaryQuery = RevenueSharing::selectRaw('
+                COUNT(*) as total_bookings,
+                SUM(total_amount) as total_revenue,
+                SUM(admin_commission) as admin_commission,
+                SUM(owner_amount) as owner_amount,
+                SUM(CASE WHEN status = "pending" THEN 1 ELSE 0 END) as pending_settlements,
+                SUM(CASE WHEN status = "paid" THEN 1 ELSE 0 END) as completed_settlements
+            ')
+            ->whereIn('status', ['pending', 'paid']);
+        
+        // Apply month filter to summary if selected
+        if ($request->filled('month')) {
+            $month = $request->month;
+            $year = now()->year;
+            $summaryQuery->whereMonth('created_at', $month)
+                        ->whereYear('created_at', $year);
+        }
+        
+        $summaryData = $summaryQuery->first();
 
         $summary = [
-            'total_revenue' => $totalRevenue,
-            'admin_commission' => $adminCommission,
-            'owner_amount' => $ownerShare,
-            'total_bookings' => $allRevenueSharing->count(),
-            'pending_settlements' => $allRevenueSharing->where('status', 'pending')->count(),
-            'completed_settlements' => $allRevenueSharing->where('status', 'paid')->count()
+            'total_revenue' => $summaryData->total_revenue ?? 0,
+            'admin_commission' => $summaryData->admin_commission ?? 0,
+            'owner_amount' => $summaryData->owner_amount ?? 0,
+            'total_bookings' => $summaryData->total_bookings ?? 0,
+            'pending_settlements' => $summaryData->pending_settlements ?? 0,
+            'completed_settlements' => $summaryData->completed_settlements ?? 0
         ];
 
-        // Data untuk chart - revenue per bulan dari revenue sharing (12 bulan terakhir)
+        // Data untuk chart - revenue per bulan dari revenue sharing (12 bulan terakhir) - REAL TIME
         $monthlyRevenue = RevenueSharing::selectRaw('MONTH(created_at) as month, YEAR(created_at) as year, SUM(total_amount) as total, SUM(admin_commission) as admin_total, SUM(owner_amount) as owner_total')
             ->whereIn('status', ['pending', 'paid'])
             ->where('created_at', '>=', now()->subMonths(12))
@@ -585,34 +713,68 @@ class AdminController extends Controller
             'owner_share' => $monthlyRevenue->pluck('owner_total')->toArray()
         ];
 
-        // Top motors berdasarkan booking yang completed
-        $topMotors = Booking::select('motor_id', DB::raw('COUNT(*) as booking_count'), DB::raw('SUM(price) as total_revenue'))
-            ->where('status', 'completed')
-            ->with(['motor'])
-            ->groupBy('motor_id')
+        // Top motors berdasarkan revenue sharing (lebih akurat)
+        $topMotorsQuery = RevenueSharing::join('bookings', 'revenue_sharings.booking_id', '=', 'bookings.id')
+            ->join('motors', 'bookings.motor_id', '=', 'motors.id')
+            ->select('motors.id', 'motors.brand', 'motors.model', 'motors.plate_number',
+                     DB::raw('COUNT(*) as booking_count'),
+                     DB::raw('SUM(revenue_sharings.total_amount) as total_revenue'))
+            ->whereIn('revenue_sharings.status', ['pending', 'paid']);
+        
+        // Apply month filter if selected
+        if ($request->filled('month')) {
+            $month = $request->month;
+            $year = now()->year;
+            $topMotorsQuery->whereMonth('revenue_sharings.created_at', $month)
+                          ->whereYear('revenue_sharings.created_at', $year);
+        }
+        
+        $topMotors = $topMotorsQuery->groupBy('motors.id', 'motors.brand', 'motors.model', 'motors.plate_number')
             ->orderBy('total_revenue', 'desc')
-            ->take(5)
+            ->limit(5)
             ->get()
             ->map(function ($item) {
                 return [
-                    'motor' => $item->motor,
+                    'motor' => (object)[
+                        'id' => $item->id,
+                        'brand' => $item->brand,
+                        'model' => $item->model,
+                        'plate_number' => $item->plate_number
+                    ],
                     'booking_count' => $item->booking_count,
                     'total_revenue' => $item->total_revenue
                 ];
             });
 
-        // Revenue sharing per pemilik
-        $ownerSummary = RevenueSharing::select('owner_id', DB::raw('COUNT(*) as transaction_count'), 
+        // Revenue sharing per pemilik dengan eager loading dan join
+        $ownerSummaryQuery = RevenueSharing::select('revenue_sharings.owner_id',
+                                               DB::raw('COUNT(*) as transaction_count'), 
                                                DB::raw('SUM(total_amount) as total_revenue'),
                                                DB::raw('SUM(owner_amount) as owner_earned'),
                                                DB::raw('SUM(admin_commission) as admin_earned'))
-            ->groupBy('owner_id')
+            ->join('users', 'revenue_sharings.owner_id', '=', 'users.id')
+            ->selectRaw('users.name as owner_name, users.email as owner_email')
+            ->selectRaw('(SELECT COUNT(*) FROM motors WHERE motors.owner_id = revenue_sharings.owner_id) as motor_count')
+            ->whereIn('revenue_sharings.status', ['pending', 'paid']);
+        
+        // Apply month filter if selected
+        if ($request->filled('month')) {
+            $month = $request->month;
+            $year = now()->year;
+            $ownerSummaryQuery->whereMonth('revenue_sharings.created_at', $month)
+                             ->whereYear('revenue_sharings.created_at', $year);
+        }
+        
+        $ownerSummary = $ownerSummaryQuery->groupBy('revenue_sharings.owner_id', 'users.name', 'users.email')
             ->orderBy('total_revenue', 'desc')
+            ->limit(10)
             ->get()
             ->map(function($item) {
-                $item->owner = User::find($item->owner_id);
-                // Hitung jumlah motor yang dimiliki owner
-                $item->motor_count = Motor::where('owner_id', $item->owner_id)->count();
+                $item->owner = (object)[
+                    'id' => $item->owner_id,
+                    'name' => $item->owner_name,
+                    'email' => $item->owner_email
+                ];
                 return $item;
             });
 
@@ -630,18 +792,20 @@ class AdminController extends Controller
             ->whereHas('owner')
             ->whereIn('status', ['pending', 'paid']);
 
-        // Filter berdasarkan tanggal jika ada
+        // Filter berdasarkan bulan jika ada
         $dateRange = null;
-        if ($request->filled('date_from') && $request->filled('date_to')) {
-            $query->where('created_at', '>=', $request->date_from)
-                  ->where('created_at', '<=', $request->date_to . ' 23:59:59');
-            $dateRange = date('d M Y', strtotime($request->date_from)) . ' - ' . date('d M Y', strtotime($request->date_to));
-        } elseif ($request->filled('date_from')) {
-            $query->where('created_at', '>=', $request->date_from);
-            $dateRange = 'Sejak ' . date('d M Y', strtotime($request->date_from));
-        } elseif ($request->filled('date_to')) {
-            $query->where('created_at', '<=', $request->date_to . ' 23:59:59');
-            $dateRange = 'Sampai ' . date('d M Y', strtotime($request->date_to));
+        if ($request->filled('month')) {
+            $month = $request->month;
+            $year = now()->year;
+            $query->whereMonth('created_at', $month)
+                  ->whereYear('created_at', $year);
+            
+            $monthNames = [
+                1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+                5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+            ];
+            $dateRange = $monthNames[$month] . ' ' . $year;
         }
 
         // Get all transactions untuk PDF (tanpa pagination)
@@ -650,12 +814,12 @@ class AdminController extends Controller
         // Hitung summary dari semua revenue sharing yang sudah dibuat
         $allRevenueSharing = RevenueSharing::whereIn('status', ['pending', 'paid']);
         
-        // Apply same date filter untuk summary
-        if ($request->filled('date_from')) {
-            $allRevenueSharing->where('created_at', '>=', $request->date_from);
-        }
-        if ($request->filled('date_to')) {
-            $allRevenueSharing->where('created_at', '<=', $request->date_to . ' 23:59:59');
+        // Apply same month filter untuk summary
+        if ($request->filled('month')) {
+            $month = $request->month;
+            $year = now()->year;
+            $allRevenueSharing->whereMonth('created_at', $month)
+                             ->whereYear('created_at', $year);
         }
         
         $filteredRevenueSharing = $allRevenueSharing->get();
@@ -672,50 +836,65 @@ class AdminController extends Controller
             'completed_settlements' => $filteredRevenueSharing->where('status', 'paid')->count()
         ];
 
-        // Top motors berdasarkan booking yang completed dalam periode yang dipilih
-        $topMotorsQuery = Booking::select('motor_id', DB::raw('COUNT(*) as booking_count'), DB::raw('SUM(price) as total_revenue'))
-            ->where('status', 'completed')
-            ->with(['motor']);
+        // Top motors berdasarkan revenue sharing dalam periode yang dipilih
+        $topMotorsQuery = RevenueSharing::join('bookings', 'revenue_sharings.booking_id', '=', 'bookings.id')
+            ->join('motors', 'bookings.motor_id', '=', 'motors.id')
+            ->select('motors.id', 'motors.brand', 'motors.model', 'motors.plate_number',
+                     DB::raw('COUNT(*) as booking_count'),
+                     DB::raw('SUM(revenue_sharings.total_amount) as total_revenue'))
+            ->whereIn('revenue_sharings.status', ['pending', 'paid']);
             
-        if ($request->filled('date_from')) {
-            $topMotorsQuery->where('created_at', '>=', $request->date_from);
-        }
-        if ($request->filled('date_to')) {
-            $topMotorsQuery->where('created_at', '<=', $request->date_to . ' 23:59:59');
+        if ($request->filled('month')) {
+            $month = $request->month;
+            $year = now()->year;
+            $topMotorsQuery->whereMonth('revenue_sharings.created_at', $month)
+                          ->whereYear('revenue_sharings.created_at', $year);
         }
             
-        $topMotors = $topMotorsQuery->groupBy('motor_id')
+        $topMotors = $topMotorsQuery->groupBy('motors.id', 'motors.brand', 'motors.model', 'motors.plate_number')
             ->orderBy('total_revenue', 'desc')
-            ->take(5)
+            ->limit(5)
             ->get()
             ->map(function ($item) {
                 return [
-                    'motor' => $item->motor,
+                    'motor' => (object)[
+                        'id' => $item->id,
+                        'brand' => $item->brand,
+                        'model' => $item->model,
+                        'plate_number' => $item->plate_number
+                    ],
                     'booking_count' => $item->booking_count,
                     'total_revenue' => $item->total_revenue
                 ];
             });
 
         // Revenue sharing per pemilik dalam periode yang dipilih
-        $ownerSummaryQuery = RevenueSharing::select('owner_id', DB::raw('COUNT(*) as transaction_count'), 
-                                                   DB::raw('SUM(total_amount) as total_revenue'),
-                                                   DB::raw('SUM(owner_amount) as owner_earned'),
-                                                   DB::raw('SUM(admin_commission) as admin_earned'))
-            ->groupBy('owner_id')
-            ->orderBy('total_revenue', 'desc');
+        $ownerSummaryQuery = RevenueSharing::select('revenue_sharings.owner_id',
+                                               DB::raw('COUNT(*) as transaction_count'), 
+                                               DB::raw('SUM(total_amount) as total_revenue'),
+                                               DB::raw('SUM(owner_amount) as owner_earned'),
+                                               DB::raw('SUM(admin_commission) as admin_earned'))
+            ->join('users', 'revenue_sharings.owner_id', '=', 'users.id')
+            ->selectRaw('users.name as owner_name, users.email as owner_email')
+            ->selectRaw('(SELECT COUNT(*) FROM motors WHERE motors.owner_id = revenue_sharings.owner_id) as motor_count')
+            ->whereIn('revenue_sharings.status', ['pending', 'paid']);
             
-        if ($request->filled('date_from')) {
-            $ownerSummaryQuery->where('created_at', '>=', $request->date_from);
-        }
-        if ($request->filled('date_to')) {
-            $ownerSummaryQuery->where('created_at', '<=', $request->date_to . ' 23:59:59');
+        if ($request->filled('month')) {
+            $month = $request->month;
+            $year = now()->year;
+            $ownerSummaryQuery->whereMonth('revenue_sharings.created_at', $month)
+                             ->whereYear('revenue_sharings.created_at', $year);
         }
             
-        $ownerSummary = $ownerSummaryQuery->get()
+        $ownerSummary = $ownerSummaryQuery->groupBy('revenue_sharings.owner_id', 'users.name', 'users.email')
+            ->orderBy('total_revenue', 'desc')
+            ->get()
             ->map(function($item) {
-                $item->owner = User::find($item->owner_id);
-                // Hitung jumlah motor yang dimiliki owner
-                $item->motor_count = Motor::where('owner_id', $item->owner_id)->count();
+                $item->owner = (object)[
+                    'id' => $item->owner_id,
+                    'name' => $item->owner_name,
+                    'email' => $item->owner_email
+                ];
                 return $item;
             });
 
@@ -797,7 +976,7 @@ class AdminController extends Controller
 
         // Filter by payment method
         if ($request->has('payment_method') && $request->payment_method !== '') {
-            $query->where('method', $request->payment_method);
+            $query->where('payment_method', $request->payment_method);
         }
 
         // Search by penyewa name or booking ID
@@ -851,7 +1030,9 @@ class AdminController extends Controller
     {
         $request->validate([
             'verification_notes' => 'nullable|string|max:500',
-            'action' => 'required|in:approve,reject'
+            'rejection_reason' => 'nullable|string|max:500',
+            'action' => 'nullable|in:approve,reject',
+            'status' => 'nullable|in:paid,failed'
         ]);
 
         $payment = \App\Models\Payment::with(['booking'])->findOrFail($id);
@@ -860,15 +1041,25 @@ class AdminController extends Controller
             return back()->with('error', 'Pembayaran sudah diverifikasi sebelumnya.');
         }
 
+        // Support both 'action' and 'status' parameters
+        $isApproved = false;
+        if ($request->has('action')) {
+            $isApproved = $request->action === 'approve';
+        } elseif ($request->has('status')) {
+            $isApproved = $request->status === 'paid';
+        }
+
+        $notes = $request->verification_notes ?? $request->rejection_reason;
+
         $payment->update([
             'verified_at' => now(),
             'verified_by' => Auth::id(),
-            'payment_notes' => $request->verification_notes,
-            'status' => $request->action === 'approve' ? 'paid' : 'failed'
+            'payment_notes' => $notes,
+            'status' => $isApproved ? 'paid' : 'failed'
         ]);
 
         // Update booking status based on verification
-        if ($request->action === 'approve') {
+        if ($isApproved) {
             $payment->booking->update(['status' => 'confirmed']);
             
             // Create revenue sharing record when payment is approved
@@ -911,14 +1102,14 @@ class AdminController extends Controller
         \App\Models\Notification::create([
             'user_id' => $payment->booking->renter_id,
             'title' => 'Status Pembayaran Diupdate',
-            'message' => $request->action === 'approve' 
+            'message' => $isApproved
                 ? 'Pembayaran Anda telah diverifikasi dan disetujui. Booking dikonfirmasi.'
                 : 'Pembayaran Anda ditolak. Silakan hubungi admin untuk informasi lebih lanjut.',
             'type' => 'payment_verification',
             'data' => json_encode([
                 'payment_id' => $payment->id,
                 'booking_id' => $payment->booking->id,
-                'action' => $request->action
+                'status' => $isApproved ? 'approved' : 'rejected'
             ])
         ]);
 
@@ -940,19 +1131,53 @@ class AdminController extends Controller
                 'verifiedBy'
             ])->findOrFail($id);
 
+            $statusBadge = '';
+            if ($payment->verified_at) {
+                if ($payment->status === 'paid') {
+                    $statusBadge = '<span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded inline-flex items-center"><i class="bi bi-check-circle mr-1"></i>Diverifikasi</span>';
+                } else {
+                    $statusBadge = '<span class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded inline-flex items-center"><i class="bi bi-x-circle mr-1"></i>Ditolak</span>';
+                }
+            } else {
+                $statusBadge = '<span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded inline-flex items-center"><i class="bi bi-clock mr-1"></i>Menunggu Verifikasi</span>';
+            }
+
             return response()->json([
                 'success' => true,
-                'payment' => $payment,
-                'booking' => $payment->booking,
-                'renter' => $payment->booking->renter,
-                'motor' => $payment->booking->motor,
-                'owner' => $payment->booking->motor->owner,
-                'verified_by' => $payment->verifiedBy,
-                'payment_proof_url' => $payment->payment_proof ? asset('storage/' . $payment->payment_proof) : null,
-                'formatted_amount' => 'Rp ' . number_format((float)$payment->amount, 0, ',', '.'),
-                'formatted_payment_method' => $payment->formatted_payment_method,
-                'is_verified' => $payment->is_verified,
-                'can_verify' => !$payment->verified_at
+                'payment' => [
+                    'id' => $payment->id,
+                    'amount' => $payment->amount,
+                    'formatted_amount' => number_format($payment->amount, 0, ',', '.'),
+                    'payment_method' => $payment->payment_method,
+                    'formatted_payment_method' => $payment->formatted_payment_method,
+                    'status' => $payment->status,
+                    'status_badge' => $statusBadge,
+                    'payment_notes' => $payment->payment_notes,
+                    'proof_image_url' => $payment->payment_proof ? asset('storage/' . $payment->payment_proof) : null,
+                    'formatted_date' => $payment->created_at->format('d M Y H:i'),
+                    'verified_at' => $payment->verified_at,
+                    'formatted_verified_at' => $payment->verified_at ? $payment->verified_at->format('d M Y H:i') : null,
+                    'verified_by' => $payment->verifiedBy ? [
+                        'name' => $payment->verifiedBy->name,
+                        'email' => $payment->verifiedBy->email
+                    ] : null,
+                    'booking' => [
+                        'id' => $payment->booking->id,
+                        'duration' => $payment->booking->duration,
+                        'formatted_rental_period' => $payment->booking->start_date->format('d M Y') . ' - ' . $payment->booking->end_date->format('d M Y'),
+                        'renter' => [
+                            'name' => $payment->booking->renter->name,
+                            'email' => $payment->booking->renter->email,
+                            'phone' => $payment->booking->renter->phone ?? '-'
+                        ],
+                        'motor' => [
+                            'brand' => $payment->booking->motor->brand,
+                            'model' => $payment->booking->motor->model,
+                            'type_cc' => $payment->booking->motor->type_cc,
+                            'plate_number' => $payment->booking->motor->plate_number
+                        ]
+                    ]
+                ]
             ]);
         } catch (\Exception $e) {
             Log::error("Error getting payment detail: " . $e->getMessage());

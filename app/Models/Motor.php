@@ -22,6 +22,7 @@ class Motor extends Model
         'photo',
         'document',
         'description',
+        'maintenance_note',
         'verified_at',
         'verified_by'
     ];

@@ -67,6 +67,7 @@
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Tanggal Sewa</th>
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Durasi</th>
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Total Harga</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Metode Pembayaran</th>
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Status</th>
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Aksi</th>
             </tr>
@@ -97,6 +98,29 @@
                     Rp {{ number_format($booking->price, 0, ',', '.') }}
                 </td>
                 <td class="px-4 py-3">
+                    @if($booking->payment_method)
+                        @if($booking->payment_method === 'dana')
+                            <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
+                                <i class="bi bi-wallet2 mr-1"></i>DANA
+                            </span>
+                        @elseif($booking->payment_method === 'gopay')
+                            <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded">
+                                <i class="bi bi-wallet2 mr-1"></i>GoPay
+                            </span>
+                        @elseif($booking->payment_method === 'bank')
+                            <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded">
+                                <i class="bi bi-bank mr-1"></i>Transfer Bank
+                            </span>
+                        @elseif($booking->payment_method === 'shopeepay')
+                            <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded">
+                                <i class="bi bi-wallet2 mr-1"></i>ShopeePay
+                            </span>
+                        @endif
+                    @else
+                        <span class="text-xs text-gray-400 italic">-</span>
+                    @endif
+                </td>
+                <td class="px-4 py-3">
                     <span class="px-2 py-1 text-xs rounded
                         @if($booking->status == 'pending') bg-yellow-100 text-yellow-700
                         @elseif($booking->status == 'confirmed') bg-blue-100 text-blue-700
@@ -125,25 +149,13 @@
                                 title="Batalkan">
                             <i class="bi bi-x"></i>
                         </button>
-                        @elseif($booking->status == 'confirmed')
-                        <button onclick="startBooking({{ $booking->id }})" 
-                                class="p-1.5 text-blue-600 hover:bg-blue-50 rounded" 
-                                title="Mulai Sewa">
-                            <i class="bi bi-play"></i>
-                        </button>
-                        @elseif($booking->status == 'ongoing')
-                        <button onclick="completeBooking({{ $booking->id }})" 
-                                class="p-1.5 text-green-600 hover:bg-green-50 rounded" 
-                                title="Selesaikan">
-                            <i class="bi bi-check-all"></i>
-                        </button>
                         @endif
                     </div>
                 </td>
             </tr>
             @empty
             <tr>
-                <td colspan="8" class="px-4 py-8 text-center text-gray-500">
+                <td colspan="9" class="px-4 py-8 text-center text-gray-500">
                     <i class="bi bi-inbox text-4xl mb-2 block"></i>
                     Tidak ada pemesanan ditemukan
                 </td>

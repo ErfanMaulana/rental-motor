@@ -224,6 +224,14 @@ use Illuminate\Support\Facades\Storage;
                                 </div>
                             @endif
                             
+                            <!-- Edit Price Option -->
+                            <button type="button" 
+                                    @click="open = false; showEditPriceModal({{ $motor->id }}, '{{ $motor->brand }} {{ $motor->model }}', {{ $motor->rentalRate ? $motor->rentalRate->daily_rate : 0 }}, {{ $motor->rentalRate ? $motor->rentalRate->weekly_rate : 0 }}, {{ $motor->rentalRate ? $motor->rentalRate->monthly_rate : 0 }})"
+                                    class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-yellow-50 hover:text-yellow-600 flex items-center transition border-t border-gray-100">
+                                <i class="bi bi-currency-dollar mr-2"></i>
+                                Edit Harga Sewa
+                            </button>
+                            
                             <!-- Delete Option -->
                             @php
                                 $hasActiveBookings = $motor->bookings()
@@ -585,6 +593,122 @@ use Illuminate\Support\Facades\Storage;
     </div>
 </div>
 
+<!-- Edit Price Modal -->
+<div x-data="{ open: false, motorId: null, motorName: '', dailyRate: 0, weeklyRate: 0, monthlyRate: 0 }" 
+     x-show="open" 
+     @open-edit-price-modal.window="open = true; motorId = $event.detail.motorId; motorName = $event.detail.motorName; dailyRate = $event.detail.dailyRate; weeklyRate = $event.detail.weeklyRate; monthlyRate = $event.detail.monthlyRate"
+     @keydown.escape.window="open = false"
+     style="display: none;"
+     class="fixed inset-0 z-50 overflow-y-auto"
+     id="editPriceModal">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div x-show="open" 
+             x-transition:enter="ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
+             @click="open = false"></div>
+
+        <!-- Modal panel -->
+        <div x-show="open"
+             x-transition:enter="ease-out duration-300"
+             x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+             x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+             x-transition:leave="ease-in duration-200"
+             x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+             x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+             class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            
+            <form method="POST" id="editPriceForm" onsubmit="return submitEditPrice(event);">
+                @csrf
+                
+                <input type="hidden" id="editMotorId" name="motor_id" x-model="motorId">
+                
+                <div class="bg-white px-6 pt-5 pb-4">
+                    <div class="flex items-center mb-4">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100">
+                            <i class="bi bi-currency-dollar text-yellow-600 text-2xl"></i>
+                        </div>
+                    </div>
+                    <div class="text-center mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Edit Harga Sewa Motor</h3>
+                        <p class="text-sm text-gray-600" x-text="motorName"></p>
+                        <p class="text-xs text-gray-500 mt-2">Ubah harga sewa motor untuk tarif harian, mingguan, dan bulanan</p>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Tarif Harian <span class="text-red-600">*</span>
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-2 text-gray-500">Rp</span>
+                                <input type="number" 
+                                       id="editDailyRateInput"
+                                       name="daily_rate"
+                                       x-model="dailyRate"
+                                       min="10000"
+                                       class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                                       placeholder="Contoh: 50000"
+                                       @input="weeklyRate = Math.floor(dailyRate * 7 * 0.9); monthlyRate = Math.floor(dailyRate * 30 * 0.8)"
+                                       required>
+                            </div>
+                            <small class="text-gray-500 text-xs">Minimal Rp 10.000</small>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tarif Mingguan</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-2 text-gray-500">Rp</span>
+                                <input type="number" 
+                                       id="editWeeklyRateInput"
+                                       name="weekly_rate"
+                                       x-model="weeklyRate"
+                                       min="50000"
+                                       class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 bg-gray-50"
+                                       placeholder="Otomatis dari tarif harian"
+                                       readonly>
+                            </div>
+                            <small class="text-gray-500 text-xs">Auto: diskon 10% dari 7x tarif harian</small>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tarif Bulanan</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-2 text-gray-500">Rp</span>
+                                <input type="number" 
+                                       id="editMonthlyRateInput"
+                                       name="monthly_rate"
+                                       x-model="monthlyRate"
+                                       min="200000"
+                                       class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 bg-gray-50"
+                                       placeholder="Otomatis dari tarif harian"
+                                       readonly>
+                            </div>
+                            <small class="text-gray-500 text-xs">Auto: diskon 20% dari 30x tarif harian</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 px-6 py-3 flex gap-3">
+                    <button type="button" 
+                            @click="open = false"
+                            class="flex-1 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
+                        <i class="bi bi-x-lg mr-1"></i>Batal
+                    </button>
+                    <button type="submit" 
+                            id="editPriceSubmitBtn"
+                            class="flex-1 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition">
+                        <i class="bi bi-save mr-1"></i>Simpan Perubahan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('styles')
@@ -746,6 +870,72 @@ function calculateRatesFromDaily(dailyRate) {
         if (weeklyInput) weeklyInput.value = weeklyRate;
         if (monthlyInput) monthlyInput.value = monthlyRate;
     }
+}
+
+// Function to show edit price modal
+function showEditPriceModal(motorId, motorName, dailyRate, weeklyRate, monthlyRate) {
+    window.dispatchEvent(new CustomEvent('open-edit-price-modal', {
+        detail: { motorId, motorName, dailyRate, weeklyRate, monthlyRate }
+    }));
+}
+
+// Function to submit edit price form
+function submitEditPrice(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const motorId = document.getElementById('editMotorId').value;
+    const dailyRate = document.getElementById('editDailyRateInput').value;
+    const weeklyRate = document.getElementById('editWeeklyRateInput').value;
+    const monthlyRate = document.getElementById('editMonthlyRateInput').value;
+    
+    if (!dailyRate || dailyRate < 10000) {
+        showAlert('error', 'Tarif harian minimal Rp 10.000!');
+        return false;
+    }
+    
+    const submitBtn = document.getElementById('editPriceSubmitBtn');
+    const originalText = submitBtn.innerHTML;
+    
+    // Show loading state
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="inline-block animate-spin mr-2">⏳</span>Menyimpan...';
+    
+    // Send update request
+    fetch(`/admin/motors/${motorId}/update-price`, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            daily_rate: parseFloat(dailyRate),
+            weekly_rate: parseFloat(weeklyRate),
+            monthly_rate: parseFloat(monthlyRate)
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('success', 'Harga sewa berhasil diperbarui!');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            showAlert('error', data.message || 'Gagal memperbarui harga sewa!');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('error', 'Terjadi kesalahan saat memperbarui harga!');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    });
+    
+    return false;
 }
 
 // Delete Motor Functions

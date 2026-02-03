@@ -267,7 +267,9 @@ class PemilikController extends Controller
             'plate_number' => 'required|string|max:20|unique:motors,plate_number,' . $motor->id,
             'description' => 'nullable|string|max:1000',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'document' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
+            'document' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'is_maintenance' => 'nullable|boolean',
+            'maintenance_note' => 'nullable|string|max:500'
         ]);
 
         // Upload gambar jika ada
@@ -300,7 +302,9 @@ class PemilikController extends Controller
             'plate_number' => strtoupper($request->plate_number),
             'description' => $request->description,
             'photo' => $photoPath,
-            'document' => $documentPath
+            'document' => $documentPath,
+            'status' => $request->is_maintenance ? 'maintenance' : ($motor->status == 'maintenance' ? 'available' : $motor->status),
+            'maintenance_note' => $request->is_maintenance ? $request->maintenance_note : null
         ]);
 
         return redirect()->route('pemilik.motors')
@@ -391,7 +395,18 @@ class PemilikController extends Controller
 
         $activeBookings = Booking::whereHas('motor', function($q) {
             $q->where('owner_id', Auth::id());
-        })->where('status', 'active')->count();
+        })
+        ->where(function($q) {
+            // Booking dengan status active
+            $q->where('status', 'active')
+              // ATAU booking confirmed yang sedang berlangsung
+              ->orWhere(function($q2) {
+                  $q2->where('status', 'confirmed')
+                     ->where('start_date', '<=', now()->format('Y-m-d'))
+                     ->where('end_date', '>=', now()->format('Y-m-d'));
+              });
+        })
+        ->count();
 
         $pendingBookings = Booking::whereHas('motor', function($q) {
             $q->where('owner_id', Auth::id());
@@ -444,12 +459,16 @@ class PemilikController extends Controller
         })->with(['booking.motor', 'booking.user']);
 
         // Apply filters to both queries
-        if ($request->has('month') && $request->month !== '') {
-            $totalQuery->whereMonth('created_at', $request->month);
-            $paginatedQuery->whereMonth('created_at', $request->month);
-        }
-
-        if ($request->has('year') && $request->year !== '') {
+        if ($request->filled('month')) {
+            $month = $request->month;
+            $year = $request->filled('year') ? $request->year : now()->year;
+            
+            $totalQuery->whereMonth('created_at', $month)
+                      ->whereYear('created_at', $year);
+            $paginatedQuery->whereMonth('created_at', $month)
+                          ->whereYear('created_at', $year);
+        } elseif ($request->filled('year')) {
+            // Jika hanya tahun yang dipilih tanpa bulan
             $totalQuery->whereYear('created_at', $request->year);
             $paginatedQuery->whereYear('created_at', $request->year);
         }

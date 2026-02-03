@@ -63,9 +63,11 @@ class PenyewaController extends Controller
             ->limit(5)
             ->get();
 
-        // Featured motors untuk dashboard
+        // Featured motors untuk dashboard - hanya motor yang sudah diverifikasi
         $featuredMotors = Motor::where('status', 'available')
-            ->with(['rentalRate'])
+            ->whereNotNull('verified_at')
+            ->with(['rentalRate', 'owner'])
+            ->orderBy('verified_at', 'desc')
             ->limit(6)
             ->get();
 
@@ -85,8 +87,11 @@ class PenyewaController extends Controller
      */
     public function motors(Request $request)
     {
+        // Hanya tampilkan motor yang sudah diverifikasi admin
         $query = Motor::where('status', 'available')
-            ->with(['rentalRate', 'owner']);
+            ->whereNotNull('verified_at')
+            ->with(['rentalRate', 'owner'])
+            ->orderBy('verified_at', 'desc');
 
         // Filter by brand
         if ($request->filled('brand')) {
@@ -124,7 +129,9 @@ class PenyewaController extends Controller
      */
     public function motorDetail($id)
     {
+        // Hanya tampilkan motor yang sudah diverifikasi admin
         $motor = Motor::where('status', 'available')
+            ->whereNotNull('verified_at')
             ->with(['rentalRate', 'owner'])
             ->findOrFail($id);
 
@@ -136,7 +143,9 @@ class PenyewaController extends Controller
      */
     public function getMotorDetailAjax($id)
     {
+        // Hanya tampilkan motor yang sudah diverifikasi admin
         $motor = Motor::where('status', 'available')
+            ->whereNotNull('verified_at')
             ->with(['rentalRate', 'owner'])
             ->findOrFail($id);
 
@@ -179,6 +188,7 @@ class PenyewaController extends Controller
             'start_date' => 'required|date|after_or_equal:today',
             'end_date' => 'required|date|after_or_equal:start_date',
             'package_type' => 'required|in:daily,weekly,monthly',
+            'payment_method' => 'required|in:dana,gopay,bank,shopeepay',
             'notes' => 'nullable|string|max:500'
         ]);
 
@@ -231,6 +241,16 @@ class PenyewaController extends Controller
         $discount = $packageDiscounts[$request->package_type];
         $totalAmount = $rentalRate->daily_rate * $totalDays * $discount;
 
+        // Tentukan status berdasarkan tanggal mulai
+        $bookingStatus = 'pending';
+        if ($startDate->isToday()) {
+            // Jika sewa mulai hari ini, langsung active
+            $bookingStatus = 'active';
+        } elseif ($startDate->isFuture()) {
+            // Jika sewa masa depan, status confirmed
+            $bookingStatus = 'confirmed';
+        }
+
         // Buat booking
         $booking = Booking::create([
             'renter_id' => Auth::id(),
@@ -241,9 +261,44 @@ class PenyewaController extends Controller
             'end_date' => $request->end_date,
             'duration_type' => 'daily',
             'price' => $totalAmount,
-            'status' => 'pending',
+            'payment_method' => $request->payment_method,
+            'status' => $bookingStatus,
             'notes' => $request->notes
         ]);
+
+        // Auto-create payment record
+        try {
+            $paymentMethodMap = [
+                'dana' => 'e_wallet',
+                'gopay' => 'e_wallet',
+                'shopeepay' => 'e_wallet',
+                'bank' => 'bank_transfer'
+            ];
+
+            $payment = Payment::create([
+                'booking_id' => $booking->id,
+                'amount' => $totalAmount,
+                'method' => $paymentMethodMap[$request->payment_method] ?? 'e_wallet',
+                'payment_method' => $request->payment_method,
+                'status' => 'paid',
+                'paid_at' => now(),
+                'verified_at' => now(), // Auto-verified untuk e-wallet dan bank transfer
+                'verified_by' => 1, // System auto-verify (admin ID 1)
+                'payment_notes' => 'Pembayaran otomatis terverifikasi via ' . strtoupper($request->payment_method),
+                'notes' => 'Pembayaran via ' . strtoupper($request->payment_method)
+            ]);
+
+            \Log::info('Payment created successfully', [
+                'booking_id' => $booking->id,
+                'payment_id' => $payment->id,
+                'amount' => $totalAmount
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to create payment', [
+                'booking_id' => $booking->id,
+                'error' => $e->getMessage()
+            ]);
+        }
 
         // TODO: Add notification system when Notification model is available
         // For now, we'll skip notifications
@@ -399,11 +454,42 @@ class PenyewaController extends Controller
         ->findOrFail($id);
 
         if ($payment->status !== 'paid') {
-            return redirect()->route('penyewa.payment.history')
+            return redirect()->route('penyewa.payment-history')
                 ->with('error', 'Invoice hanya tersedia untuk pembayaran yang sudah lunas.');
         }
 
         return view('penyewa.payment-invoice', compact('payment'));
+    }
+
+    /**
+     * Download payment invoice as PDF
+     */
+    public function downloadInvoicePDF($id)
+    {
+        $payment = Payment::whereHas('booking', function($query) {
+            $query->where('renter_id', Auth::id());
+        })
+        ->with(['booking', 'booking.motor', 'booking.motor.owner'])
+        ->findOrFail($id);
+
+        if ($payment->status !== 'paid') {
+            return redirect()->route('penyewa.payment-history')
+                ->with('error', 'Invoice hanya tersedia untuk pembayaran yang sudah lunas.');
+        }
+
+        // Generate PDF
+        $pdf = \PDF::loadView('penyewa.payment-invoice-pdf', compact('payment'));
+        
+        // Create filename: Invoice_#ID_NamaPenyewa_Tanggal.pdf
+        $filename = sprintf(
+            'Invoice_#%d_%s_%s.pdf',
+            $payment->id,
+            str_replace(' ', '_', $payment->booking->renter->name),
+            now()->format('Ymd')
+        );
+        
+        // Download PDF with custom filename
+        return $pdf->download($filename);
     }
 
     /**
@@ -665,14 +751,14 @@ class PenyewaController extends Controller
         $user = Auth::user();
         $format = $request->get('format', 'pdf');
         
-        // Get user's bookings with motor relationship - fix column name to user_id
-        $bookings = Booking::where('user_id', $user->id)
+        // Get user's bookings with motor relationship - use renter_id
+        $bookings = Booking::where('renter_id', $user->id)
             ->whereHas('motor')
             ->with(['motor.owner', 'payment'])
             ->orderBy('created_at', 'desc')
             ->get();
         
-        // Get user's ratings
+        // Get user's ratings - use user_id
         $ratings = Rating::where('user_id', $user->id)
             ->whereHas('motor')
             ->with(['motor'])

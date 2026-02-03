@@ -12,6 +12,12 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
+        // Update booking status setiap jam untuk real-time
+        $schedule->command('bookings:update-status')
+                 ->hourly()
+                 ->withoutOverlapping()
+                 ->runInBackground();
+
         // Update motor status dan booking status setiap hari pada jam 00:01
         $schedule->command('motor:update-status')
                  ->dailyAt('00:01')

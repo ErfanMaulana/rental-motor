@@ -46,8 +46,15 @@ Route::get('/', function () {
         }
     }
     
-    // Jika belum login, tampilkan halaman welcome
-    return view('welcome');
+    // Ambil semua motor yang sudah diverifikasi untuk ditampilkan di halaman welcome
+    $motors = \App\Models\Motor::where('status', 'available')
+        ->whereNotNull('verified_at')
+        ->with(['rentalRate', 'owner'])
+        ->orderBy('verified_at', 'desc')
+        ->get();
+    
+    // Jika belum login, tampilkan halaman welcome dengan data motor
+    return view('welcome', compact('motors'));
 });
 
 Route::get('/dashboard', function () {
@@ -100,6 +107,7 @@ Route::middleware(['auth', 'role:penyewa'])->prefix('penyewa')->name('penyewa.')
     Route::get('/payment-history', [PenyewaController::class, 'paymentHistory'])->name('payment-history');
     Route::get('/payments/{id}/detail', [PenyewaController::class, 'getPaymentDetailAjax'])->name('payment.detail.ajax');
     Route::get('/payments/{id}/invoice', [PenyewaController::class, 'paymentInvoice'])->name('payment.invoice');
+    Route::get('/payments/{id}/download-pdf', [PenyewaController::class, 'downloadInvoicePDF'])->name('payment.download-pdf');
     
     // Rating routes
     Route::post('/ratings', [PenyewaController::class, 'storeRating'])->name('rating.store');
@@ -160,12 +168,14 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/motors/{id}', [AdminController::class, 'motorDetail'])->name('motor.detail');
     Route::get('/motors/{id}/ajax', [AdminController::class, 'getMotorDetailAjax'])->name('motor.detail.ajax');
     Route::patch('/motors/{motor}/verify', [AdminController::class, 'verifyMotor'])->name('motor.verify');
+    Route::post('/motors/{id}/update-price', [AdminController::class, 'updateMotorPrice'])->name('motor.update-price');
     Route::delete('/motors/{id}', [AdminController::class, 'deleteMotor'])->name('motor.delete');
     
     // Booking management
     Route::get('/bookings', [AdminController::class, 'bookings'])->name('bookings');
     Route::get('/bookings/export', [AdminController::class, 'exportBookingsPdf'])->name('bookings.export');
     Route::get('/bookings/{id}', [AdminController::class, 'showBooking'])->name('bookings.show');
+    Route::get('/bookings/{id}/detail', [AdminController::class, 'getBookingDetailAjax'])->name('bookings.detail.ajax');
     Route::patch('/bookings/{id}/status', [AdminController::class, 'updateBookingStatus'])->name('bookings.status');
     
     // Payment verification

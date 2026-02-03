@@ -15,15 +15,15 @@
     <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
         <div class="text-center">
             <p class="text-xs text-gray-500 mb-1">Total Pendapatan</p>
-            <p class="text-2xl font-semibold text-gray-900">{{ number_format($summary['total_revenue'] / 1000000, 1) }}M</p>
+            <p class="text-2xl font-semibold text-gray-900">Rp {{ number_format($summary['total_revenue'], 0, ',', '.') }}</p>
         </div>
         <div class="text-center">
             <p class="text-xs text-gray-500 mb-1">Komisi Admin (30%)</p>
-            <p class="text-2xl font-semibold text-green-600">{{ number_format($summary['admin_commission'] / 1000000, 1) }}M</p>
+            <p class="text-2xl font-semibold text-green-600">Rp {{ number_format($summary['admin_commission'], 0, ',', '.') }}</p>
         </div>
         <div class="text-center">
             <p class="text-xs text-gray-500 mb-1">Bagian Pemilik (70%)</p>
-            <p class="text-2xl font-semibold text-yellow-600">{{ number_format($summary['owner_amount'] / 1000000, 1) }}M</p>
+            <p class="text-2xl font-semibold text-yellow-600">Rp {{ number_format($summary['owner_amount'], 0, ',', '.') }}</p>
         </div>
         <div class="text-center">
             <p class="text-xs text-gray-500 mb-1">Total Transaksi</p>
@@ -33,12 +33,22 @@
 </div>
 
 <div class="bg-white border border-gray-200 rounded-lg p-4 mb-6">
-    <form method="GET" action="{{ route('admin.financial-report') }}" class="flex flex-wrap gap-3">
-        <input type="date" name="date_from" value="{{ request('date_from') }}" class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500">
-        <input type="date" name="date_to" value="{{ request('date_to') }}" class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500">
-        <button type="submit" class="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-            <i class="bi bi-search"></i> Filter Laporan
-        </button>
+    <form method="GET" action="{{ route('admin.financial-report') }}" class="flex flex-wrap gap-3 items-center">
+        <select name="month" onchange="this.form.submit()" class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500">
+            <option value="">Semua Bulan</option>
+            <option value="1" {{ request('month') == '1' ? 'selected' : '' }}>Januari</option>
+            <option value="2" {{ request('month') == '2' ? 'selected' : '' }}>Februari</option>
+            <option value="3" {{ request('month') == '3' ? 'selected' : '' }}>Maret</option>
+            <option value="4" {{ request('month') == '4' ? 'selected' : '' }}>April</option>
+            <option value="5" {{ request('month') == '5' ? 'selected' : '' }}>Mei</option>
+            <option value="6" {{ request('month') == '6' ? 'selected' : '' }}>Juni</option>
+            <option value="7" {{ request('month') == '7' ? 'selected' : '' }}>Juli</option>
+            <option value="8" {{ request('month') == '8' ? 'selected' : '' }}>Agustus</option>
+            <option value="9" {{ request('month') == '9' ? 'selected' : '' }}>September</option>
+            <option value="10" {{ request('month') == '10' ? 'selected' : '' }}>Oktober</option>
+            <option value="11" {{ request('month') == '11' ? 'selected' : '' }}>November</option>
+            <option value="12" {{ request('month') == '12' ? 'selected' : '' }}>Desember</option>
+        </select>
         <a href="{{ route('admin.financial-report') }}" class="px-3 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
             <i class="bi bi-arrow-clockwise"></i> Reset Filter
         </a>
@@ -55,7 +65,9 @@
     <div class="lg:col-span-2 bg-white border border-gray-200 rounded-lg p-4">
         <h5 class="text-lg font-semibold text-gray-900 mb-4">Trend Pendapatan</h5>
         @if(count($chartData['labels'] ?? []) > 0)
-            <canvas id="revenueChart" style="height: 300px;"></canvas>
+            <div style="height: 300px; width: 100%; position: relative;">
+                <canvas id="revenueChart" width="800" height="300"></canvas>
+            </div>
         @else
             <div class="py-12 text-center text-gray-400">
                 <i class="bi bi-graph-up text-4xl mb-2 block"></i>
@@ -180,7 +192,7 @@
                 <tr class="hover:bg-gray-50">
                     <td class="px-4 py-3 text-sm">
                         <div class="font-medium text-gray-900">{{ $ownerData->owner ? $ownerData->owner->name : 'N/A' }}</div>
-                        <div class="text-xs text-gray-500">{{ $ownerData->owner ? $ownerData->owner->phone : 'N/A' }}</div>
+                        <div class="text-xs text-gray-500">{{ $ownerData->owner ? $ownerData->owner->email : 'N/A' }}</div>
                     </td>
                     <td class="px-4 py-3">
                         <span class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">{{ $ownerData->motor_count ?? 0 }}</span>
@@ -226,7 +238,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         backgroundColor: 'rgba(59, 130, 246, 0.1)',
                         borderWidth: 3,
                         fill: true,
-                        tension: 0.4
+                        tension: 0
                     },
                     {
                         label: 'Komisi Admin (30%)',
@@ -235,7 +247,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         backgroundColor: 'rgba(34, 197, 94, 0.1)',
                         borderWidth: 2,
                         borderDash: [5, 5],
-                        fill: false
+                        fill: false,
+                        tension: 0
                     },
                     {
                         label: 'Bagian Pemilik (70%)',
@@ -244,13 +257,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         backgroundColor: 'rgba(249, 115, 22, 0.1)',
                         borderWidth: 2,
                         borderDash: [10, 5],
-                        fill: false
+                        fill: false,
+                        tension: 0
                     }
                 ]
             },
             options: {
-                responsive: true,
+                responsive: false,
                 maintainAspectRatio: false,
+                animation: false,
                 scales: {
                     y: {
                         beginAtZero: true,
@@ -267,6 +282,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         position: 'top'
                     },
                     tooltip: {
+                        animation: false,
                         callbacks: {
                             label: function(context) {
                                 return context.dataset.label + ': Rp ' + new Intl.NumberFormat('id-ID').format(context.parsed.y);
