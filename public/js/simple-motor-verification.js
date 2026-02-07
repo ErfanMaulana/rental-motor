@@ -76,8 +76,8 @@ function showMotorDetail(motorId) {
             
             content.innerHTML = `
                 ${photoUrl ? 
-                    `<img src="${photoUrl}" class="w-full rounded-lg mb-2" alt="${motor.brand} ${motor.model || ''}" style="height: 160px; object-fit: cover;">` :
-                    `<div class="bg-gray-100 rounded-lg flex items-center justify-center mb-2" style="height: 160px;">
+                    `<img src="${photoUrl}" class="rounded-lg mb-2 mx-auto" alt="${motor.brand} ${motor.model || ''}" style="width: 75%; height: auto; aspect-ratio: 4/3; object-fit: contain; background-color: #f3f4f6;">` :
+                    `<div class="bg-gray-100 rounded-lg flex items-center justify-center mb-2 mx-auto" style="width: 75%; aspect-ratio: 4/3;">
                         <i class="bi bi-motorcycle text-gray-400 text-4xl"></i>
                     </div>`
                 }

@@ -17,14 +17,6 @@
                         Dari motor matic untuk dalam kota hingga motor sport untuk perjalanan jauh.
                     </p>
                     @guest
-                        <div class="d-flex gap-3 mb-4">
-                            <a href="{{ route('register') }}" class="btn btn-warning btn-lg px-4 py-3 fw-semibold">
-                                <i class="bi bi-person-plus me-2"></i>Mulai Sekarang
-                            </a>
-                            <a href="#kategori-motor" class="btn btn-outline-light btn-lg px-4 py-3">
-                                <i class="bi bi-search me-2"></i>Lihat Motor
-                            </a>
-                        </div>
                     @else
                         <div class="d-flex gap-3 mb-4">
                             @if(auth()->user()->role === 'admin')
@@ -148,7 +140,7 @@
 </section>
 
 <!-- Motor Available Section -->
-<section id="kategori-motor" class="py-5" style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);">
+<section id="kategori-motor" class="py-5 bg-white">
     <div class="container">
         <div class="row mb-5">
             <div class="col-12 text-center">
@@ -160,8 +152,8 @@
         @if($motors->count() > 0)
         <div class="row g-4">
             @foreach($motors as $motor)
-            <div class="col-lg-4 col-md-6">
-                <div class="card h-100 border-0 shadow-sm hover:shadow-lg transition-all">
+            <div class="col-lg-3 col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
                     <!-- Badge Status -->
                     <div class="position-absolute top-0 start-0 m-3 z-1">
                         <span class="badge bg-success">Tersedia</span>
@@ -222,7 +214,7 @@
                         <div class="text-center mt-3">
                             <small class="text-success">
                                 <i class="bi bi-patch-check-fill me-1"></i>
-                                Diverifikasi {{ $motor->verified_at->diffForHumans() }}
+                                Diverifikasi {{ $motor->verified_at->locale('id')->diffForHumans() }}
                             </small>
                         </div>
                     </div>

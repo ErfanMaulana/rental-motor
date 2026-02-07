@@ -42,6 +42,13 @@ class PenyewaController extends Controller
         // Check verification status for display
         $isVerified = $penyewa->verified_at && $penyewa->status === 'verified';
         
+        // Auto-update status booking yang sudah melewati tanggal berakhir
+        $today = Carbon::today();
+        Booking::where('renter_id', $penyewa->id)
+            ->whereIn('status', ['confirmed', 'active'])
+            ->where('end_date', '<', $today)
+            ->update(['status' => 'completed']);
+        
         // Statistik
         $totalBookings = Booking::where('renter_id', $penyewa->id)->count();
         $activeBookings = Booking::where('renter_id', $penyewa->id)
@@ -312,6 +319,13 @@ class PenyewaController extends Controller
      */
     public function bookings()
     {
+        // Auto-update status booking yang sudah melewati tanggal berakhir
+        $today = Carbon::today();
+        Booking::where('renter_id', Auth::id())
+            ->whereIn('status', ['confirmed', 'active'])
+            ->where('end_date', '<', $today)
+            ->update(['status' => 'completed']);
+
         $bookings = Booking::where('renter_id', Auth::id())
             ->with(['motor', 'motor.rentalRate'])
             ->orderBy('created_at', 'desc')

@@ -21,6 +21,12 @@ class AdminController extends Controller
 {
     public function dashboard()
     {
+        // Auto-update status booking yang sudah melewati tanggal berakhir
+        $today = Carbon::today();
+        Booking::whereIn('status', ['confirmed', 'active'])
+            ->where('end_date', '<', $today)
+            ->update(['status' => 'completed']);
+        
         $totalUsers = User::count();
         $totalPenyewa = User::where('role', 'penyewa')->count();
         $totalPemilik = User::where('role', 'pemilik')->count();
@@ -284,6 +290,12 @@ class AdminController extends Controller
 
     public function bookings(Request $request)
     {
+        // Auto-update status booking yang sudah melewati tanggal berakhir
+        $today = Carbon::today();
+        Booking::whereIn('status', ['confirmed', 'active'])
+            ->where('end_date', '<', $today)
+            ->update(['status' => 'completed']);
+        
         $query = Booking::with(['renter', 'motor']);
 
         if ($request->has('status') && $request->status !== '') {

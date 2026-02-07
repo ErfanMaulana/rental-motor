@@ -34,7 +34,7 @@
         body {
             background-color: var(--fann-light);
             color: var(--fann-dark);
-            padding-top: 76px; /* Space for fixed navbar */
+            padding-top: 0;
         }
 
         .btn-primary {
@@ -80,11 +80,16 @@
 
         .feature-card {
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
         }
 
         .feature-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-color: #cbd5e1;
         }
 
         .category-card {
@@ -103,7 +108,8 @@
             min-height: 100vh;
             position: relative;
             overflow: hidden;
-            padding-top: 2rem; /* Additional space for fixed navbar */
+            padding-top: 76px;
+            margin-top: 0;
         }
 
         .hero-banner::before {
@@ -202,6 +208,37 @@
             margin: -1rem -1.5rem -1.5rem -1.5rem;
             padding: 1.5rem;
             border-radius: 0 0 16px 16px;
+        }
+
+        /* Motor Available Card Styles */
+        .card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+        }
+
+        .card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(37, 99, 235, 0.15) !important;
+            border-color: #cbd5e1 !important;
+        }
+
+        .card:hover .card-img-top {
+            transform: scale(1.1);
+        }
+
+        .card-img-top {
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card:hover .card-title {
+            color: var(--fann-primary);
+        }
+
+        .card-title {
+            transition: color 0.3s ease;
         }
 
         /* Footer Styles */

@@ -64,10 +64,10 @@ use Illuminate\Support\Facades\Storage;
 </div>
 
 <!-- Motors Grid -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
     @if($motors->count() > 0)
         @foreach($motors as $motor)
-        <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-visible motor-card" data-motor-id="{{ $motor->id }}">
+        <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-visible motor-card" data-motor-id="{{ $motor->id }}">
             <!-- Motor Image -->
             <div class="relative overflow-hidden rounded-t-lg" style="aspect-ratio: 4/3;">
                 @if($motor->photo)
@@ -314,7 +314,7 @@ use Illuminate\Support\Facades\Storage;
              x-transition:leave="ease-in duration-200"
              x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
              x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-             class="inline-block w-[600px] my-2 overflow-hidden text-left align-middle transition-all transform bg-white rounded shadow-xl">
+             class="inline-block w-[480px] my-2 overflow-hidden text-left align-middle transition-all transform bg-white rounded shadow-xl">
             
             <!-- Header -->
             <div class="flex items-center justify-between px-2.5 py-1.5 bg-blue-600 text-white">
@@ -327,7 +327,7 @@ use Illuminate\Support\Facades\Storage;
             </div>
             
             <!-- Body -->
-            <div id="motorDetailContent" class="p-2.5 max-h-[320px] overflow-y-auto text-xs">
+            <div id="motorDetailContent" class="p-2.5 max-h-[70vh] overflow-y-auto text-xs">
                 <!-- Content will be loaded here by JavaScript -->
             </div>
             
@@ -721,11 +721,22 @@ use Illuminate\Support\Facades\Storage;
 @push('styles')
 <style>
 .motor-card {
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    border: 1px solid #e2e8f0 !important;
 }
 
 .motor-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-10px) scale(1.02) !important;
+    box-shadow: 0 20px 40px rgba(37, 99, 235, 0.15) !important;
+    border-color: #cbd5e1 !important;
+}
+
+.motor-card:hover .object-cover {
+    transform: scale(1.1) !important;
+}
+
+.motor-card .object-cover {
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 .cursor-pointer {
