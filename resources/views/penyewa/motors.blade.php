@@ -68,7 +68,7 @@
 <!-- Motor Cards -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="motorContainer">
     @forelse($motors as $motor)
-        <div class="motor-card bg-white rounded-lg shadow-sm hover:shadow-md transition overflow-hidden flex flex-col" 
+        <div class="motor-card bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition overflow-hidden flex flex-col" 
              data-brand="{{ $motor->brand }}" 
              data-type="{{ $motor->type_cc }}" 
              data-name="{{ strtolower($motor->brand . ' ' . $motor->model . ' ' . $motor->year . ' ' . $motor->plate_number) }}">

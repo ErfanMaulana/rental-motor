@@ -106,6 +106,31 @@
         </div>
     </div>
 
+    <!-- Revenue Chart -->
+    <div class="bg-white shadow-sm rounded-lg overflow-hidden mb-6">
+        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-gray-900">
+                <i class="bi bi-graph-up mr-2 text-blue-600"></i>
+                Trend Pendapatan (12 Bulan Terakhir)
+            </h2>
+            <a href="{{ route('admin.financial-report') }}" 
+               class="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center">
+                Lihat Detail
+                <i class="bi bi-arrow-right ml-1"></i>
+            </a>
+        </div>
+        <div class="p-6">
+            @if(count($chartData['labels'] ?? []) > 0)
+                <canvas id="revenueChart" height="80"></canvas>
+            @else
+                <div class="text-center py-12">
+                    <i class="bi bi-graph-up text-gray-300 text-6xl"></i>
+                    <h3 class="mt-4 text-lg font-medium text-gray-900">Belum ada data pendapatan</h3>
+                </div>
+            @endif
+        </div>
+    </div>
+
     <!-- Content Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Recent Bookings -->
@@ -172,67 +197,167 @@
 
         <!-- Sidebar -->
         <div class="space-y-6">
-            <!-- Pending Actions -->
+            <!-- Action Required -->
             <div class="bg-white shadow-sm rounded-lg overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-200">
-                    <h2 class="text-lg font-semibold text-gray-900">Perlu Tindakan</h2>
+                    <h2 class="text-lg font-semibold text-gray-900">
+                        <i class="bi bi-exclamation-circle mr-2 text-orange-600"></i>
+                        Perlu Tindakan
+                    </h2>
                 </div>
-                <div class="p-6 space-y-4">
+                <div class="p-6 space-y-3">
                     @if($pendingMotorsCount > 0)
-                    <a href="{{ route('admin.motors') }}?status=pending" 
-                       class="block p-4 bg-yellow-50 border border-yellow-200 rounded-lg hover:bg-yellow-100 transition">
+                    <a href="{{ route('admin.motors') }}?status=pending_verification" 
+                       class="block p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded hover:bg-yellow-100 transition">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-sm font-medium text-yellow-800">Motor Perlu Verifikasi</p>
+                                <p class="text-sm font-semibold text-yellow-800">Motor Perlu Verifikasi</p>
                                 <p class="text-xs text-yellow-600 mt-1">{{ $pendingMotorsCount }} motor menunggu</p>
                             </div>
-                            <i class="bi bi-arrow-right text-yellow-600"></i>
+                            <i class="bi bi-arrow-right text-yellow-600 text-lg"></i>
                         </div>
                     </a>
                     @endif
                     
                     @if($pendingBookings > 0)
                     <a href="{{ route('admin.bookings') }}?status=pending" 
-                       class="block p-4 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition">
+                       class="block p-4 bg-blue-50 border-l-4 border-blue-400 rounded hover:bg-blue-100 transition">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-sm font-medium text-blue-800">Booking Pending</p>
-                                <p class="text-xs text-blue-600 mt-1">{{ $pendingBookings }} booking menunggu</p>
+                                <p class="text-sm font-semibold text-blue-800">Booking Menunggu</p>
+                                <p class="text-xs text-blue-600 mt-1">{{ $pendingBookings }} booking baru</p>
                             </div>
-                            <i class="bi bi-arrow-right text-blue-600"></i>
+                            <i class="bi bi-arrow-right text-blue-600 text-lg"></i>
                         </div>
                     </a>
                     @endif
 
+                    <a href="{{ route('admin.payments') }}" 
+                       class="block p-4 bg-purple-50 border-l-4 border-purple-400 rounded hover:bg-purple-100 transition">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-semibold text-purple-800">Verifikasi Pembayaran</p>
+                                <p class="text-xs text-purple-600 mt-1">Cek pembayaran pending</p>
+                            </div>
+                            <i class="bi bi-arrow-right text-purple-600 text-lg"></i>
+                        </div>
+                    </a>
+
                     @if($pendingMotorsCount == 0 && $pendingBookings == 0)
-                    <div class="text-center py-6">
-                        <i class="bi bi-check-circle text-green-500 text-4xl"></i>
-                        <p class="text-sm text-gray-600 mt-2">Semua tindakan selesai!</p>
+                    <div class="text-center py-4 bg-green-50 rounded-lg border border-green-200">
+                        <i class="bi bi-check-circle text-green-500 text-3xl"></i>
+                        <p class="text-sm text-green-700 font-medium mt-2">Semua Booking & Motor Terverifikasi!</p>
+                        <p class="text-xs text-green-600 mt-1">Sistem berjalan lancar</p>
                     </div>
                     @endif
-                </div>
-            </div>
-
-            <!-- Quick Stats -->
-            <div class="bg-white shadow-sm rounded-lg overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <h2 class="text-lg font-semibold text-gray-900">Statistik Cepat</h2>
-                </div>
-                <div class="p-6 space-y-4">
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-600">Motor Aktif</span>
-                        <span class="text-sm font-semibold text-gray-900">{{ $availableMotors }}</span>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-600">Booking Aktif</span>
-                        <span class="text-sm font-semibold text-gray-900">{{ $activeBookings }}</span>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-600">Pengguna Aktif</span>
-                        <span class="text-sm font-semibold text-gray-900">{{ $totalUsers }}</span>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
 @endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    @if(count($chartData['labels'] ?? []) > 0)
+    // Revenue Chart
+    const ctx = document.getElementById('revenueChart');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {!! json_encode($chartData['labels']) !!},
+                datasets: [
+                    {
+                        label: 'Total Pendapatan',
+                        data: {!! json_encode($chartData['total_revenue']) !!},
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: 'Komisi Admin (30%)',
+                        data: {!! json_encode($chartData['admin_commission']) !!},
+                        borderColor: 'rgb(34, 197, 94)',
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: 'Bagian Pemilik (70%)',
+                        data: {!! json_encode($chartData['owner_share']) !!},
+                        borderColor: 'rgb(251, 146, 60)',
+                        backgroundColor: 'rgba(251, 146, 60, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 15,
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleFont: {
+                            size: 13
+                        },
+                        bodyFont: {
+                            size: 12
+                        },
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += 'Rp ' + context.parsed.y.toLocaleString('id-ID');
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return 'Rp ' + value.toLocaleString('id-ID');
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    }
+    @endif
+</script>
+@endpush

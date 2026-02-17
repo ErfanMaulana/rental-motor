@@ -3,13 +3,6 @@
 @section('title', 'Verifikasi Pembayaran')
 
 @section('content')
-<div class="mb-6">
-    <h1 class="text-2xl font-semibold text-gray-900 flex items-center">
-        <i class="bi bi-credit-card text-blue-600 mr-3"></i>
-        Verifikasi Pembayaran
-    </h1>
-    <p class="text-sm text-gray-500 mt-1 ml-11">Kelola dan verifikasi pembayaran dari penyewa</p>
-</div>
 
 <div class="bg-white border border-gray-200 rounded-lg p-4 mb-6">
     <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -33,23 +26,23 @@
 </div>
 
 <div class="bg-white border border-gray-200 rounded-lg p-4 mb-6">
-    <form method="GET" action="{{ route('admin.payments') }}" class="flex flex-wrap gap-3">
-        <select name="status" class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500">
+    <form method="GET" action="{{ route('admin.payments') }}" id="filterForm" class="flex flex-wrap gap-3">
+        <select name="status" id="statusFilter" class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 {{ request('status') ? 'bg-blue-50 border-blue-300' : '' }}">
             <option value="">Semua Status</option>
-            <option value="unverified" {{ request('status') === 'unverified' ? 'selected' : '' }}>Belum Diverifikasi</option>
-            <option value="verified" {{ request('status') === 'verified' ? 'selected' : '' }}>Sudah Diverifikasi</option>
-            <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending</option>
-            <option value="paid" {{ request('status') === 'paid' ? 'selected' : '' }}>Lunas</option>
-            <option value="failed" {{ request('status') === 'failed' ? 'selected' : '' }}>Gagal</option>
+            <option value="unverified" {{ request('status') == 'unverified' ? 'selected' : '' }}>Belum Diverifikasi</option>
+            <option value="verified" {{ request('status') == 'verified' ? 'selected' : '' }}>Sudah Diverifikasi</option>
+            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+            <option value="paid" {{ request('status') == 'paid' ? 'selected' : '' }}>Lunas</option>
+            <option value="failed" {{ request('status') == 'failed' ? 'selected' : '' }}>Gagal</option>
         </select>
-        <select name="payment_method" class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500">
+        <select name="payment_method" id="methodFilter" class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 {{ request('payment_method') ? 'bg-blue-50 border-blue-300' : '' }}">
             <option value="">Semua Metode</option>
-            <option value="dana" {{ request('payment_method') === 'dana' ? 'selected' : '' }}>DANA</option>
-            <option value="gopay" {{ request('payment_method') === 'gopay' ? 'selected' : '' }}>GoPay</option>
-            <option value="shopeepay" {{ request('payment_method') === 'shopeepay' ? 'selected' : '' }}>ShopeePay</option>
-            <option value="bank" {{ request('payment_method') === 'bank' ? 'selected' : '' }}>Transfer Bank</option>
+            <option value="dana" {{ request('payment_method') == 'dana' ? 'selected' : '' }}>DANA</option>
+            <option value="gopay" {{ request('payment_method') == 'gopay' ? 'selected' : '' }}>GoPay</option>
+            <option value="shopeepay" {{ request('payment_method') == 'shopeepay' ? 'selected' : '' }}>ShopeePay</option>
+            <option value="bank" {{ request('payment_method') == 'bank' ? 'selected' : '' }}>Transfer Bank</option>
         </select>
-        <input type="text" name="search" value="{{ request('search') }}" class="flex-1 min-w-[200px] px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="Nama penyewa, email, atau ID booking...">
+        <input type="text" name="search" id="searchInput" value="{{ request('search') }}" class="flex-1 min-w-[200px] px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 {{ request('search') ? 'bg-blue-50 border-blue-300' : '' }}" placeholder="Nama penyewa, email, atau ID booking...">
         <button type="submit" class="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700">
             <i class="bi bi-search"></i>
         </button>
@@ -57,6 +50,27 @@
             <i class="bi bi-arrow-clockwise"></i>
         </a>
     </form>
+    
+    @if(request('status') || request('payment_method') || request('search'))
+    <div class="mt-3 flex items-center gap-2 text-xs">
+        <span class="text-gray-600">Filter aktif:</span>
+        @if(request('status'))
+            <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded">
+                Status: {{ ucfirst(request('status')) }}
+            </span>
+        @endif
+        @if(request('payment_method'))
+            <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded">
+                Metode: {{ strtoupper(request('payment_method')) }}
+            </span>
+        @endif
+        @if(request('search'))
+            <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded">
+                Pencarian: "{{ request('search') }}"
+            </span>
+        @endif
+    </div>
+    @endif
 </div>
 
 <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
@@ -217,6 +231,48 @@
 
 @push('scripts')
 <script>
+// Handle filter changes and search
+document.addEventListener('DOMContentLoaded', function() {
+    const filterForm = document.getElementById('filterForm');
+    const statusFilter = document.getElementById('statusFilter');
+    const methodFilter = document.getElementById('methodFilter');
+    const searchInput = document.getElementById('searchInput');
+    
+    // Auto-submit when status filter changes
+    if (statusFilter) {
+        statusFilter.addEventListener('change', function() {
+            console.log('Status filter changed to:', this.value);
+            filterForm.submit();
+        });
+    }
+    
+    // Auto-submit when payment method filter changes
+    if (methodFilter) {
+        methodFilter.addEventListener('change', function() {
+            console.log('Payment method filter changed to:', this.value);
+            filterForm.submit();
+        });
+    }
+    
+    // Enable Enter key to submit search
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                console.log('Search submitted:', this.value);
+                filterForm.submit();
+            }
+        });
+    }
+    
+    // Log current filters on page load
+    console.log('Current filters:', {
+        status: statusFilter ? statusFilter.value : null,
+        method: methodFilter ? methodFilter.value : null,
+        search: searchInput ? searchInput.value : null
+    });
+});
+
 function showPaymentDetail(paymentId) {
     const modal = document.getElementById('paymentDetailModal');
     const content = document.getElementById('paymentDetailContent');

@@ -40,6 +40,12 @@ class PemilikController extends Controller
         $user = Auth::user();
         $isVerified = $user->verified_at && $user->status === 'verified';
         
+        // Auto-fix status booking yang statusnya active tapi tanggal mulai belum tiba
+        $today = \Carbon\Carbon::today();
+        \App\Models\Booking::where('status', 'active')
+            ->where('start_date', '>', $today)
+            ->update(['status' => 'confirmed']);
+        
         // Statistik untuk pemilik (realtime)
         $totalMotors = Motor::where('owner_id', $user->id)->count();
         

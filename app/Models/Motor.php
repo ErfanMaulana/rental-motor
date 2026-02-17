@@ -79,7 +79,7 @@ class Motor extends Model
     public function isCurrentlyRented()
     {
         return $this->bookings()
-            ->where('status', 'confirmed')
+            ->whereIn('status', ['confirmed', 'active'])
             ->where('start_date', '<=', now()->format('Y-m-d'))
             ->where('end_date', '>=', now()->format('Y-m-d'))
             ->exists();
@@ -115,7 +115,7 @@ class Motor extends Model
     public function getCurrentBooking()
     {
         return $this->bookings()
-            ->where('status', 'confirmed')
+            ->whereIn('status', ['confirmed', 'active'])
             ->where('start_date', '<=', now()->format('Y-m-d'))
             ->where('end_date', '>=', now()->format('Y-m-d'))
             ->with(['renter'])

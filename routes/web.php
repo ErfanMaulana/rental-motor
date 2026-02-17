@@ -259,3 +259,61 @@ Route::get('/test-login-admin', function () {
     }
     return 'Admin user not found';
 });
+
+// Test payment filter
+Route::get('/test-payment-filter', function (\Illuminate\Http\Request $request) {
+    $query = \App\Models\Payment::with(['booking', 'booking.renter', 'booking.motor', 'verifiedBy']);
+
+    $output = "=== PAYMENT FILTER DEBUG ===\n\n";
+    $output .= "Request Parameters:\n";
+    $output .= "Status: " . ($request->status ?? 'null') . "\n";
+    $output .= "Payment Method: " . ($request->payment_method ?? 'null') . "\n";
+    $output .= "Search: " . ($request->search ?? 'null') . "\n\n";
+
+    if ($request->filled('status')) {
+        $status = $request->status;
+        $output .= "Applying status filter: $status\n";
+        
+        if ($status === 'verified') {
+            $query->whereNotNull('verified_at');
+        } elseif ($status === 'unverified') {
+            $query->whereNull('verified_at');
+        } elseif (in_array($status, ['pending', 'paid', 'failed'])) {
+            $query->where('status', $status);
+        }
+    }
+
+    if ($request->filled('payment_method')) {
+        $paymentMethod = $request->payment_method;
+        $output .= "Applying payment method filter: $paymentMethod\n";
+        $query->where('payment_method', $paymentMethod);
+    }
+
+    if ($request->filled('search')) {
+        $search = trim($request->search);
+        $output .= "Applying search: $search\n";
+        $query->where(function($q) use ($search) {
+            $q->whereHas('booking.renter', function($q2) use ($search) {
+                $q2->where('name', 'like', "%{$search}%")
+                   ->orWhere('email', 'like', "%{$search}%");
+            })->orWhere('id', 'like', "%{$search}%")
+              ->orWhereHas('booking', function($q2) use ($search) {
+                  $q2->where('id', 'like', "%{$search}%");
+              });
+        });
+    }
+
+    $payments = $query->orderBy('created_at', 'desc')->get();
+    
+    $output .= "\n=== Results ===\n";
+    $output .= "Total results: " . $payments->count() . "\n\n";
+    
+    foreach ($payments->take(10) as $payment) {
+        $output .= "ID: {$payment->id} | Status: {$payment->status} | Method: {$payment->payment_method} | ";
+        $output .= "Renter: {$payment->booking->renter->name} | ";
+        $output .= "Verified: " . ($payment->verified_at ? 'Yes' : 'No') . "\n";
+    }
+    
+    return response($output, 200)->header('Content-Type', 'text/plain');
+})->middleware('auth');
+

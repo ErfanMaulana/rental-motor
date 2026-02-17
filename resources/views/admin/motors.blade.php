@@ -7,13 +7,6 @@ use Illuminate\Support\Facades\Storage;
 @endphp
 
 @section('content')
-<div class="mb-6">
-    <h1 class="text-2xl font-semibold text-gray-900 flex items-center">
-        <i class="bi bi-motorcycle text-blue-600 mr-3"></i>
-        Verifikasi Motor
-    </h1>
-    <p class="text-sm text-gray-500 mt-1 ml-11">Kelola dan verifikasi motor yang didaftarkan pemilik</p>
-</div>
 
 <div class="bg-white border border-gray-200 rounded-lg p-4 mb-6">
     <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -67,7 +60,7 @@ use Illuminate\Support\Facades\Storage;
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
     @if($motors->count() > 0)
         @foreach($motors as $motor)
-        <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-visible motor-card" data-motor-id="{{ $motor->id }}">
+        <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-visible motor-card hover:shadow-md transition-shadow" data-motor-id="{{ $motor->id }}">
             <!-- Motor Image -->
             <div class="relative overflow-hidden rounded-t-lg" style="aspect-ratio: 4/3;">
                 @if($motor->photo)
@@ -181,10 +174,10 @@ use Illuminate\Support\Facades\Storage;
             </div>
 
             <!-- Card Footer with Action Buttons -->
-            <div class="bg-gray-50 px-2 py-1.5 border-t border-gray-100">
+            <div class="bg-gray-50 px-3 py-2.5 border-t border-gray-100">
                 <div class="flex justify-between items-center">
-                    <small class="text-gray-500 text-[9px]">
-                        <i class="bi bi-calendar mr-0.5 text-[9px]"></i>
+                    <small class="text-gray-500 text-[10px]">
+                        <i class="bi bi-calendar mr-1 text-[10px]"></i>
                         {{ $motor->created_at->format('d M Y') }}
                     </small>
                     
@@ -314,7 +307,7 @@ use Illuminate\Support\Facades\Storage;
              x-transition:leave="ease-in duration-200"
              x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
              x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-             class="inline-block w-[480px] my-2 overflow-hidden text-left align-middle transition-all transform bg-white rounded shadow-xl">
+             class="inline-block w-[600px] my-2 overflow-hidden text-left align-middle transition-all transform bg-white rounded shadow-xl">
             
             <!-- Header -->
             <div class="flex items-center justify-between px-2.5 py-1.5 bg-blue-600 text-white">
@@ -327,7 +320,7 @@ use Illuminate\Support\Facades\Storage;
             </div>
             
             <!-- Body -->
-            <div id="motorDetailContent" class="p-2.5 max-h-[70vh] overflow-y-auto text-xs">
+            <div id="motorDetailContent" class="p-2.5 text-xs">
                 <!-- Content will be loaded here by JavaScript -->
             </div>
             
@@ -588,12 +581,13 @@ use Illuminate\Support\Facades\Storage;
     </div>
 </div>
                 
-                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                    <i class="bi bi-exclamation-triangle text-yellow-600 mr-2"></i>
-                    <small>
-                        <strong>Peringatan:</strong> Motor yang dihapus akan menghilangkan semua data terkait 
-                        termasuk booking, pembayaran, dan riwayat lainnya.
-                    </small>
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-4 mb-2">
+                    <div class="flex items-start gap-2">
+                        <i class="bi bi-exclamation-triangle text-yellow-600 text-lg mt-0.5"></i>
+                        <p class="text-sm text-yellow-800">
+                            <strong class="font-semibold">Peringatan:</strong> Motor yang dihapus akan menghilangkan semua data terkait termasuk booking, pembayaran, dan riwayat lainnya.
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>

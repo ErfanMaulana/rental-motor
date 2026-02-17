@@ -3,13 +3,6 @@
 @section('title', 'Kelola Pemesanan')
 
 @section('content')
-<div class="mb-6">
-    <h1 class="text-2xl font-semibold text-gray-900 flex items-center">
-        <i class="bi bi-calendar-check text-blue-600 mr-3"></i>
-        Kelola Pemesanan
-    </h1>
-    <p class="text-sm text-gray-500 mt-1 ml-11">Manajemen pemesanan motor dalam sistem rental</p>
-</div>
 
 <div class="bg-white border border-gray-200 rounded-lg p-4 mb-6">
     <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -18,7 +11,7 @@
             <p class="text-2xl font-semibold text-gray-900">{{ $bookings->total() }}</p>
         </div>
         <div class="text-center">
-            <p class="text-xs text-gray-500 mb-1">Pending</p>
+            <p class="text-xs text-gray-500 mb-1">Menunggu</p>
             <p class="text-2xl font-semibold text-yellow-600">{{ $stats['pending'] ?? 0 }}</p>
         </div>
         <div class="text-center">
@@ -26,25 +19,25 @@
             <p class="text-2xl font-semibold text-blue-600">{{ $stats['confirmed'] ?? 0 }}</p>
         </div>
         <div class="text-center">
-            <p class="text-xs text-gray-500 mb-1">Sedang Aktif</p>
+            <p class="text-xs text-gray-500 mb-1">Berlangsung</p>
             <p class="text-2xl font-semibold text-green-600">{{ $stats['ongoing'] ?? 0 }}</p>
         </div>
     </div>
 </div>
 
 <div class="bg-white border border-gray-200 rounded-lg p-4 mb-6">
-    <form method="GET" action="{{ route('admin.bookings') }}" class="flex flex-wrap gap-3">
-        <select class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500" name="status">
+    <form method="GET" action="{{ route('admin.bookings') }}" id="filterForm" class="flex flex-wrap gap-3">
+        <select class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 {{ request('status') ? 'bg-blue-50 border-blue-300' : '' }}" name="status" id="statusFilter">
             <option value="">Semua Status</option>
-            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Menunggu</option>
             <option value="confirmed" {{ request('status') == 'confirmed' ? 'selected' : '' }}>Dikonfirmasi</option>
-            <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Sedang Berlangsung</option>
+            <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Berlangsung</option>
             <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Selesai</option>
             <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Dibatalkan</option>
         </select>
-        <input type="date" class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500" name="date_from" value="{{ request('date_from') }}">
-        <input type="date" class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500" name="date_to" value="{{ request('date_to') }}">
-        <input type="text" class="flex-1 min-w-[200px] px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500" name="search" value="{{ request('search') }}" placeholder="Nama penyewa, motor, atau plat nomor...">
+        <input type="date" class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 {{ request('date_from') ? 'bg-blue-50 border-blue-300' : '' }}" name="date_from" id="dateFromFilter" value="{{ request('date_from') }}">
+        <input type="date" class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 {{ request('date_to') ? 'bg-blue-50 border-blue-300' : '' }}" name="date_to" id="dateToFilter" value="{{ request('date_to') }}">
+        <input type="text" class="flex-1 min-w-[200px] px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 {{ request('search') ? 'bg-blue-50 border-blue-300' : '' }}" name="search" id="searchInput" value="{{ request('search') }}" placeholder="Nama penyewa, motor, atau plat nomor...">
         <button class="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700" type="submit">
             <i class="bi bi-search"></i>
         </button>
@@ -52,11 +45,34 @@
             <i class="bi bi-arrow-clockwise"></i>
         </a>
     </form>
+    
+    @if(request('status') || request('date_from') || request('date_to') || request('search'))
+    <div class="mt-3 flex items-center gap-2 text-xs">
+        <span class="text-gray-600">Filter aktif:</span>
+        @if(request('status'))
+            <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded">
+                Status: {{ ucfirst(request('status')) }}
+            </span>
+        @endif
+        @if(request('date_from'))
+            <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded">
+                Dari: {{ \Carbon\Carbon::parse(request('date_from'))->format('d/m/Y') }}
+            </span>
+        @endif
+        @if(request('date_to'))
+            <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded">
+                Sampai: {{ \Carbon\Carbon::parse(request('date_to'))->format('d/m/Y') }}
+            </span>
+        @endif
+        @if(request('search'))
+            <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded">
+                Pencarian: "{{ request('search') }}"
+            </span>
+        @endif
+    </div>
+    @endif
 </div>
-                                <div>
-                                    <h4>{{ $stats['ongoing'] ?? 0 }}</h4>
-                                    <p class="mb-0">Berlangsung</p>
-                                </div>
+
 <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
     <table class="w-full">
         <thead class="bg-gray-50 border-b border-gray-200">
@@ -121,35 +137,113 @@
                     @endif
                 </td>
                 <td class="px-4 py-3">
-                    <span class="px-2 py-1 text-xs rounded
-                        @if($booking->status == 'pending') bg-yellow-100 text-yellow-700
-                        @elseif($booking->status == 'confirmed') bg-blue-100 text-blue-700
-                        @elseif($booking->status == 'ongoing') bg-green-100 text-green-700
-                        @elseif($booking->status == 'completed') bg-gray-100 text-gray-700
-                        @else bg-red-100 text-red-700
-                        @endif">
-                        {{ ucfirst($booking->status) }}
-                    </span>
+                    @if($booking->status == 'pending')
+                        <span class="px-2.5 py-1 text-xs font-medium bg-yellow-100 text-yellow-700 rounded">
+                            Menunggu
+                        </span>
+                    @elseif($booking->status == 'confirmed')
+                        <span class="px-2.5 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded">
+                            Dikonfirmasi
+                        </span>
+                    @elseif($booking->status == 'ongoing' || $booking->status == 'active')
+                        <span class="px-2.5 py-1 text-xs font-medium bg-green-100 text-green-700 rounded">
+                            Berlangsung
+                        </span>
+                    @elseif($booking->status == 'completed')
+                        <span class="px-2.5 py-1 text-xs font-medium bg-purple-100 text-purple-700 rounded">
+                            Selesai
+                        </span>
+                    @elseif($booking->status == 'cancelled')
+                        <span class="px-2.5 py-1 text-xs font-medium bg-red-100 text-red-700 rounded">
+                            Dibatalkan
+                        </span>
+                    @else
+                        <span class="px-2.5 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded">
+                            {{ $booking->status }}
+                        </span>
+                    @endif
                 </td>
                 <td class="px-4 py-3">
-                    <div class="flex gap-1">
-                        <button onclick="viewBooking({{ $booking->id }})" 
-                                class="p-1.5 text-blue-600 hover:bg-blue-50 rounded" 
-                                title="Lihat Detail">
-                            <i class="bi bi-eye"></i>
+                    <div class="relative dropdown-container">
+                        <button onclick="toggleDropdown(this, event)" class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition" title="Menu Aksi">
+                            <i class="bi bi-three-dots-vertical text-lg"></i>
                         </button>
-                        @if($booking->status == 'pending')
-                        <button onclick="confirmBooking({{ $booking->id }})" 
-                                class="p-1.5 text-green-600 hover:bg-green-50 rounded" 
-                                title="Konfirmasi">
-                            <i class="bi bi-check"></i>
-                        </button>
-                        <button onclick="cancelBooking({{ $booking->id }})" 
-                                class="p-1.5 text-red-600 hover:bg-red-50 rounded" 
-                                title="Batalkan">
-                            <i class="bi bi-x"></i>
-                        </button>
-                        @endif
+                        <div class="dropdown-menu hidden absolute right-0 mt-1 w-52 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                            <div class="py-1">
+                                <button onclick="viewBooking({{ $booking->id }})" 
+                                        class="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-blue-50 flex items-center gap-3">
+                                    <i class="bi bi-eye text-blue-600 text-base"></i>
+                                    <span>Lihat Detail</span>
+                                </button>
+                                
+                                @if($booking->status === 'pending')
+                                <div class="border-t border-gray-100"></div>
+                                <button onclick="confirmBooking({{ $booking->id }})" 
+                                        class="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-green-50 flex items-center gap-3">
+                                    <i class="bi bi-check-circle text-green-600 text-base"></i>
+                                    <span>Konfirmasi Booking</span>
+                                </button>
+                                <button onclick="cancelBooking({{ $booking->id }})" 
+                                        class="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-red-50 flex items-center gap-3">
+                                    <i class="bi bi-x-circle text-red-600 text-base"></i>
+                                    <span>Batalkan Booking</span>
+                                </button>
+                                
+                                @elseif($booking->status === 'confirmed')
+                                <div class="border-t border-gray-100"></div>
+                                @php
+                                    $today = \Carbon\Carbon::today();
+                                    $startDate = \Carbon\Carbon::parse($booking->start_date);
+                                    $canActivate = $startDate->lte($today);
+                                @endphp
+                                @if($canActivate)
+                                <button onclick="startBooking({{ $booking->id }})" 
+                                        class="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-blue-50 flex items-center gap-3">
+                                    <i class="bi bi-play-circle text-blue-600 text-base"></i>
+                                    <span>Aktifkan Rental</span>
+                                </button>
+                                @else
+                                <button disabled
+                                        class="w-full px-4 py-2.5 text-left text-sm text-gray-400 bg-gray-50 cursor-not-allowed flex items-center gap-3"
+                                        title="Rental hanya dapat diaktifkan pada tanggal {{ $startDate->format('d/m/Y') }}">
+                                    <i class="bi bi-play-circle text-gray-400 text-base"></i>
+                                    <span>Aktifkan Rental</span>
+                                </button>
+                                <div class="px-4 py-2 text-xs text-gray-500 bg-yellow-50 border-t border-yellow-100">
+                                    <i class="bi bi-info-circle mr-1"></i>
+                                    Rental dimulai {{ $startDate->format('d/m/Y') }}
+                                </div>
+                                @endif
+                                
+                                @elseif($booking->status === 'ongoing' || $booking->status === 'active')
+                                <div class="border-t border-gray-100"></div>
+                                @php
+                                    $today = \Carbon\Carbon::today();
+                                    $endDate = \Carbon\Carbon::parse($booking->end_date);
+                                    $canComplete = $endDate->lte($today);
+                                    $remainingDays = $today->diffInDays($endDate, false);
+                                @endphp
+                                @if($canComplete)
+                                <button onclick="completeBooking({{ $booking->id }})" 
+                                        class="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-purple-50 flex items-center gap-3">
+                                    <i class="bi bi-check2-circle text-purple-600 text-base"></i>
+                                    <span>Selesaikan Rental</span>
+                                </button>
+                                @else
+                                <button disabled
+                                        class="w-full px-4 py-2.5 text-left text-sm text-gray-400 bg-gray-50 cursor-not-allowed flex items-center gap-3"
+                                        title="Rental hanya dapat diselesaikan pada tanggal {{ $endDate->format('d/m/Y') }}">
+                                    <i class="bi bi-check2-circle text-gray-400 text-base"></i>
+                                    <span>Selesaikan Rental</span>
+                                </button>
+                                <div class="px-4 py-2 text-xs text-gray-500 bg-blue-50 border-t border-blue-100">
+                                    <i class="bi bi-info-circle mr-1"></i>
+                                    Rental berakhir {{ $endDate->format('d/m/Y') }} ({{ abs($remainingDays) }} hari lagi)
+                                </div>
+                                @endif
+                                @endif
+                            </div>
+                        </div>
                     </div>
                 </td>
             </tr>
@@ -175,6 +269,84 @@
 
 @push('scripts')
 <script>
+// Handle filter auto-submit
+document.addEventListener('DOMContentLoaded', function() {
+    const filterForm = document.getElementById('filterForm');
+    const statusFilter = document.getElementById('statusFilter');
+    const dateFromFilter = document.getElementById('dateFromFilter');
+    const dateToFilter = document.getElementById('dateToFilter');
+    const searchInput = document.getElementById('searchInput');
+    
+    // Auto-submit when status filter changes
+    if (statusFilter) {
+        statusFilter.addEventListener('change', function() {
+            console.log('Status filter changed to:', this.value);
+            filterForm.submit();
+        });
+    }
+    
+    // Auto-submit when date filters change
+    if (dateFromFilter) {
+        dateFromFilter.addEventListener('change', function() {
+            console.log('Date from filter changed to:', this.value);
+            filterForm.submit();
+        });
+    }
+    
+    if (dateToFilter) {
+        dateToFilter.addEventListener('change', function() {
+            console.log('Date to filter changed to:', this.value);
+            filterForm.submit();
+        });
+    }
+    
+    // Enable Enter key to submit search
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                console.log('Search submitted:', this.value);
+                filterForm.submit();
+            }
+        });
+    }
+    
+    // Log current filters on page load
+    console.log('Current bookings filters:', {
+        status: statusFilter ? statusFilter.value : null,
+        dateFrom: dateFromFilter ? dateFromFilter.value : null,
+        dateTo: dateToFilter ? dateToFilter.value : null,
+        search: searchInput ? searchInput.value : null
+    });
+});
+
+// Toggle dropdown menu
+function toggleDropdown(button, event) {
+    event.stopPropagation();
+    const container = button.closest('.dropdown-container');
+    const menu = container.querySelector('.dropdown-menu');
+    const allMenus = document.querySelectorAll('.dropdown-menu');
+    
+    // Close all other dropdowns
+    allMenus.forEach(m => {
+        if (m !== menu) {
+            m.classList.add('hidden');
+        }
+    });
+    
+    // Toggle current dropdown
+    menu.classList.toggle('hidden');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('.dropdown-container')) {
+        document.querySelectorAll('.dropdown-menu').forEach(menu => {
+            menu.classList.add('hidden');
+        });
+    }
+});
+
 function viewBooking(bookingId) {
     // Implement view booking with Tailwind modal or SweetAlert
     fetch(`/admin/bookings/${bookingId}`)
@@ -198,7 +370,7 @@ function cancelBooking(bookingId) {
 
 function startBooking(bookingId) {
     if (confirm('Mulai proses penyewaan?')) {
-        updateBookingStatus(bookingId, 'ongoing');
+        updateBookingStatus(bookingId, 'active');
     }
 }
 
@@ -218,13 +390,25 @@ function updateBookingStatus(bookingId, status) {
         },
         body: JSON.stringify({ status: status })
     })
-    .then(response => response.json())
+    .then(response => {
+        // Check if response is ok
+        if (!response.ok) {
+            return response.json().then(errorData => {
+                throw new Error(errorData.message || 'Gagal mengupdate status pemesanan');
+            });
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             location.reload();
         } else {
-            alert('Gagal mengupdate status pemesanan');
+            alert(data.message || 'Gagal mengupdate status pemesanan');
         }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert(error.message || 'Terjadi kesalahan saat mengupdate status');
     });
 }
 </script>

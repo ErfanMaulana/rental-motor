@@ -3,11 +3,6 @@
 @section('title', 'Laporan Keuangan')
 
 @section('content')
-<!-- Content Header -->
-<div class="content-header">
-    <h1>Laporan Keuangan</h1>
-    <p>Analisis pendapatan dan revenue sharing sistem rental</p>
-</div>
 
 <div class="row">
     <div class="col-12">

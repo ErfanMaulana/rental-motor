@@ -75,80 +75,99 @@ function showMotorDetail(motorId) {
             const photoUrl = motor.photo ? `/storage/${motor.photo}` : null;
             
             content.innerHTML = `
-                ${photoUrl ? 
-                    `<img src="${photoUrl}" class="rounded-lg mb-2 mx-auto" alt="${motor.brand} ${motor.model || ''}" style="width: 75%; height: auto; aspect-ratio: 4/3; object-fit: contain; background-color: #f3f4f6;">` :
-                    `<div class="bg-gray-100 rounded-lg flex items-center justify-center mb-2 mx-auto" style="width: 75%; aspect-ratio: 4/3;">
-                        <i class="bi bi-motorcycle text-gray-400 text-4xl"></i>
-                    </div>`
-                }
-                
-                <div class="space-y-1">
+                <div class="grid grid-cols-2 gap-1.5">
+                    <!-- Left: Image -->
                     <div>
-                        <h3 class="text-sm font-bold text-gray-900 leading-tight">${motor.brand} ${motor.model || ''}</h3>
-                        <div class="flex gap-1 mt-1">
-                            <span class="px-2 py-0.5 text-[10px] bg-blue-100 text-blue-700 rounded">${motor.type_cc}</span>
-                            <span class="px-2 py-0.5 text-[10px] ${getStatusBadgeClass(motor.status)} rounded">${getStatusText(motor.status)}</span>
-                        </div>
+                        ${photoUrl ? 
+                            `<img src="${photoUrl}" class="w-full h-[150px] object-cover rounded border border-gray-200" alt="${motor.brand} ${motor.model || ''}">` :
+                            `<div class="w-full h-[150px] bg-gray-100 rounded flex items-center justify-center border border-gray-200">
+                                <i class="bi bi-motorcycle text-gray-400 text-3xl"></i>
+                            </div>`
+                        }
                     </div>
                     
-                    <div class="grid grid-cols-2 gap-2 text-xs">
-                        <div><span class="text-gray-500">Tahun:</span> <span class="font-semibold">${motor.year || '-'}</span></div>
-                        <div><span class="text-gray-500">Warna:</span> <span class="font-semibold">${motor.color || '-'}</span></div>
-                        <div><span class="text-gray-500">Plat:</span> <span class="font-semibold">${motor.plate_number}</span></div>
-                        <div><span class="text-gray-500">Pemilik:</span> <span class="font-semibold">${motor.owner.name}</span></div>
-                    </div>
-                    
-                    ${motor.description ? `
-                        <div class="border-t border-gray-200 pt-1.5">
-                            <p class="text-[10px] text-gray-500 mb-0.5">Deskripsi</p>
-                            <p class="text-xs text-gray-700">${motor.description}</p>
+                    <!-- Right: Info -->
+                    <div class="space-y-1">
+                        <div class="bg-gradient-to-r from-blue-50 to-blue-100 p-1 rounded">
+                            <h4 class="text-[11px] font-bold text-gray-900 leading-tight mb-0.5">${motor.brand} ${motor.model || ''}</h4>
+                            <div class="flex gap-0.5 flex-wrap">
+                                <span class="px-1 py-0.5 text-[8px] font-semibold rounded-full bg-blue-600 text-white">${motor.type_cc}</span>
+                                <span class="px-1 py-0.5 text-[8px] font-semibold rounded-full ${getStatusBadgeClass(motor.status)} border">${getStatusText(motor.status)}</span>
+                            </div>
                         </div>
-                    ` : ''}
+                        
+                        <div class="grid grid-cols-2 gap-1 text-[10px]">
+                            <div class="bg-gray-50 p-1 rounded">
+                                <div class="text-gray-500">Tahun</div>
+                                <div class="font-semibold">${motor.year || '-'}</div>
+                            </div>
+                            <div class="bg-gray-50 p-1 rounded">
+                                <div class="text-gray-500">Warna</div>
+                                <div class="font-semibold">${motor.color || '-'}</div>
+                            </div>
+                            <div class="bg-gray-50 p-1 rounded">
+                                <div class="text-gray-500">Plat</div>
+                                <div class="font-semibold">${motor.plate_number}</div>
+                            </div>
+                            <div class="bg-gray-50 p-1 rounded">
+                                <div class="text-gray-500">Pemilik</div>
+                                <div class="font-semibold text-[9px]">${motor.owner.name}</div>
+                            </div>
+                        </div>
+                        
+                        ${motor.description ? `
+                            <div class="bg-gray-50 p-1 rounded text-[9px]">
+                                <div class="text-gray-500 mb-0.5">Deskripsi</div>
+                                <div class="text-gray-700 line-clamp-2">${motor.description}</div>
+                            </div>
+                        ` : ''}
+                    </div>
                 </div>
                 
                 ${motor.rental_rate ? `
-                    <div class="mt-2 border-t border-gray-200 pt-2">
-                        <p class="text-xs text-gray-500 mb-1"><i class="bi bi-cash-stack mr-1"></i>Harga Sewa</p>
-                        <div class="flex gap-2 text-xs">
-                            <div class="flex-1 bg-blue-50 rounded px-2 py-1.5 text-center">
-                                <p class="text-[10px] text-gray-600 mb-0.5">Harian</p>
-                                <p class="text-sm font-bold text-blue-600">Rp ${new Intl.NumberFormat('id-ID').format(motor.rental_rate.daily_rate)}</p>
+                    <div class="mt-1.5 bg-blue-50 border border-blue-200 rounded p-1.5">
+                        <div class="text-[9px] font-semibold text-blue-800 mb-1">HARGA SEWA</div>
+                        <div class="grid grid-cols-3 gap-1 text-[10px]">
+                            <div class="text-center">
+                                <div class="text-gray-500">Harian</div>
+                                <div class="text-xs font-bold text-blue-600">Rp ${new Intl.NumberFormat('id-ID').format(motor.rental_rate.daily_rate)}</div>
                             </div>
-                            <div class="flex-1 bg-blue-50 rounded px-2 py-1.5 text-center">
-                                <p class="text-[10px] text-gray-600 mb-0.5">Mingguan</p>
-                                <p class="text-sm font-bold text-blue-600">Rp ${new Intl.NumberFormat('id-ID').format(motor.rental_rate.weekly_rate)}</p>
+                            <div class="text-center">
+                                <div class="text-gray-500">Mingguan</div>
+                                <div class="text-xs font-bold text-blue-600">Rp ${new Intl.NumberFormat('id-ID').format(motor.rental_rate.weekly_rate)}</div>
                             </div>
-                            <div class="flex-1 bg-blue-50 rounded px-2 py-1.5 text-center">
-                                <p class="text-[10px] text-gray-600 mb-0.5">Bulanan</p>
-                                <p class="text-sm font-bold text-blue-600">Rp ${new Intl.NumberFormat('id-ID').format(motor.rental_rate.monthly_rate)}</p>
+                            <div class="text-center">
+                                <div class="text-gray-500">Bulanan</div>
+                                <div class="text-xs font-bold text-blue-600">Rp ${new Intl.NumberFormat('id-ID').format(motor.rental_rate.monthly_rate)}</div>
                             </div>
                         </div>
                     </div>
                 ` : `
-                    <div class="mt-2 bg-yellow-50 border border-yellow-200 rounded px-3 py-2">
-                        <span class="text-xs text-yellow-800"><i class="bi bi-exclamation-triangle mr-1"></i>Harga sewa belum ditetapkan</span>
+                    <div class="mt-1.5 bg-yellow-50 border border-yellow-200 rounded px-2 py-1.5 text-center text-[10px]">
+                        <i class="bi bi-exclamation-circle text-yellow-600"></i>
+                        <span class="text-yellow-800 ml-1">Harga sewa belum ditetapkan</span>
                     </div>
                 `}
                 
                 ${data.stats ? `
-                    <div class="mt-2 border-t border-gray-200 pt-2">
-                        <p class="text-xs text-gray-500 mb-1"><i class="bi bi-graph-up mr-1"></i>Statistik</p>
-                        <div class="flex gap-2">
-                            <div class="flex-1 bg-blue-500 text-white rounded px-2 py-2 text-center">
-                                <p class="text-base font-bold leading-none">${data.stats.total_bookings}</p>
-                                <p class="text-[10px] mt-1">Total</p>
+                    <div class="mt-1.5 bg-gray-50 border border-gray-200 rounded p-1.5">
+                        <div class="text-[9px] font-semibold text-gray-800 mb-1">STATISTIK</div>
+                        <div class="grid grid-cols-4 gap-1">
+                            <div class="bg-blue-500 text-white rounded px-1 py-1 text-center">
+                                <p class="text-sm font-bold leading-none">${data.stats.total_bookings}</p>
+                                <p class="text-[8px] mt-0.5">Total</p>
                             </div>
-                            <div class="flex-1 bg-yellow-500 text-white rounded px-2 py-2 text-center">
-                                <p class="text-base font-bold leading-none">${data.stats.active_bookings}</p>
-                                <p class="text-[10px] mt-1">Aktif</p>
+                            <div class="bg-yellow-500 text-white rounded px-1 py-1 text-center">
+                                <p class="text-sm font-bold leading-none">${data.stats.active_bookings}</p>
+                                <p class="text-[8px] mt-0.5">Aktif</p>
                             </div>
-                            <div class="flex-1 bg-green-500 text-white rounded px-2 py-2 text-center">
-                                <p class="text-base font-bold leading-none">${data.stats.completed_bookings}</p>
-                                <p class="text-[10px] mt-1">Selesai</p>
+                            <div class="bg-green-500 text-white rounded px-1 py-1 text-center">
+                                <p class="text-sm font-bold leading-none">${data.stats.completed_bookings}</p>
+                                <p class="text-[8px] mt-0.5">Selesai</p>
                             </div>
-                            <div class="flex-1 bg-purple-500 text-white rounded px-2 py-2 text-center">
-                                <p class="text-xs font-bold leading-none">Rp ${(data.stats.total_earnings / 1000).toFixed(0)}k</p>
-                                <p class="text-[10px] mt-1">Revenue</p>
+                            <div class="bg-purple-500 text-white rounded px-1 py-1 text-center">
+                                <p class="text-[10px] font-bold leading-none">Rp ${(data.stats.total_earnings / 1000).toFixed(0)}k</p>
+                                <p class="text-[8px] mt-0.5">Revenue</p>
                             </div>
                         </div>
                     </div>

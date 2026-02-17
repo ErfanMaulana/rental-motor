@@ -119,23 +119,25 @@
                                 </tr>
                                 @endforelse
                             </tbody>
+                            @if($users->hasPages())
+                            <tfoot>
+                                <tr>
+                                    <td colspan="8" class="bg-light border-0 p-3">
+                                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
+                                            <div class="text-muted mb-2 mb-md-0 small">
+                                                Menampilkan {{ $users->firstItem() }} sampai {{ $users->lastItem() }} 
+                                                dari {{ $users->total() }} hasil
+                                            </div>
+                                            <div>
+                                                {{ $users->appends(request()->query())->links('pagination.custom') }}
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                            @endif
                         </table>
                     </div>
-
-                    <!-- Pagination -->
-                    @if($users->hasPages())
-                    <div class="mt-4">
-                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
-                            <div class="text-muted mb-2 mb-md-0">
-                                Menampilkan {{ $users->firstItem() }} sampai {{ $users->lastItem() }} 
-                                dari {{ $users->total() }} hasil
-                            </div>
-                            <div>
-                                {{ $users->appends(request()->query())->links('pagination.custom') }}
-                            </div>
-                        </div>
-                    </div>
-                    @endif
                 </div>
             </div>
         </div>

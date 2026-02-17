@@ -5,10 +5,9 @@
 @section('content')
 <div class="mb-6">
     <h1 class="text-2xl font-semibold text-gray-900 flex items-center">
-        <i class="bi bi-calendar-check text-blue-600 mr-3"></i>
         Kelola Pemesanan
     </h1>
-    <p class="text-sm text-gray-500 mt-1 ml-11">Manajemen pemesanan motor dalam sistem rental</p>
+    <p class="text-sm text-gray-500 mt-1">Manajemen pemesanan motor dalam sistem rental</p>
 </div>
 
 <div class="bg-white border border-gray-200 rounded-lg p-4 mb-6">
@@ -134,45 +133,48 @@
                             @endif
                         </td>
                         <td class="px-6 py-4">
-                            <div x-data="{ open: false }" class="relative">
-                                <button @click="open = !open" class="p-1.5 text-gray-600 hover:bg-gray-100 rounded" title="Menu Aksi">
-                                    <i class="bi bi-three-dots-vertical"></i>
+                            <div class="relative dropdown-container">
+                                <button onclick="toggleDropdown(this, event)" class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition" title="Menu Aksi">
+                                    <i class="bi bi-three-dots-vertical text-lg"></i>
                                 </button>
-                                <div x-show="open" @click.away="open = false" 
-                                     class="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10"
-                                     style="display: none;">
-                                    <button onclick="showBookingDetail({{ $booking->id }})" 
-                                            class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-                                        <i class="bi bi-eye text-blue-600"></i>
-                                        Lihat Detail
-                                    </button>
-                                    @if($booking->status === 'pending')
-                                    <div class="border-t border-gray-200"></div>
-                                    <button onclick="updateBookingStatus({{ $booking->id }}, 'confirmed')" 
-                                            class="w-full px-4 py-2 text-left text-sm text-green-700 hover:bg-green-50 flex items-center gap-2">
-                                        <i class="bi bi-check-circle text-green-600"></i>
-                                        Konfirmasi Booking
-                                    </button>
-                                    <button onclick="updateBookingStatus({{ $booking->id }}, 'cancelled')" 
-                                            class="w-full px-4 py-2 text-left text-sm text-red-700 hover:bg-red-50 flex items-center gap-2">
-                                        <i class="bi bi-x-circle text-red-600"></i>
-                                        Batalkan Booking
-                                    </button>
-                                    @elseif($booking->status === 'confirmed')
-                                    <div class="border-t border-gray-200"></div>
-                                    <button onclick="updateBookingStatus({{ $booking->id }}, 'active')" 
-                                            class="w-full px-4 py-2 text-left text-sm text-blue-700 hover:bg-blue-50 flex items-center gap-2">
-                                        <i class="bi bi-play-circle text-blue-600"></i>
-                                        Aktifkan Rental
-                                    </button>
-                                    @elseif($booking->status === 'active')
-                                    <div class="border-t border-gray-200"></div>
-                                    <button onclick="updateBookingStatus({{ $booking->id }}, 'completed')" 
-                                            class="w-full px-4 py-2 text-left text-sm text-purple-700 hover:bg-purple-50 flex items-center gap-2">
-                                        <i class="bi bi-check2-circle text-purple-600"></i>
-                                        Selesaikan Rental
-                                    </button>
-                                    @endif
+                                <div class="dropdown-menu hidden absolute right-0 mt-1 w-52 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                                    <div class="py-1">
+                                        <button onclick="showBookingDetail({{ $booking->id }})" 
+                                                class="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-blue-50 flex items-center gap-3">
+                                            <i class="bi bi-eye text-blue-600 text-base"></i>
+                                            <span>Lihat Detail</span>
+                                        </button>
+                                        
+                                        @if($booking->status === 'pending')
+                                        <div class="border-t border-gray-100"></div>
+                                        <button onclick="updateBookingStatus({{ $booking->id }}, 'confirmed')" 
+                                                class="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-green-50 flex items-center gap-3">
+                                            <i class="bi bi-check-circle text-green-600 text-base"></i>
+                                            <span>Konfirmasi Booking</span>
+                                        </button>
+                                        <button onclick="updateBookingStatus({{ $booking->id }}, 'cancelled')" 
+                                                class="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-red-50 flex items-center gap-3">
+                                            <i class="bi bi-x-circle text-red-600 text-base"></i>
+                                            <span>Batalkan Booking</span>
+                                        </button>
+                                        
+                                        @elseif($booking->status === 'confirmed')
+                                        <div class="border-t border-gray-100"></div>
+                                        <button onclick="updateBookingStatus({{ $booking->id }}, 'active')" 
+                                                class="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-blue-50 flex items-center gap-3">
+                                            <i class="bi bi-play-circle text-blue-600 text-base"></i>
+                                            <span>Aktifkan Rental</span>
+                                        </button>
+                                        
+                                        @elseif($booking->status === 'active')
+                                        <div class="border-t border-gray-100"></div>
+                                        <button onclick="updateBookingStatus({{ $booking->id }}, 'completed')" 
+                                                class="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-purple-50 flex items-center gap-3">
+                                            <i class="bi bi-check2-circle text-purple-600 text-base"></i>
+                                            <span>Selesaikan Rental</span>
+                                        </button>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                         </td>
@@ -218,6 +220,33 @@
 
 @push('scripts')
 <script>
+// Toggle dropdown menu
+function toggleDropdown(button, event) {
+    event.stopPropagation();
+    const container = button.closest('.dropdown-container');
+    const menu = container.querySelector('.dropdown-menu');
+    const allMenus = document.querySelectorAll('.dropdown-menu');
+    
+    // Close all other dropdowns
+    allMenus.forEach(m => {
+        if (m !== menu) {
+            m.classList.add('hidden');
+        }
+    });
+    
+    // Toggle current dropdown
+    menu.classList.toggle('hidden');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('.dropdown-container')) {
+        document.querySelectorAll('.dropdown-menu').forEach(menu => {
+            menu.classList.add('hidden');
+        });
+    }
+});
+
 function showBookingDetail(bookingId) {
     const modal = document.getElementById('bookingDetailModal');
     const content = document.getElementById('bookingDetailContent');

@@ -27,19 +27,25 @@ class AdminController extends Controller
             ->where('end_date', '<', $today)
             ->update(['status' => 'completed']);
         
+        // Auto-fix status booking yang statusnya active tapi tanggal mulai belum tiba
+        Booking::where('status', 'active')
+            ->where('start_date', '>', $today)
+            ->update(['status' => 'confirmed']);
+        
         $totalUsers = User::count();
         $totalPenyewa = User::where('role', 'penyewa')->count();
         $totalPemilik = User::where('role', 'pemilik')->count();
         $totalMotors = Motor::count();
         $totalBookings = Booking::count();
-        $totalRevenue = Booking::where('status', 'completed')->sum('price');
+        // Use revenue sharing for accurate financial data (only verified payments)
+        $totalRevenue = RevenueSharing::whereIn('status', ['pending', 'paid'])->sum('total_amount');
         $pendingMotorsCount = Motor::where('status', 'pending_verification')->count();
         $pendingMotors = Motor::where('status', 'pending_verification')->with('owner')->latest()->take(5)->get();
         $pendingBookingsList = Booking::where('status', 'pending')->with(['renter', 'motor'])->latest()->take(5)->get();
         $availableMotors = Motor::where('status', 'available')->count();
         $pendingBookings = Booking::where('status', 'pending')->count();
         $confirmedBookings = Booking::where('status', 'confirmed')->count();
-        $activeBookings = Booking::whereIn('status', ['confirmed', 'ongoing'])->count();
+        $activeBookings = Booking::whereIn('status', ['confirmed', 'active'])->count();
         
         // Recent bookings for dashboard
         $recentBookings = Booking::with(['user', 'motor'])
@@ -298,19 +304,32 @@ class AdminController extends Controller
         
         $query = Booking::with(['renter', 'motor']);
 
-        if ($request->has('status') && $request->status !== '') {
+        // Filter by status
+        if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        if ($request->has('search') && $request->search !== '') {
+        // Filter by date range
+        if ($request->filled('date_from')) {
+            $query->where('start_date', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->where('start_date', '<=', $request->date_to);
+        }
+
+        // Filter by search
+        if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('id', 'like', "%{$search}%")
+                $q->where('booking_code', 'like', "%{$search}%")
                   ->orWhereHas('renter', function($userQ) use ($search) {
-                      $userQ->where('name', 'like', "%{$search}%");
+                      $userQ->where('name', 'like', "%{$search}%")
+                            ->orWhere('phone', 'like', "%{$search}%");
                   })
                   ->orWhereHas('motor', function($motorQ) use ($search) {
                       $motorQ->where('brand', 'like', "%{$search}%")
+                             ->orWhere('model', 'like', "%{$search}%")
                              ->orWhere('plate_number', 'like', "%{$search}%");
                   });
             });
@@ -407,8 +426,65 @@ class AdminController extends Controller
             'status' => 'required|in:pending,confirmed,active,completed,cancelled'
         ]);
 
+        // Validasi tanggal untuk mengaktifkan rental
+        if ($request->status === 'active') {
+            $today = \Carbon\Carbon::today();
+            $startDate = \Carbon\Carbon::parse($booking->start_date);
+            
+            if ($startDate->gt($today)) {
+                $errorMessage = 'Rental hanya dapat diaktifkan pada atau setelah tanggal mulai sewa (' . $startDate->format('d/m/Y') . ')';
+                
+                if ($request->expectsJson() || $request->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $errorMessage
+                    ], 422);
+                }
+                
+                return redirect()->route('admin.bookings')
+                    ->with('error', $errorMessage);
+            }
+        }
+
+        // Validasi tanggal untuk menyelesaikan rental
+        if ($request->status === 'completed') {
+            $today = \Carbon\Carbon::today();
+            $endDate = \Carbon\Carbon::parse($booking->end_date);
+            
+            if ($endDate->gt($today)) {
+                $remainingDays = $today->diffInDays($endDate, false);
+                $errorMessage = 'Rental hanya dapat diselesaikan pada atau setelah tanggal berakhir (' . $endDate->format('d/m/Y') . '). Sisa waktu: ' . abs($remainingDays) . ' hari lagi';
+                
+                if ($request->expectsJson() || $request->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $errorMessage
+                    ], 422);
+                }
+                
+                return redirect()->route('admin.bookings')
+                    ->with('error', $errorMessage);
+            }
+        }
+
         $oldStatus = $booking->status;
         $booking->update(['status' => $request->status]);
+
+        // Update revenue sharing status when booking is completed
+        if ($request->status === 'completed') {
+            $revenueSharing = \App\Models\RevenueSharing::where('booking_id', $booking->id)->first();
+            if ($revenueSharing && $revenueSharing->status === 'pending') {
+                $revenueSharing->update([
+                    'status' => 'paid',
+                    'settled_at' => now()
+                ]);
+                
+                \Log::info('Revenue sharing status updated to paid', [
+                    'booking_id' => $booking->id,
+                    'revenue_sharing_id' => $revenueSharing->id
+                ]);
+            }
+        }
 
         $statusMessages = [
             'confirmed' => 'Booking berhasil dikonfirmasi',
@@ -416,6 +492,14 @@ class AdminController extends Controller
             'active' => 'Rental berhasil diaktifkan',
             'completed' => 'Rental berhasil diselesaikan'
         ];
+
+        // Return JSON response for AJAX requests
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => $statusMessages[$request->status] ?? 'Status booking berhasil diupdate'
+            ]);
+        }
 
         return redirect()->route('admin.bookings')
             ->with('success', $statusMessages[$request->status] ?? 'Status booking berhasil diupdate');
@@ -696,12 +780,16 @@ class AdminController extends Controller
             ->whereHas('owner')
             ->whereIn('status', ['pending', 'paid']); // Include both approved payments and completed rentals
 
-        // Filter berdasarkan bulan jika ada
+        // Filter berdasarkan bulan dan tahun
+        $year = $request->filled('year') ? $request->year : now()->year;
+        
         if ($request->filled('month')) {
             $month = $request->month;
-            $year = now()->year; // Tahun sekarang
             $query->whereMonth('created_at', $month)
                   ->whereYear('created_at', $year);
+        } elseif ($request->filled('year')) {
+            // Jika hanya tahun yang dipilih (tanpa bulan)
+            $query->whereYear('created_at', $year);
         }
 
         // Get transactions dengan pagination
@@ -719,12 +807,15 @@ class AdminController extends Controller
             ')
             ->whereIn('status', ['pending', 'paid']);
         
-        // Apply month filter to summary if selected
+        // Apply month and year filter to summary
+        $year = $request->filled('year') ? $request->year : now()->year;
+        
         if ($request->filled('month')) {
             $month = $request->month;
-            $year = now()->year;
             $summaryQuery->whereMonth('created_at', $month)
                         ->whereYear('created_at', $year);
+        } elseif ($request->filled('year')) {
+            $summaryQuery->whereYear('created_at', $year);
         }
         
         $summaryData = $summaryQuery->first();
@@ -764,12 +855,15 @@ class AdminController extends Controller
                      DB::raw('SUM(revenue_sharings.total_amount) as total_revenue'))
             ->whereIn('revenue_sharings.status', ['pending', 'paid']);
         
-        // Apply month filter if selected
+        // Apply month and year filter
+        $year = $request->filled('year') ? $request->year : now()->year;
+        
         if ($request->filled('month')) {
             $month = $request->month;
-            $year = now()->year;
             $topMotorsQuery->whereMonth('revenue_sharings.created_at', $month)
                           ->whereYear('revenue_sharings.created_at', $year);
+        } elseif ($request->filled('year')) {
+            $topMotorsQuery->whereYear('revenue_sharings.created_at', $year);
         }
         
         $topMotors = $topMotorsQuery->groupBy('motors.id', 'motors.brand', 'motors.model', 'motors.plate_number')
@@ -800,12 +894,15 @@ class AdminController extends Controller
             ->selectRaw('(SELECT COUNT(*) FROM motors WHERE motors.owner_id = revenue_sharings.owner_id) as motor_count')
             ->whereIn('revenue_sharings.status', ['pending', 'paid']);
         
-        // Apply month filter if selected
+        // Apply month and year filter
+        $year = $request->filled('year') ? $request->year : now()->year;
+        
         if ($request->filled('month')) {
             $month = $request->month;
-            $year = now()->year;
             $ownerSummaryQuery->whereMonth('revenue_sharings.created_at', $month)
                              ->whereYear('revenue_sharings.created_at', $year);
+        } elseif ($request->filled('year')) {
+            $ownerSummaryQuery->whereYear('revenue_sharings.created_at', $year);
         }
         
         $ownerSummary = $ownerSummaryQuery->groupBy('revenue_sharings.owner_id', 'users.name', 'users.email')
@@ -835,11 +932,12 @@ class AdminController extends Controller
             ->whereHas('owner')
             ->whereIn('status', ['pending', 'paid']);
 
-        // Filter berdasarkan bulan jika ada
+        // Filter berdasarkan bulan dan tahun
         $dateRange = null;
+        $year = $request->filled('year') ? $request->year : now()->year;
+        
         if ($request->filled('month')) {
             $month = $request->month;
-            $year = now()->year;
             $query->whereMonth('created_at', $month)
                   ->whereYear('created_at', $year);
             
@@ -849,6 +947,9 @@ class AdminController extends Controller
                 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
             ];
             $dateRange = $monthNames[$month] . ' ' . $year;
+        } elseif ($request->filled('year')) {
+            $query->whereYear('created_at', $year);
+            $dateRange = 'Tahun ' . $year;
         }
 
         // Get all transactions untuk PDF (tanpa pagination)
@@ -857,12 +958,15 @@ class AdminController extends Controller
         // Hitung summary dari semua revenue sharing yang sudah dibuat
         $allRevenueSharing = RevenueSharing::whereIn('status', ['pending', 'paid']);
         
-        // Apply same month filter untuk summary
+        // Apply same month and year filter untuk summary
+        $year = $request->filled('year') ? $request->year : now()->year;
+        
         if ($request->filled('month')) {
             $month = $request->month;
-            $year = now()->year;
             $allRevenueSharing->whereMonth('created_at', $month)
                              ->whereYear('created_at', $year);
+        } elseif ($request->filled('year')) {
+            $allRevenueSharing->whereYear('created_at', $year);
         }
         
         $filteredRevenueSharing = $allRevenueSharing->get();
@@ -887,11 +991,14 @@ class AdminController extends Controller
                      DB::raw('SUM(revenue_sharings.total_amount) as total_revenue'))
             ->whereIn('revenue_sharings.status', ['pending', 'paid']);
             
+        $year = $request->filled('year') ? $request->year : now()->year;
+        
         if ($request->filled('month')) {
             $month = $request->month;
-            $year = now()->year;
             $topMotorsQuery->whereMonth('revenue_sharings.created_at', $month)
                           ->whereYear('revenue_sharings.created_at', $year);
+        } elseif ($request->filled('year')) {
+            $topMotorsQuery->whereYear('revenue_sharings.created_at', $year);
         }
             
         $topMotors = $topMotorsQuery->groupBy('motors.id', 'motors.brand', 'motors.model', 'motors.plate_number')
@@ -918,25 +1025,29 @@ class AdminController extends Controller
                                                DB::raw('SUM(owner_amount) as owner_earned'),
                                                DB::raw('SUM(admin_commission) as admin_earned'))
             ->join('users', 'revenue_sharings.owner_id', '=', 'users.id')
-            ->selectRaw('users.name as owner_name, users.email as owner_email')
+            ->selectRaw('users.name as owner_name, users.email as owner_email, users.phone as owner_phone')
             ->selectRaw('(SELECT COUNT(*) FROM motors WHERE motors.owner_id = revenue_sharings.owner_id) as motor_count')
             ->whereIn('revenue_sharings.status', ['pending', 'paid']);
             
+        $year = $request->filled('year') ? $request->year : now()->year;
+        
         if ($request->filled('month')) {
             $month = $request->month;
-            $year = now()->year;
             $ownerSummaryQuery->whereMonth('revenue_sharings.created_at', $month)
                              ->whereYear('revenue_sharings.created_at', $year);
+        } elseif ($request->filled('year')) {
+            $ownerSummaryQuery->whereYear('revenue_sharings.created_at', $year);
         }
             
-        $ownerSummary = $ownerSummaryQuery->groupBy('revenue_sharings.owner_id', 'users.name', 'users.email')
+        $ownerSummary = $ownerSummaryQuery->groupBy('revenue_sharings.owner_id', 'users.name', 'users.email', 'users.phone')
             ->orderBy('total_revenue', 'desc')
             ->get()
             ->map(function($item) {
                 $item->owner = (object)[
                     'id' => $item->owner_id,
                     'name' => $item->owner_name,
-                    'email' => $item->owner_email
+                    'email' => $item->owner_email,
+                    'phone' => $item->owner_phone ?? null
                 ];
                 return $item;
             });
@@ -1007,32 +1118,39 @@ class AdminController extends Controller
         $query = \App\Models\Payment::with(['booking', 'booking.renter', 'booking.motor', 'verifiedBy']);
 
         // Filter by status
-        if ($request->has('status') && $request->status !== '') {
-            if ($request->status === 'verified') {
+        if ($request->filled('status')) {
+            $status = $request->status;
+            
+            if ($status === 'verified') {
                 $query->whereNotNull('verified_at');
-            } elseif ($request->status === 'unverified') {
+            } elseif ($status === 'unverified') {
                 $query->whereNull('verified_at');
-            } else {
-                $query->where('status', $request->status);
+            } elseif (in_array($status, ['pending', 'paid', 'failed'])) {
+                $query->where('status', $status);
             }
         }
 
         // Filter by payment method
-        if ($request->has('payment_method') && $request->payment_method !== '') {
-            $query->where('payment_method', $request->payment_method);
+        if ($request->filled('payment_method')) {
+            $paymentMethod = $request->payment_method;
+            $query->where('payment_method', $paymentMethod);
         }
 
-        // Search by penyewa name or booking ID
-        if ($request->has('search') && $request->search !== '') {
-            $search = $request->search;
+        // Search by penyewa name, email, or booking ID
+        if ($request->filled('search')) {
+            $search = trim($request->search);
             $query->where(function($q) use ($search) {
+                // Search in renter name and email
                 $q->whereHas('booking.renter', function($q2) use ($search) {
                     $q2->where('name', 'like', "%{$search}%")
-                      ->orWhere('email', 'like', "%{$search}%");
-                })->orWhere('id', 'like', "%{$search}%")
-                  ->orWhereHas('booking', function($q2) use ($search) {
-                      $q2->where('id', 'like', "%{$search}%");
-                  });
+                       ->orWhere('email', 'like', "%{$search}%");
+                })
+                // Search by payment ID
+                ->orWhere('id', 'like', "%{$search}%")
+                // Search by booking ID
+                ->orWhereHas('booking', function($q2) use ($search) {
+                    $q2->where('id', 'like', "%{$search}%");
+                });
             });
         }
 

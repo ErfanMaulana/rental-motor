@@ -3,13 +3,6 @@
 @section('title', 'Laporan Keuangan')
 
 @section('content')
-<div class="mb-6">
-    <h1 class="text-2xl font-semibold text-gray-900 flex items-center">
-        <i class="bi bi-graph-up text-blue-600 mr-3"></i>
-        Laporan Keuangan
-    </h1>
-    <p class="text-sm text-gray-500 mt-1 ml-11">Analisis pendapatan dan revenue sharing sistem rental</p>
-</div>
 
 <div class="bg-white border border-gray-200 rounded-lg p-4 mb-6">
     <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -48,6 +41,12 @@
             <option value="10" {{ request('month') == '10' ? 'selected' : '' }}>Oktober</option>
             <option value="11" {{ request('month') == '11' ? 'selected' : '' }}>November</option>
             <option value="12" {{ request('month') == '12' ? 'selected' : '' }}>Desember</option>
+        </select>
+        <select name="year" onchange="this.form.submit()" class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500">
+            <option value="">Semua Tahun</option>
+            @for($y = date('Y'); $y >= 2020; $y--)
+                <option value="{{ $y }}" {{ request('year') == $y ? 'selected' : '' }}>{{ $y }}</option>
+            @endfor
         </select>
         <a href="{{ route('admin.financial-report') }}" class="px-3 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
             <i class="bi bi-arrow-clockwise"></i> Reset Filter

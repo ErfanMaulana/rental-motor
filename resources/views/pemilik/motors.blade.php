@@ -93,7 +93,7 @@
 
 <!-- Motors List -->
 @if($motors->count() > 0)
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         @foreach($motors as $motor)
         <div class="bg-white rounded-lg shadow hover:shadow-lg transition-shadow flex flex-col overflow-visible">
             <!-- Motor Image -->
@@ -169,19 +169,18 @@
                 <!-- Rental Rates -->
                 @if($motor->rentalRate)
                     <div class="mt-auto pt-3 border-t">
-                        <p class="text-xs font-semibold text-gray-500 uppercase mb-2">Harga Sewa</p>
-                        <div class="grid grid-cols-3 gap-2 text-center">
-                            <div class="bg-blue-50 rounded p-2">
-                                <p class="text-xs text-gray-600">Harian</p>
-                                <p class="font-bold text-blue-600 text-xs">Rp {{ number_format($motor->rentalRate->daily_rate / 1000, 0) }}k</p>
+                        <div class="grid grid-cols-3 gap-1 text-center">
+                            <div>
+                                <small class="text-gray-500 text-[9px] block">Harian</small>
+                                <div class="font-semibold text-blue-600 text-[10px]">Rp {{ number_format($motor->rentalRate->daily_rate, 0, ',', '.') }}</div>
                             </div>
-                            <div class="bg-blue-50 rounded p-2">
-                                <p class="text-xs text-gray-600">Mingguan</p>
-                                <p class="font-bold text-blue-600 text-xs">Rp {{ number_format($motor->rentalRate->weekly_rate / 1000, 0) }}k</p>
+                            <div>
+                                <small class="text-gray-500 text-[9px] block">Mingguan</small>
+                                <div class="font-semibold text-blue-600 text-[10px]">Rp {{ number_format($motor->rentalRate->weekly_rate, 0, ',', '.') }}</div>
                             </div>
-                            <div class="bg-blue-50 rounded p-2">
-                                <p class="text-xs text-gray-600">Bulanan</p>
-                                <p class="font-bold text-blue-600 text-xs">Rp {{ number_format($motor->rentalRate->monthly_rate / 1000, 0) }}k</p>
+                            <div>
+                                <small class="text-gray-500 text-[9px] block">Bulanan</small>
+                                <div class="font-semibold text-blue-600 text-[10px]">Rp {{ number_format($motor->rentalRate->monthly_rate, 0, ',', '.') }}</div>
                             </div>
                         </div>
                     </div>

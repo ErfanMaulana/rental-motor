@@ -5,7 +5,9 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\Motor;
 use App\Models\Booking;
+use App\Models\RevenueSharing;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class UpdateMotorStatus extends Command
 {
@@ -110,6 +112,22 @@ class UpdateMotorStatus extends Command
             
             if (!$isDryRun) {
                 $booking->update(['status' => 'completed']);
+                
+                // Update revenue sharing status to 'paid' when booking is completed
+                $revenueSharing = RevenueSharing::where('booking_id', $booking->id)->first();
+                if ($revenueSharing && $revenueSharing->status === 'pending') {
+                    $revenueSharing->update([
+                        'status' => 'paid',
+                        'settled_at' => now()
+                    ]);
+                    
+                    $this->line("   💰 Revenue sharing updated to 'paid'");
+                    
+                    Log::info('Revenue sharing status updated to paid by scheduler', [
+                        'booking_id' => $booking->id,
+                        'revenue_sharing_id' => $revenueSharing->id
+                    ]);
+                }
             }
         }
 

@@ -49,6 +49,12 @@ class PenyewaController extends Controller
             ->where('end_date', '<', $today)
             ->update(['status' => 'completed']);
         
+        // Auto-fix status booking yang statusnya active tapi tanggal mulai belum tiba
+        Booking::where('renter_id', $penyewa->id)
+            ->where('status', 'active')
+            ->where('start_date', '>', $today)
+            ->update(['status' => 'confirmed']);
+        
         // Statistik
         $totalBookings = Booking::where('renter_id', $penyewa->id)->count();
         $activeBookings = Booking::where('renter_id', $penyewa->id)

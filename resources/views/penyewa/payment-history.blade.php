@@ -12,7 +12,7 @@
 <div class="bg-white rounded-lg shadow-sm">
     <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
         <h5 class="text-lg font-semibold text-gray-900">
-            <i class="bi bi-clock-history mr-2"></i>Daftar Riwayat Pembayaran
+            <i class="mr-2"></i>Daftar Riwayat Pembayaran
         </h5>
         <a href="{{ route('penyewa.bookings') }}" class="px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition">
             <i class="bi bi-calendar-check mr-1"></i>Lihat Booking
