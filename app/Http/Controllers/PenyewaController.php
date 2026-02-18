@@ -64,9 +64,9 @@ class PenyewaController extends Controller
             ->where('status', 'completed')
             ->count();
 
-        // Total spent - dari booking yang sudah completed
+        // Total spent - dari booking yang sudah dibayar (confirmed, active, completed)
         $totalSpent = Booking::where('renter_id', $penyewa->id)
-            ->where('status', 'completed')
+            ->whereIn('status', ['confirmed', 'active', 'completed'])
             ->sum('price');
 
         // Recent bookings untuk dashboard
@@ -747,9 +747,9 @@ class PenyewaController extends Controller
             ->limit(10)
             ->get();
 
-        // Calculate total spending
+        // Calculate total spending - dari booking yang sudah dibayar
         $totalSpending = Booking::where('renter_id', $penyewa->id)
-            ->whereIn('status', ['completed', 'active'])
+            ->whereIn('status', ['confirmed', 'active', 'completed'])
             ->sum('price');
 
         return view('penyewa.reports', compact(
@@ -788,7 +788,7 @@ class PenyewaController extends Controller
         $summary = [
             'total_bookings' => $bookings->count(),
             'completed_bookings' => $bookings->where('status', 'completed')->count(),
-            'total_spending' => $bookings->whereIn('status', ['completed', 'active'])->sum('price'),
+            'total_spending' => $bookings->whereIn('status', ['confirmed', 'active', 'completed'])->sum('price'),
             'average_rating_given' => $ratings->avg('rating')
         ];
         

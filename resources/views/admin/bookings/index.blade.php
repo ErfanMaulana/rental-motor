@@ -101,14 +101,14 @@
                 </td>
                 <td class="px-4 py-3 text-sm">
                     <div class="font-medium text-gray-900">{{ $booking->motor->brand }} {{ $booking->motor->model }}</div>
-                    <div class="text-xs text-gray-500">{{ $booking->motor->plate_number }} - {{ $booking->motor->cc }}cc</div>
+                    <div class="text-xs text-gray-500">{{ $booking->motor->plate_number }} - {{ $booking->motor->type_cc }}</div>
                 </td>
                 <td class="px-4 py-3 text-sm">
                     <div class="font-medium text-gray-900">{{ \Carbon\Carbon::parse($booking->start_date)->format('d/m/Y') }}</div>
                     <div class="text-xs text-gray-500">s/d {{ \Carbon\Carbon::parse($booking->end_date)->format('d/m/Y') }}</div>
                 </td>
                 <td class="px-4 py-3">
-                    <span class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">{{ $booking->duration }} hari</span>
+                    <span class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">{{ $booking->getDurationInDays() }} hari</span>
                 </td>
                 <td class="px-4 py-3 text-sm font-medium text-gray-900">
                     Rp {{ number_format($booking->price, 0, ',', '.') }}
@@ -265,6 +265,26 @@
 </div>
 @endif
 
+<!-- Modal Detail Booking -->
+<div id="bookingDetailModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onclick="closeBookingModal()">
+    <div class="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between p-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900">Detail Pemesanan</h3>
+            <button onclick="closeBookingModal()" class="text-gray-400 hover:text-gray-600">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        
+        <!-- Modal Body -->
+        <div id="bookingDetailContent" class="p-4">
+            <div class="flex items-center justify-center py-8">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -348,13 +368,217 @@ document.addEventListener('click', function(event) {
 });
 
 function viewBooking(bookingId) {
-    // Implement view booking with Tailwind modal or SweetAlert
+    const modal = document.getElementById('bookingDetailModal');
+    const content = document.getElementById('bookingDetailContent');
+    
+    // Show modal with loading state
+    modal.classList.remove('hidden');
+    content.innerHTML = `
+        <div class="flex justify-center items-center py-12">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+    `;
+    
+    // Fetch booking details
     fetch(`/admin/bookings/${bookingId}`)
         .then(response => response.json())
         .then(data => {
-            alert(`Detail Pemesanan:\nKode: ${data.booking_code}\nPenyewa: ${data.renter.name}\nMotor: ${data.motor.brand} ${data.motor.model}\nTotal: Rp ${new Intl.NumberFormat('id-ID').format(data.price)}`);
+            if (data.error) {
+                throw new Error(data.message || 'Gagal memuat detail booking');
+            }
+            
+            const booking = data;
+            const startDate = new Date(booking.start_date);
+            const endDate = new Date(booking.end_date);
+            
+            // Calculate duration in days
+            const diffTime = Math.abs(endDate - startDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+            const duration = booking.duration_days || diffDays;
+            
+            // Format currency
+            const formatCurrency = (amount) => {
+                return new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR',
+                    minimumFractionDigits: 0
+                }).format(amount);
+            };
+            
+            // Format date
+            const formatDate = (date) => {
+                return new Intl.DateTimeFormat('id-ID', {
+                    day: '2-digit',
+                    month: 'long',
+                    year: 'numeric'
+                }).format(date);
+            };
+            
+            // Status badge HTML
+            let statusBadge = '';
+            if (booking.status === 'pending') {
+                statusBadge = '<span class="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-700 rounded">Menunggu</span>';
+            } else if (booking.status === 'confirmed') {
+                statusBadge = '<span class="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded">Dikonfirmasi</span>';
+            } else if (booking.status === 'active' || booking.status === 'ongoing') {
+                statusBadge = '<span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-700 rounded">Berlangsung</span>';
+            } else if (booking.status === 'completed') {
+                statusBadge = '<span class="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-700 rounded">Selesai</span>';
+            } else if (booking.status === 'cancelled') {
+                statusBadge = '<span class="px-2 py-1 text-xs font-medium bg-red-100 text-red-700 rounded">Dibatalkan</span>';
+            }
+            
+            // Payment method badge HTML
+            let paymentBadge = '-';
+            if (booking.payment_method) {
+                const methodMap = {
+                    'dana': '<span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded"><i class="bi bi-wallet2 mr-1"></i>DANA</span>',
+                    'gopay': '<span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded"><i class="bi bi-wallet2 mr-1"></i>GoPay</span>',
+                    'bank': '<span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded"><i class="bi bi-bank mr-1"></i>Transfer Bank</span>',
+                    'shopeepay': '<span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded"><i class="bi bi-wallet2 mr-1"></i>ShopeePay</span>'
+                };
+                paymentBadge = methodMap[booking.payment_method] || booking.payment_method;
+            }
+            
+            content.innerHTML = `
+                <div class="space-y-4">
+                    <!-- Status Badge -->
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="text-base font-bold text-gray-900">${booking.booking_code}</h4>
+                            <p class="text-xs text-gray-500">${formatDate(new Date(booking.created_at))}</p>
+                        </div>
+                        ${statusBadge}
+                    </div>
+                    
+                    <!-- Informasi Penyewa -->
+                    <div>
+                        <h4 class="text-xs font-semibold text-gray-700 mb-2 flex items-center">
+                            <i class="bi bi-person-circle mr-1.5 text-sm text-blue-600"></i>Informasi Penyewa
+                        </h4>
+                        <div class="bg-gray-50 rounded-lg p-3 space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Nama:</span>
+                                <span class="font-medium text-gray-900">${booking.renter.name}</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Email:</span>
+                                <span class="font-medium text-gray-900 text-xs">${booking.renter.email}</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">No. Telepon:</span>
+                                <span class="font-medium text-gray-900">${booking.renter.phone || '-'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Informasi Motor -->
+                    <div>
+                        <h4 class="text-xs font-semibold text-gray-700 mb-2 flex items-center">
+                            <i class="bi bi-bicycle mr-1.5 text-sm text-blue-600"></i>Informasi Motor
+                        </h4>
+                        <div class="bg-gray-50 rounded-lg p-3 space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Brand & Model:</span>
+                                <span class="font-medium text-gray-900">${booking.motor.brand} ${booking.motor.model}</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Plat Nomor:</span>
+                                <span class="font-medium text-gray-900">${booking.motor.plate_number}</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Kapasitas:</span>
+                                <span class="font-medium text-gray-900">${booking.motor.type_cc || '-'}</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Pemilik:</span>
+                                <span class="font-medium text-gray-900">${booking.motor.owner?.name || '-'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Detail Sewa -->
+                    <div>
+                        <h4 class="text-xs font-semibold text-gray-700 mb-2 flex items-center">
+                            <i class="bi bi-calendar-check mr-1.5 text-sm text-blue-600"></i>Detail Sewa
+                        </h4>
+                        <div class="bg-gray-50 rounded-lg p-3 space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Tanggal Mulai:</span>
+                                <span class="font-medium text-gray-900">${formatDate(startDate)}</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Tanggal Selesai:</span>
+                                <span class="font-medium text-gray-900">${formatDate(endDate)}</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Durasi:</span>
+                                <span class="font-medium text-gray-900">${duration} hari</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Metode Pembayaran:</span>
+                                <span class="font-medium text-gray-900">${paymentBadge}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Rincian Biaya -->
+                    <div>
+                        <h4 class="text-xs font-semibold text-gray-700 mb-2 flex items-center">
+                            <i class="bi bi-cash-stack mr-1.5 text-sm text-blue-600"></i>Rincian Biaya
+                        </h4>
+                        <div class="bg-blue-50 rounded-lg p-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm font-semibold text-gray-900">Total Biaya</span>
+                                <span class="text-lg font-bold text-blue-600">${formatCurrency(booking.price)}</span>
+                            </div>
+                        </div>
+                        ${booking.notes ? `
+                        <div class="mt-3 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                            <p class="text-xs text-gray-600 mb-1 font-semibold">Catatan:</p>
+                            <p class="text-xs text-gray-700">${booking.notes}</p>
+                        </div>
+                        ` : ''}
+                    </div>
+                    
+                    <!-- Action Button -->
+                    <div class="flex justify-end pt-2">
+                        <button onclick="closeBookingModal()" class="px-4 py-2 text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700">
+                            Tutup
+                        </button>
+                    </div>
+                </div>
+            `;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            content.innerHTML = `
+                <div class="text-center py-8">
+                    <i class="bi bi-exclamation-circle text-4xl text-red-500 mb-3"></i>
+                    <p class="text-gray-900 font-medium mb-2">Gagal Memuat Detail</p>
+                    <p class="text-sm text-gray-500 mb-4">${error.message}</p>
+                    <button onclick="closeBookingModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                        Tutup
+                    </button>
+                </div>
+            `;
         });
 }
+
+function closeBookingModal() {
+    const modal = document.getElementById('bookingDetailModal');
+    modal.classList.add('hidden');
+}
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        const modal = document.getElementById('bookingDetailModal');
+        if (!modal.classList.contains('hidden')) {
+            closeBookingModal();
+        }
+    }
+});
 
 function confirmBooking(bookingId) {
     if (confirm('Konfirmasi pemesanan ini?')) {

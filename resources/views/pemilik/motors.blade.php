@@ -2,6 +2,10 @@
 
 @section('title', 'Motor Saya')
 
+@php
+use Illuminate\Support\Facades\Storage;
+@endphp
+
 @section('content')
 <!-- Content Header -->
 <div class="mb-6">
@@ -93,82 +97,101 @@
 
 <!-- Motors List -->
 @if($motors->count() > 0)
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
         @foreach($motors as $motor)
-        <div class="bg-white rounded-lg shadow hover:shadow-lg transition-shadow flex flex-col overflow-visible">
+        <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-visible motor-card hover:shadow-md transition-shadow">
             <!-- Motor Image -->
-            <div class="relative h-48 bg-gray-100 overflow-hidden rounded-t-lg">
+            <div class="relative overflow-hidden rounded-t-lg" style="aspect-ratio: 4/3;">
                 @if($motor->photo)
                     <img src="{{ Storage::url($motor->photo) }}" 
                          class="w-full h-full object-cover" 
-                         alt="{{ $motor->brand }}"
-                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                    <div class="w-full h-full hidden items-center justify-center bg-gray-100">
-                        <div class="text-center">
-                            <i class="bi bi-motorcycle text-gray-400 text-5xl"></i>
-                            <p class="text-xs text-gray-400 mt-2">Foto tidak ditemukan</p>
-                        </div>
-                    </div>
+                         alt="{{ $motor->brand }}">
                 @else
-                    <div class="w-full h-full flex items-center justify-center bg-gray-100">
-                        <div class="text-center">
-                            <i class="bi bi-motorcycle text-gray-400 text-5xl"></i>
-                            <p class="text-xs text-gray-400 mt-2">Belum ada foto</p>
-                        </div>
+                    <div class="w-full h-full bg-gray-100 flex items-center justify-center">
+                        <i class="bi bi-motorcycle text-gray-400" style="font-size: 1.5rem;"></i>
                     </div>
                 @endif
                 
                 <!-- Status Badge -->
-                <div class="absolute top-3 left-3">
+                <div class="absolute top-0 right-0 m-2">
                     @php
                         $currentStatus = $motor->getCurrentStatus();
-                        $currentBooking = $motor->getCurrentBooking();
                     @endphp
                     
                     @if($currentStatus === 'pending_verification')
-                        <span class="px-3 py-1 bg-yellow-500 text-white text-xs font-semibold rounded-full shadow">
-                            Menunggu Verifikasi
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-yellow-500 text-white">
+                            <i class="bi bi-clock mr-0.5 text-[10px]"></i>Menunggu Verifikasi
                         </span>
                     @elseif($currentStatus === 'rented')
-                        <span class="px-3 py-1 bg-orange-500 text-white text-xs font-semibold rounded-full shadow">
-                            Disewa
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-orange-500 text-white">
+                            <i class="bi bi-person-check mr-0.5 text-[10px]"></i>Disewa
                         </span>
                     @elseif($currentStatus === 'available')
-                        <span class="px-3 py-1 bg-green-500 text-white text-xs font-semibold rounded-full shadow">
-                            Tersedia
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-500 text-white">
+                            <i class="bi bi-check-circle mr-0.5 text-[10px]"></i>Tersedia
                         </span>
                     @elseif($currentStatus === 'maintenance')
-                        <span class="px-3 py-1 bg-gray-500 text-white text-xs font-semibold rounded-full shadow">
-                            Maintenance
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-500 text-white">
+                            <i class="bi bi-tools mr-0.5 text-[10px]"></i>Maintenance
                         </span>
                     @endif
                 </div>
             </div>
 
             <!-- Motor Info -->
-            <div class="p-5 flex-1 flex flex-col">
-                <!-- Model Motor (Nama Utama) -->
-                <div class="mb-3">
-                    <h3 class="text-lg font-bold text-gray-900 mb-1">{{ $motor->model }}</h3>
-                    <div class="flex items-center text-sm text-gray-600">
-                        <i class="bi bi-tag mr-1"></i>
-                        <span>{{ $motor->brand }}</span>
-                        <span class="mx-2">•</span>
-                        <i class="bi bi-credit-card mr-1"></i>
-                        <span>{{ $motor->plate_number }}</span>
-                        <span class="mx-2">•</span>
-                        <i class="bi bi-gear mr-1"></i>
-                        <span>{{ $motor->type_cc }}</span>
+            <div class="p-2">
+                <h5 class="text-sm font-semibold text-gray-900 flex items-center mb-1">
+                    <i class="bi bi-motorcycle text-blue-600 mr-1 text-sm"></i>
+                    {{ $motor->model }}
+                </h5>
+                <p class="text-gray-600 text-[10px] mb-1.5">
+                    <i class="bi bi-tag mr-0.5 text-[10px]"></i>{{ $motor->brand }}
+                    <span class="ml-2">
+                        <i class="bi bi-credit-card mr-0.5 text-[10px]"></i>{{ $motor->plate_number }}
+                    </span>
+                    <span class="ml-2">
+                        <i class="bi bi-gear mr-0.5 text-[10px]"></i>{{ $motor->type_cc }}
+                    </span>
+                </p>
+                
+                <!-- Owner Info -->
+                <div class="mb-1.5 border-t border-gray-100 pt-1.5">
+                    <div class="flex items-start justify-between gap-2">
+                        <!-- Owner Details -->
+                        <div class="flex items-center flex-1">
+                            <i class="bi bi-person-circle mr-1 text-gray-400 text-xs"></i>
+                            <div>
+                                <div class="font-medium text-[10px] text-gray-900">{{ $motor->owner->name }}</div>
+                                <small class="text-gray-500 text-[9px]">{{ $motor->owner->email }}</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Document Photo -->
+                        @if($motor->document)
+                            <div class="flex items-center gap-1">
+                                <div class="text-right">
+                                    <small class="text-gray-500 text-[9px] block">Dokumen:</small>
+                                    <i class="bi bi-file-earmark-text text-gray-400 text-[8px]"></i>
+                                </div>
+                                <img src="{{ Storage::url($motor->document) }}" 
+                                     alt="Dokumen Motor" 
+                                     class="rounded border border-gray-200 cursor-pointer hover:border-blue-500 transition"
+                                     style="width: 45px; height: 30px; object-fit: cover;"
+                                     onclick="showDocumentPreview('{{ Storage::url($motor->document) }}')"
+                                     title="Klik untuk memperbesar">
+                            </div>
+                        @else
+                            <div class="flex items-center gap-1">
+                                <i class="bi bi-file-earmark-x text-gray-400 text-xs"></i>
+                                <small class="text-gray-500 text-[9px]">Tidak ada</small>
+                            </div>
+                        @endif
                     </div>
                 </div>
-                
-                @if($motor->description)
-                    <p class="text-sm text-gray-500 mb-4 line-clamp-2">{{ $motor->description }}</p>
-                @endif
 
                 <!-- Rental Rates -->
                 @if($motor->rentalRate)
-                    <div class="mt-auto pt-3 border-t">
+                    <div class="mb-1.5 border-t border-gray-100 pt-1.5">
                         <div class="grid grid-cols-3 gap-1 text-center">
                             <div>
                                 <small class="text-gray-500 text-[9px] block">Harian</small>
@@ -187,18 +210,20 @@
                 @endif
             </div>
 
-            <!-- Footer Actions -->
-            <div class="px-5 py-3 bg-gray-50 border-t flex items-center justify-between rounded-b-lg relative overflow-visible">
-                <span class="text-xs text-gray-500">
-                    <i class="bi bi-calendar mr-1"></i>{{ $motor->created_at->diffForHumans() }}
-                </span>
-                
-                <!-- Three Dot Menu -->
-                <div class="relative" x-data="{ open: false }">
-                    <button @click="open = !open" 
-                            @click.away="open = false"
-                            class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded-full transition"
-                            title="Menu Aksi">
+            <!-- Card Footer with Action Buttons -->
+            <div class="bg-gray-50 px-3 py-2.5 border-t border-gray-100">
+                <div class="flex justify-between items-center">
+                    <small class="text-gray-500 text-[10px]">
+                        <i class="bi bi-calendar mr-1 text-[10px]"></i>
+                        {{ $motor->created_at->format('d M Y') }}
+                    </small>
+                    
+                    <!-- Three Dot Menu -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" 
+                                @click.away="open = false"
+                                class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded-full transition"
+                                title="Menu Aksi">
                         <i class="bi bi-three-dots-vertical text-lg"></i>
                     </button>
                     
@@ -297,4 +322,73 @@
     </div>
 @endif
 
+<!-- Document Preview Modal -->
+<div x-data="{ open: false }" 
+     x-show="open" 
+     @open-document-preview.window="open = true"
+     @keydown.escape.window="open = false"
+     style="display: none;"
+     class="fixed inset-0 z-50 overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div x-show="open" 
+             x-transition:enter="ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 transition-opacity bg-black bg-opacity-75"
+             @click="open = false"></div>
+
+        <!-- Modal panel -->
+        <div x-show="open"
+             x-transition:enter="ease-out duration-300"
+             x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+             x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+             x-transition:leave="ease-in duration-200"
+             x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+             x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+             class="inline-block w-full max-w-4xl my-8 overflow-hidden text-left align-middle transition-all transform bg-gray-900 rounded-lg shadow-xl">
+            
+            <!-- Header -->
+            <div class="flex items-center justify-between px-6 py-4 bg-gray-800 text-white">
+                <h3 class="text-lg font-medium">
+                    <i class="bi bi-file-earmark-text mr-2"></i>Preview Dokumen Motor
+                </h3>
+                <button @click="open = false" class="text-white hover:text-gray-300">
+                    <i class="bi bi-x-lg text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- Body -->
+            <div class="p-0 text-center bg-gray-900">
+                <img id="documentPreviewImage" 
+                     src="" 
+                     alt="Dokumen Motor" 
+                     class="w-full"
+                     style="max-height: 80vh; object-fit: contain;">
+            </div>
+            
+            <!-- Footer -->
+            <div class="flex justify-end px-6 py-4 bg-gray-800">
+                <button @click="open = false" class="px-4 py-2 text-white bg-gray-700 rounded-lg hover:bg-gray-600 transition">
+                    <i class="bi bi-x-circle mr-2"></i>Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
+
+@push('scripts')
+<script>
+// Function to show document preview
+function showDocumentPreview(imageUrl) {
+    const previewImage = document.getElementById('documentPreviewImage');
+    previewImage.src = imageUrl;
+    window.dispatchEvent(new CustomEvent('open-document-preview'));
+}
+</script>
+@endpush

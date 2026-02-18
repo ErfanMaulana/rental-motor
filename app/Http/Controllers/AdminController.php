@@ -349,7 +349,7 @@ class AdminController extends Controller
 
     public function showBooking($id)
     {
-        $booking = Booking::with(['renter', 'motor'])->findOrFail($id);
+        $booking = Booking::with(['renter', 'motor', 'motor.owner', 'payment'])->findOrFail($id);
         return response()->json($booking);
     }
 
@@ -1324,7 +1324,7 @@ class AdminController extends Controller
                     ] : null,
                     'booking' => [
                         'id' => $payment->booking->id,
-                        'duration' => $payment->booking->duration,
+                        'duration' => $payment->booking->getDurationInDays(),
                         'formatted_rental_period' => $payment->booking->start_date->format('d M Y') . ' - ' . $payment->booking->end_date->format('d M Y'),
                         'renter' => [
                             'name' => $payment->booking->renter->name,

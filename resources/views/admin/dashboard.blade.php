@@ -132,9 +132,9 @@
     </div>
 
     <!-- Content Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 gap-6">
         <!-- Recent Bookings -->
-        <div class="lg:col-span-2">
+        <div>
             <div class="bg-white shadow-sm rounded-lg overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                     <h2 class="text-lg font-semibold text-gray-900">
@@ -195,64 +195,7 @@
             </div>
         </div>
 
-        <!-- Sidebar -->
-        <div class="space-y-6">
-            <!-- Action Required -->
-            <div class="bg-white shadow-sm rounded-lg overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <h2 class="text-lg font-semibold text-gray-900">
-                        <i class="bi bi-exclamation-circle mr-2 text-orange-600"></i>
-                        Perlu Tindakan
-                    </h2>
-                </div>
-                <div class="p-6 space-y-3">
-                    @if($pendingMotorsCount > 0)
-                    <a href="{{ route('admin.motors') }}?status=pending_verification" 
-                       class="block p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded hover:bg-yellow-100 transition">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-semibold text-yellow-800">Motor Perlu Verifikasi</p>
-                                <p class="text-xs text-yellow-600 mt-1">{{ $pendingMotorsCount }} motor menunggu</p>
-                            </div>
-                            <i class="bi bi-arrow-right text-yellow-600 text-lg"></i>
-                        </div>
-                    </a>
-                    @endif
-                    
-                    @if($pendingBookings > 0)
-                    <a href="{{ route('admin.bookings') }}?status=pending" 
-                       class="block p-4 bg-blue-50 border-l-4 border-blue-400 rounded hover:bg-blue-100 transition">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-semibold text-blue-800">Booking Menunggu</p>
-                                <p class="text-xs text-blue-600 mt-1">{{ $pendingBookings }} booking baru</p>
-                            </div>
-                            <i class="bi bi-arrow-right text-blue-600 text-lg"></i>
-                        </div>
-                    </a>
-                    @endif
 
-                    <a href="{{ route('admin.payments') }}" 
-                       class="block p-4 bg-purple-50 border-l-4 border-purple-400 rounded hover:bg-purple-100 transition">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-semibold text-purple-800">Verifikasi Pembayaran</p>
-                                <p class="text-xs text-purple-600 mt-1">Cek pembayaran pending</p>
-                            </div>
-                            <i class="bi bi-arrow-right text-purple-600 text-lg"></i>
-                        </div>
-                    </a>
-
-                    @if($pendingMotorsCount == 0 && $pendingBookings == 0)
-                    <div class="text-center py-4 bg-green-50 rounded-lg border border-green-200">
-                        <i class="bi bi-check-circle text-green-500 text-3xl"></i>
-                        <p class="text-sm text-green-700 font-medium mt-2">Semua Booking & Motor Terverifikasi!</p>
-                        <p class="text-xs text-green-600 mt-1">Sistem berjalan lancar</p>
-                    </div>
-                    @endif
-                </div>
-            </div>
-        </div>
     </div>
 @endsection
 
