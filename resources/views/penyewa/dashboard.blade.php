@@ -60,8 +60,8 @@
             <div class="p-6">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
-                        <div class="p-3 rounded-lg bg-yellow-100">
-                            <i class="bi bi-clock text-2xl text-yellow-600"></i>
+                        <div class="p-3 rounded-lg bg-blue-100">
+                            <i class="bi bi-clock text-2xl text-blue-600"></i>
                         </div>
                     </div>
                     <div class="ml-5 w-0 flex-1">
@@ -78,8 +78,8 @@
             <div class="p-6">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
-                        <div class="p-3 rounded-lg bg-green-100">
-                            <i class="bi bi-check-circle text-2xl text-green-600"></i>
+                        <div class="p-3 rounded-lg bg-blue-100">
+                            <i class="bi bi-check-circle text-2xl text-blue-600"></i>
                         </div>
                     </div>
                     <div class="ml-5 w-0 flex-1">
@@ -96,8 +96,8 @@
             <div class="p-6">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
-                        <div class="p-3 rounded-lg bg-cyan-100">
-                            <i class="bi bi-currency-dollar text-2xl text-cyan-600"></i>
+                        <div class="p-3 rounded-lg bg-blue-100">
+                            <i class="bi bi-currency-dollar text-2xl text-blue-600"></i>
                         </div>
                     </div>
                     <div class="ml-5 w-0 flex-1">
@@ -217,14 +217,31 @@
                                             {{ \Carbon\Carbon::parse($booking->start_date)->format('d M Y') }}
                                         </p>
                                     </div>
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                        @if($booking->status === 'confirmed') bg-blue-100 text-blue-800
-                                        @elseif($booking->status === 'completed') bg-green-100 text-green-800
-                                        @elseif($booking->status === 'cancelled') bg-red-100 text-red-800
-                                        @else bg-gray-100 text-gray-800
-                                        @endif">
-                                        {{ ucfirst($booking->status) }}
-                                    </span>
+                                    @if($booking->status == 'pending')
+                                        <span class="px-2.5 py-1 text-xs font-medium bg-yellow-100 text-yellow-700 rounded">
+                                            Menunggu
+                                        </span>
+                                    @elseif($booking->status == 'confirmed')
+                                        <span class="px-2.5 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded">
+                                            Dikonfirmasi
+                                        </span>
+                                    @elseif($booking->status == 'ongoing' || $booking->status == 'active')
+                                        <span class="px-2.5 py-1 text-xs font-medium bg-green-100 text-green-700 rounded">
+                                            Berlangsung
+                                        </span>
+                                    @elseif($booking->status == 'completed')
+                                        <span class="px-2.5 py-1 text-xs font-medium bg-purple-100 text-purple-700 rounded">
+                                            Selesai
+                                        </span>
+                                    @elseif($booking->status == 'cancelled')
+                                        <span class="px-2.5 py-1 text-xs font-medium bg-red-100 text-red-700 rounded">
+                                            Dibatalkan
+                                        </span>
+                                    @else
+                                        <span class="px-2.5 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded">
+                                            {{ ucfirst($booking->status) }}
+                                        </span>
+                                    @endif
                                 </div>
                             </div>
                             @endforeach

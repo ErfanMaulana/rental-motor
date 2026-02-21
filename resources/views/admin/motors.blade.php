@@ -12,15 +12,15 @@ use Illuminate\Support\Facades\Storage;
     <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
         <div class="text-center">
             <p class="text-xs text-gray-500 mb-1">Total Motor</p>
-            <p class="text-2xl font-semibold text-gray-900">{{ $motors->total() }}</p>
+            <p class="text-2xl font-semibold text-blue-600">{{ $motors->total() }}</p>
         </div>
         <div class="text-center">
             <p class="text-xs text-gray-500 mb-1">Perlu Verifikasi</p>
-            <p class="text-2xl font-semibold text-yellow-600">{{ $pendingCount ?? 0 }}</p>
+            <p class="text-2xl font-semibold text-blue-600">{{ $pendingCount ?? 0 }}</p>
         </div>
         <div class="text-center">
             <p class="text-xs text-gray-500 mb-1">Terverifikasi</p>
-            <p class="text-2xl font-semibold text-green-600">{{ $verifiedCount ?? 0 }}</p>
+            <p class="text-2xl font-semibold text-blue-600">{{ $verifiedCount ?? 0 }}</p>
         </div>
         <div class="text-center">
             <p class="text-xs text-gray-500 mb-1">Tersedia</p>

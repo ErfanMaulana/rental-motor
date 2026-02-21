@@ -1,14 +1,9 @@
 @extends('layouts.fann')
 
-@section('title', 'Riwayat Pembayaran')
+@section('title', 'Riwayat Pembayaran - Lihat semua riwayat pembayaran dan transaksi Anda')
 
 @section('content')
 <!-- Content Header -->
-<div class="mb-6">
-    <h1 class="text-3xl font-bold text-gray-900">Riwayat Pembayaran</h1>
-    <p class="text-gray-600 mt-1">Lihat semua riwayat pembayaran dan transaksi Anda</p>
-</div>
-
 <div class="bg-white rounded-lg shadow-sm">
     <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
         <h5 class="text-lg font-semibold text-gray-900">
@@ -221,6 +216,10 @@ function toggleDropdown(id) {
     dropdown.classList.toggle('hidden');
 }
 
+function formatCurrency(amount) {
+    return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+
 function showPaymentDetail(paymentId) {
     const payments = @json($payments->items());
     const payment = payments.find(p => p.id === paymentId);
@@ -284,7 +283,7 @@ function showPaymentDetail(paymentId) {
                 <div class="space-y-2 text-sm">
                     <div class="flex justify-between">
                         <span class="text-gray-600">Total Pembayaran</span>
-                        <span class="font-bold text-lg">Rp ${payment.amount.toLocaleString('id-ID')}</span>
+                        <span class="font-bold text-lg">Rp ${formatCurrency(payment.amount)}</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-600">Metode Pembayaran</span>

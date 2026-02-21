@@ -49,7 +49,7 @@ Route::get('/', function () {
     // Ambil semua motor yang sudah diverifikasi untuk ditampilkan di halaman welcome
     $motors = \App\Models\Motor::where('status', 'available')
         ->whereNotNull('verified_at')
-        ->with(['rentalRate', 'owner'])
+        ->with(['rentalRate', 'owner', 'bookings'])
         ->orderBy('verified_at', 'desc')
         ->get();
     

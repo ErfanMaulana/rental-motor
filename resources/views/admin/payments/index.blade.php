@@ -8,15 +8,15 @@
     <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
         <div class="text-center">
             <p class="text-xs text-gray-500 mb-1">Total Pembayaran</p>
-            <p class="text-2xl font-semibold text-gray-900">{{ $summary['total_payments'] }}</p>
+            <p class="text-2xl font-semibold text-blue-600">{{ $summary['total_payments'] }}</p>
         </div>
         <div class="text-center">
             <p class="text-xs text-gray-500 mb-1">Menunggu Verifikasi</p>
-            <p class="text-2xl font-semibold text-yellow-600">{{ $summary['unverified_payments'] }}</p>
+            <p class="text-2xl font-semibold text-blue-600">{{ $summary['unverified_payments'] }}</p>
         </div>
         <div class="text-center">
             <p class="text-xs text-gray-500 mb-1">Sudah Diverifikasi</p>
-            <p class="text-2xl font-semibold text-green-600">{{ $summary['verified_payments'] }}</p>
+            <p class="text-2xl font-semibold text-blue-600">{{ $summary['verified_payments'] }}</p>
         </div>
         <div class="text-center">
             <p class="text-xs text-gray-500 mb-1">Nilai Pending</p>
@@ -143,7 +143,6 @@
                                     <i class="bi bi-x-circle mr-1"></i>Ditolak
                                 </span>
                             @endif
-                            <div class="text-xs text-gray-500 mt-1">oleh {{ $payment->verifiedBy->name }}</div>
                         @else
                             <span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded inline-flex items-center">
                                 <i class="bi bi-clock mr-1"></i>Menunggu

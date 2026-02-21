@@ -80,15 +80,20 @@ use Illuminate\Support\Facades\Storage;
     </div>
     <div class="w-full md:w-auto">
         <form method="GET" action="{{ route('pemilik.motors') }}" class="flex gap-2">
-            <input type="text" class="flex-1 md:w-64 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" name="search" value="{{ request('search') }}" placeholder="Cari motor...">
-            <select class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" name="status">
+            <input type="text" 
+                   class="flex-1 md:w-64 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                   name="search" 
+                   value="{{ request('search') }}" 
+                   placeholder="Cari motor...">
+            <select class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                    name="status">
                 <option value="">Semua Status</option>
                 <option value="pending_verification" {{ request('status') == 'pending_verification' ? 'selected' : '' }}>Menunggu Verifikasi</option>
                 <option value="available" {{ request('status') == 'available' ? 'selected' : '' }}>Tersedia</option>
                 <option value="rented" {{ request('status') == 'rented' ? 'selected' : '' }}>Disewa</option>
                 <option value="maintenance" {{ request('status') == 'maintenance' ? 'selected' : '' }}>Maintenance</option>
             </select>
-            <button class="px-4 py-2 bg-white border border-blue-600 text-blue-600 hover:bg-blue-50 rounded-lg transition" type="submit">
+            <button class="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition" type="submit">
                 <i class="bi bi-search"></i>
             </button>
         </form>
@@ -97,11 +102,11 @@ use Illuminate\Support\Facades\Storage;
 
 <!-- Motors List -->
 @if($motors->count() > 0)
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div style="display: grid !important; grid-template-columns: repeat(4, 1fr) !important; gap: 1.5rem !important;">
         @foreach($motors as $motor)
-        <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-visible motor-card hover:shadow-md transition-shadow">
+        <div class="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-200" style="display: block !important;">
             <!-- Motor Image -->
-            <div class="relative overflow-hidden rounded-t-lg" style="aspect-ratio: 4/3;">
+            <div class="relative overflow-hidden rounded-t-lg" style="height: 200px; min-height: 200px;">
                 @if($motor->photo)
                     <img src="{{ Storage::url($motor->photo) }}" 
                          class="w-full h-full object-cover" 
@@ -119,27 +124,27 @@ use Illuminate\Support\Facades\Storage;
                     @endphp
                     
                     @if($currentStatus === 'pending_verification')
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-yellow-500 text-white">
-                            <i class="bi bi-clock mr-0.5 text-[10px]"></i>Menunggu Verifikasi
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 border border-yellow-300">
+                            <i class="bi bi-clock mr-1"></i>Menunggu Verifikasi
                         </span>
                     @elseif($currentStatus === 'rented')
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-orange-500 text-white">
-                            <i class="bi bi-person-check mr-0.5 text-[10px]"></i>Disewa
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-800 border border-orange-300">
+                            <i class="bi bi-person-check mr-1"></i>Disewa
                         </span>
                     @elseif($currentStatus === 'available')
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-500 text-white">
-                            <i class="bi bi-check-circle mr-0.5 text-[10px]"></i>Tersedia
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-300">
+                            <i class="bi bi-check-circle mr-1"></i>Tersedia
                         </span>
                     @elseif($currentStatus === 'maintenance')
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-500 text-white">
-                            <i class="bi bi-tools mr-0.5 text-[10px]"></i>Maintenance
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800 border border-gray-300">
+                            <i class="bi bi-tools mr-1"></i>Maintenance
                         </span>
                     @endif
                 </div>
             </div>
 
             <!-- Motor Info -->
-            <div class="p-2">
+            <div class="p-3 flex-grow flex flex-col">
                 <h5 class="text-sm font-semibold text-gray-900 flex items-center mb-1">
                     <i class="bi bi-motorcycle text-blue-600 mr-1 text-sm"></i>
                     {{ $motor->model }}
@@ -211,7 +216,7 @@ use Illuminate\Support\Facades\Storage;
             </div>
 
             <!-- Card Footer with Action Buttons -->
-            <div class="bg-gray-50 px-3 py-2.5 border-t border-gray-100">
+            <div class="bg-gray-50 px-3 py-2.5 border-t border-gray-100 mt-auto">
                 <div class="flex justify-between items-center">
                     <small class="text-gray-500 text-[10px]">
                         <i class="bi bi-calendar mr-1 text-[10px]"></i>

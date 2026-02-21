@@ -27,8 +27,8 @@
             <div class="p-6">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
-                        <div class="p-3 rounded-lg bg-cyan-100">
-                            <i class="bi bi-scooter text-2xl text-cyan-600"></i>
+                        <div class="p-3 rounded-lg bg-blue-100">
+                            <i class="bi bi-scooter text-2xl text-blue-600"></i>
                         </div>
                     </div>
                     <div class="ml-5 w-0 flex-1">
@@ -45,8 +45,8 @@
             <div class="p-6">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
-                        <div class="p-3 rounded-lg bg-yellow-100">
-                            <i class="bi bi-calendar-check text-2xl text-yellow-600"></i>
+                        <div class="p-3 rounded-lg bg-blue-100">
+                            <i class="bi bi-calendar-check text-2xl text-blue-600"></i>
                         </div>
                     </div>
                     <div class="ml-5 w-0 flex-1">
@@ -63,8 +63,8 @@
             <div class="p-6">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
-                        <div class="p-3 rounded-lg bg-green-100">
-                            <i class="bi bi-currency-dollar text-2xl text-green-600"></i>
+                        <div class="p-3 rounded-lg bg-blue-100">
+                            <i class="bi bi-currency-dollar text-2xl text-blue-600"></i>
                         </div>
                     </div>
                     <div class="ml-5 w-0 flex-1">
@@ -84,25 +84,25 @@
             <div class="text-2xl font-bold text-blue-700">{{ $totalPenyewa }}</div>
             <div class="text-xs text-blue-600 mt-1">Penyewa</div>
         </div>
-        <div class="bg-gradient-to-br from-cyan-50 to-cyan-100 rounded-lg p-4 text-center">
-            <div class="text-2xl font-bold text-cyan-700">{{ $totalPemilik }}</div>
-            <div class="text-xs text-cyan-600 mt-1">Pemilik</div>
+        <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 text-center">
+            <div class="text-2xl font-bold  text-blue-700">{{ $totalPemilik }}</div>
+            <div class="text-xs text-blue-600 mt-1">Pemilik</div>
         </div>
-        <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg p-4 text-center">
-            <div class="text-2xl font-bold text-yellow-700">{{ $pendingMotorsCount }}</div>
-            <div class="text-xs text-yellow-600 mt-1">Perlu Verifikasi</div>
+        <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 text-center">
+            <div class="text-2xl font-bold  text-blue-700">{{ $pendingMotorsCount }}</div>
+            <div class="text-xs text-blue-600 mt-1">Perlu Verifikasi</div>
         </div>
-        <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 text-center">
-            <div class="text-2xl font-bold text-green-700">{{ $availableMotors }}</div>
-            <div class="text-xs text-green-600 mt-1">Motor Tersedia</div>
+        <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 text-center">
+            <div class="text-2xl font-bold  text-blue-700">{{ $availableMotors }}</div>
+            <div class="text-xs text-blue-600 mt-1">Motor Tersedia</div>
         </div>
-        <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4 text-center">
-            <div class="text-2xl font-bold text-purple-700">{{ $pendingBookings }}</div>
-            <div class="text-xs text-purple-600 mt-1">Booking Pending</div>
+        <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 text-center">
+            <div class="text-2xl font-bold  text-blue-700">{{ $pendingBookings }}</div>
+            <div class="text-xs text-blue-600 mt-1">Booking Pending</div>
         </div>
-        <div class="bg-gradient-to-br from-pink-50 to-pink-100 rounded-lg p-4 text-center">
-            <div class="text-2xl font-bold text-pink-700">{{ $activeBookings }}</div>
-            <div class="text-xs text-pink-600 mt-1">Booking Aktif</div>
+        <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 text-center">
+            <div class="text-2xl font-bold  text-blue-700">{{ $activeBookings }}</div>
+            <div class="text-xs text-blue-600 mt-1">Booking Aktif</div>
         </div>
     </div>
 
@@ -172,14 +172,31 @@
                                     {{ \Carbon\Carbon::parse($booking->start_date)->format('d M Y') }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                        @if($booking->status === 'confirmed') bg-blue-100 text-blue-800
-                                        @elseif($booking->status === 'completed') bg-green-100 text-green-800
-                                        @elseif($booking->status === 'cancelled') bg-red-100 text-red-800
-                                        @else bg-gray-100 text-gray-800
-                                        @endif">
-                                        {{ ucfirst($booking->status) }}
-                                    </span>
+                                    @if($booking->status == 'pending')
+                                        <span class="px-2.5 py-1 text-xs font-medium bg-yellow-100 text-yellow-700 rounded">
+                                            Menunggu
+                                        </span>
+                                    @elseif($booking->status == 'confirmed')
+                                        <span class="px-2.5 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded">
+                                            Dikonfirmasi
+                                        </span>
+                                    @elseif($booking->status == 'ongoing' || $booking->status == 'active')
+                                        <span class="px-2.5 py-1 text-xs font-medium bg-green-100 text-green-700 rounded">
+                                            Berlangsung
+                                        </span>
+                                    @elseif($booking->status == 'completed')
+                                        <span class="px-2.5 py-1 text-xs font-medium bg-purple-100 text-purple-700 rounded">
+                                            Selesai
+                                        </span>
+                                    @elseif($booking->status == 'cancelled')
+                                        <span class="px-2.5 py-1 text-xs font-medium bg-red-100 text-red-700 rounded">
+                                            Dibatalkan
+                                        </span>
+                                    @else
+                                        <span class="px-2.5 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded">
+                                            {{ ucfirst($booking->status) }}
+                                        </span>
+                                    @endif
                                 </td>
                             </tr>
                             @endforeach

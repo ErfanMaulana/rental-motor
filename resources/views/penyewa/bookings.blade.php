@@ -1,20 +1,15 @@
 @extends('layouts.fann')
 
-@section('title', 'Riwayat Pemesanan')
+@section('title', 'Riwayat Pemesanan - Kelola dan pantau semua pemesanan motor Anda')
 
 @section('content')
 <!-- Content Header -->
-<div class="mb-6">
-    <h1 class="text-3xl font-bold text-gray-900">Riwayat Pemesanan</h1>
-    <p class="text-gray-600 mt-1">Kelola dan pantau semua pemesanan motor Anda</p>
-</div>
-
 <!-- Stats Cards -->
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
         <div class="flex justify-between items-center">
             <div>
-                <h3 class="text-2xl font-bold text-gray-900">{{ $bookings->total() }}</h3>
+                <h3 class="text-2xl font-bold text-blue-600">{{ $bookings->total() }}</h3>
                 <p class="text-gray-500 text-sm mt-1">Total Booking</p>
             </div>
             <i class="bi bi-calendar-check text-4xl text-gray-300"></i>
@@ -23,7 +18,7 @@
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
         <div class="flex justify-between items-center">
             <div>
-                <h3 class="text-2xl font-bold text-yellow-600">{{ $bookings->where('status', 'pending')->count() }}</h3>
+                <h3 class="text-2xl font-bold text-blue-600">{{ $bookings->where('status', 'pending')->count() }}</h3>
                 <p class="text-gray-500 text-sm mt-1">Menunggu</p>
             </div>
             <i class="bi bi-clock text-4xl text-gray-300"></i>
@@ -32,7 +27,7 @@
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
         <div class="flex justify-between items-center">
             <div>
-                <h3 class="text-2xl font-bold text-green-600">{{ $bookings->where('status', 'active')->count() }}</h3>
+                <h3 class="text-2xl font-bold text-blue-600">{{ $bookings->where('status', 'active')->count() }}</h3>
                 <p class="text-gray-500 text-sm mt-1">Aktif</p>
             </div>
             <i class="bi bi-play-circle text-4xl text-gray-300"></i>

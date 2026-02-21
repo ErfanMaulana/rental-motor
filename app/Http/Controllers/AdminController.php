@@ -575,9 +575,9 @@ class AdminController extends Controller
             $status = $request->status;
             
             if ($status === 'rented') {
-                // Motor sedang disewa: punya booking dengan status confirmed dan tanggal sedang berlangsung
+                // Motor sedang disewa: punya booking dengan status confirmed/active dan tanggal sedang berlangsung
                 $query->whereHas('bookings', function($q) {
-                    $q->where('status', 'confirmed')
+                    $q->whereIn('status', ['confirmed', 'active'])
                       ->where('start_date', '<=', now()->format('Y-m-d'))
                       ->where('end_date', '>=', now()->format('Y-m-d'));
                 });
@@ -588,7 +588,7 @@ class AdminController extends Controller
                 // Untuk available, pastikan tidak sedang disewa
                 if ($status === 'available') {
                     $query->whereDoesntHave('bookings', function($q) {
-                        $q->where('status', 'confirmed')
+                        $q->whereIn('status', ['confirmed', 'active'])
                           ->where('start_date', '<=', now()->format('Y-m-d'))
                           ->where('end_date', '>=', now()->format('Y-m-d'));
                     });

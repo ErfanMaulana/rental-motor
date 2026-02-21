@@ -404,7 +404,7 @@
                     </div>
                 </div>
                 
-                <div class="col-lg-3 col-md-6">
+                <div class="col-lg-4 col-md-6">
                     <h5 class="fw-semibold mb-3 text-warning">Layanan</h5>
                     <ul class="list-unstyled">
                         <li class="mb-2"><a href="#" class="text-light opacity-75 text-decoration-none">Rental Motor Harian</a></li>
@@ -414,17 +414,7 @@
                     </ul>
                 </div>
                 
-                <div class="col-lg-2 col-md-6">
-                    <h5 class="fw-semibold mb-3 text-warning">Bantuan</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><a href="#" class="text-light opacity-75 text-decoration-none">FAQ</a></li>
-                        <li class="mb-2"><a href="#" class="text-light opacity-75 text-decoration-none">Cara Booking</a></li>
-                        <li class="mb-2"><a href="#" class="text-light opacity-75 text-decoration-none">Syarat & Ketentuan</a></li>
-                        <li class="mb-2"><a href="#" class="text-light opacity-75 text-decoration-none">Kebijakan Privasi</a></li>
-                    </ul>
-                </div>
-                
-                <div class="col-lg-3 col-md-6">
+                <div class="col-lg-4 col-md-6">
                     <h5 class="fw-semibold mb-3 text-warning">Kontak Saya</h5>
                     <div class="contact-info">
                         
@@ -437,15 +427,8 @@
                         
                         <div class="mb-3">
                             <i class="bi bi-telephone text-warning me-2"></i>
-                            <a href="tel:+6283820921722" class="text-light opacity-75 text-decoration-none">
+                            <a href="https://web.whatsapp.com/" target="_blank" class="text-light opacity-75 text-decoration-none">
                                 +62 838-2092-1722
-                            </a>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <i class="bi bi-whatsapp text-warning me-2"></i>
-                            <a href="https://wa.me/6283820921722" target="_blank" class="text-light opacity-75 text-decoration-none">
-                                WhatsApp
                             </a>
                         </div>
                     </div>

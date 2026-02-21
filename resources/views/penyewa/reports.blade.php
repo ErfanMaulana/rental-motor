@@ -1,14 +1,9 @@
 @extends('layouts.fann')
 
-@section('title', 'Laporan Rental')
+@section('title', 'Laporan Rental - Ringkasan aktivitas rental dan rating motor')
 
 @section('content')
 <!-- Content Header -->
-<div class="mb-6">
-    <h1 class="text-3xl font-bold text-gray-900">Laporan Rental Saya</h1>
-    <p class="text-gray-600 mt-1">Ringkasan aktivitas rental dan rating motor</p>
-</div>
-
 <!-- Statistics Cards -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center">
@@ -20,7 +15,7 @@
     </div>
     
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center">
-        <div class="text-green-600 mb-3">
+        <div class="text-blue-600 mb-3">
             <i class="bi bi-check-circle text-5xl"></i>
         </div>
         <h3 class="text-3xl font-bold text-gray-900">{{ $completedBookings }}</h3>
@@ -28,7 +23,7 @@
     </div>
     
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center">
-        <div class="text-yellow-600 mb-3">
+        <div class="text-blue-600 mb-3">
             <i class="bi bi-clock text-5xl"></i>
         </div>
         <h3 class="text-3xl font-bold text-gray-900">{{ $activeBookings }}</h3>

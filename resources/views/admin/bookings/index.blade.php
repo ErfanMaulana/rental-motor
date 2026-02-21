@@ -8,11 +8,11 @@
     <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
         <div class="text-center">
             <p class="text-xs text-gray-500 mb-1">Total Pemesanan</p>
-            <p class="text-2xl font-semibold text-gray-900">{{ $bookings->total() }}</p>
+            <p class="text-2xl font-semibold text-blue-600">{{ $bookings->total() }}</p>
         </div>
         <div class="text-center">
             <p class="text-xs text-gray-500 mb-1">Menunggu</p>
-            <p class="text-2xl font-semibold text-yellow-600">{{ $stats['pending'] ?? 0 }}</p>
+            <p class="text-2xl font-semibold text-blue-600">{{ $stats['pending'] ?? 0 }}</p>
         </div>
         <div class="text-center">
             <p class="text-xs text-gray-500 mb-1">Dikonfirmasi</p>
@@ -20,7 +20,7 @@
         </div>
         <div class="text-center">
             <p class="text-xs text-gray-500 mb-1">Berlangsung</p>
-            <p class="text-2xl font-semibold text-green-600">{{ $stats['ongoing'] ?? 0 }}</p>
+            <p class="text-2xl font-semibold text-blue-600">{{ $stats['ongoing'] ?? 0 }}</p>
         </div>
     </div>
 </div>

@@ -54,18 +54,18 @@
                                             <small class="text-muted">Mulai dari</small>
                                             <div class="price">
                                                 <span class="text-decoration-line-through text-muted">Rp 100K</span>
-                                                <strong class="text-success d-block">Rp 75K/hari</strong>
+                                                <strong class="text-primary d-block">Rp 75K/hari</strong>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="col-6">
                                         <div class="promo-item bg-light p-3 rounded-3 text-center">
-                                            <i class="text-success mb-2" style="font-size: 2rem;"></i>
+                                            <i class="text-primary mb-2" style="font-size: 2rem;"></i>
                                             <h6 class="fw-semibold">Motor Sport</h6>
                                             <small class="text-muted">Mulai dari</small>
                                             <div class="price">
                                                 <span class="text-decoration-line-through text-muted">Rp 200K</span>
-                                                <strong class="text-success d-block">Rp 150K/hari</strong>
+                                                <strong class="text-primary d-block">Rp 150K/hari</strong>
                                             </div>
                                         </div>
                                     </div>
@@ -120,7 +120,7 @@
             <div class="col-lg-4 col-md-6">
                 <div class="feature-card text-center p-4 h-100">
                     <div class="feature-icon mb-3">
-                        <i class="bi bi-currency-dollar text-success" style="font-size: 3rem;"></i>
+                        <i class="bi bi-currency-dollar text-primary" style="font-size: 3rem;"></i>
                     </div>
                     <h5 class="fw-semibold mb-3">Harga Terjangkau</h5>
                     <p class="text-muted">Berbagai pilihan motor dengan harga kompetitif. Dapatkan promo menarik setiap bulannya.</p>
@@ -129,7 +129,7 @@
             <div class="col-lg-4 col-md-6">
                 <div class="feature-card text-center p-4 h-100">
                     <div class="feature-icon mb-3">
-                        <i class="bi bi-clock text-warning" style="font-size: 3rem;"></i>
+                        <i class="bi bi-clock text-primary" style="font-size: 3rem;"></i>
                     </div>
                     <h5 class="fw-semibold mb-3">Proses Cepat</h5>
                     <p class="text-muted">Booking mudah dan konfirmasi langsung. Layanan 24/7 siap membantu kapan saja.</p>
@@ -156,7 +156,19 @@
                 <div class="card h-100 border-0 shadow-sm">
                     <!-- Badge Status -->
                     <div class="position-absolute top-0 start-0 m-3 z-1">
-                        <span class="badge bg-success">Tersedia</span>
+                        @php
+                            $currentStatus = $motor->getCurrentStatus();
+                        @endphp
+                        
+                        @if($currentStatus === 'available')
+                            <span class="badge bg-success">Tersedia</span>
+                        @elseif($currentStatus === 'rented')
+                            <span class="badge bg-warning">Sedang Disewa</span>
+                        @elseif($currentStatus === 'maintenance')
+                            <span class="badge bg-secondary">Maintenance</span>
+                        @else
+                            <span class="badge bg-secondary">{{ ucfirst($currentStatus) }}</span>
+                        @endif
                     </div>
                     
                     <!-- Motor Image -->
@@ -201,11 +213,11 @@
                             </div>
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <span class="text-muted small">Mingguan</span>
-                                <span class="fw-semibold text-success">Rp {{ number_format($motor->rentalRate->weekly_rate, 0, ',', '.') }}</span>
+                                <span class="fw-semibold text-primary">Rp {{ number_format($motor->rentalRate->weekly_rate, 0, ',', '.') }}</span>
                             </div>
                             <div class="d-flex justify-content-between align-items-center">
                                 <span class="text-muted small">Bulanan</span>
-                                <span class="fw-semibold text-info">Rp {{ number_format($motor->rentalRate->monthly_rate, 0, ',', '.') }}</span>
+                                <span class="fw-semibold text-primary">Rp {{ number_format($motor->rentalRate->monthly_rate, 0, ',', '.') }}</span>
                             </div>
                         </div>
                         @endif
@@ -228,6 +240,181 @@
             <p class="text-muted">Belum ada motor yang tersedia saat ini</p>
         </div>
         @endif
+    </div>
+</section>
+
+<!-- Bantuan Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h2 class="fw-bold mb-3">Bantuan</h2>
+                <p class="text-muted mb-5">Panduan lengkap untuk memudahkan pengalaman rental motor Anda</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <!-- FAQ -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-4">
+                            <h4 class="fw-bold mb-0">FAQ</h4>
+                        </div>
+                        <p class="text-muted mb-4">
+                            Frequently Asked Questions (FAQ) berisi jawaban dari pertanyaan-pertanyaan yang sering ditanyakan seputar layanan rental motor kami.
+                        </p>
+                        
+                        <div class="accordion accordion-flush" id="accordionFAQ">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                        <strong>Apa saja persyaratan untuk menyewa motor?</strong>
+                                    </button>
+                                </h2>
+                                <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#accordionFAQ">
+                                    <div class="accordion-body">
+                                        Anda harus memiliki KTP, SIM C, dan melakukan deposit sesuai ketentuan pemilik motor.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                        <strong>Bagaimana cara pembayaran?</strong>
+                                    </button>
+                                </h2>
+                                <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#accordionFAQ">
+                                    <div class="accordion-body">
+                                        Pembayaran dapat dilakukan melalui berbagai metode: <strong>Dana</strong>, <strong>GoPay</strong>, <strong>ShopeePay</strong>, atau <strong>Transfer Bank</strong>. Semua pembayaran akan dikonfirmasi oleh pemilik motor.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                        <strong>Apakah bisa sewa motor untuk jangka panjang?</strong>
+                                    </button>
+                                </h2>
+                                <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#accordionFAQ">
+                                    <div class="accordion-body">
+                                        Ya, kami menyediakan paket sewa mingguan dan bulanan dengan harga lebih hemat.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Cara Booking -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-4">
+                            <h4 class="fw-bold mb-0">Cara Booking</h4>
+                        </div>
+                        <p class="text-muted mb-4">
+                            Panduan langkah demi langkah untuk melakukan booking motor dengan mudah dan cepat di platform FannRental.
+                        </p>
+                        
+                        <div class="booking-steps">
+                            <div class="d-flex mb-4">
+                                <div class="flex-shrink-0">
+                                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                        <strong>1</strong>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="fw-semibold mb-1">Daftar / Login</h6>
+                                    <p class="text-muted mb-0 small">Buat akun atau login jika sudah memiliki akun</p>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex mb-4">
+                                <div class="flex-shrink-0">
+                                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                        <strong>2</strong>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="fw-semibold mb-1">Pilih Motor</h6>
+                                    <p class="text-muted mb-0 small">Cari dan pilih motor yang sesuai dengan kebutuhan Anda</p>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex mb-4">
+                                <div class="flex-shrink-0">
+                                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                        <strong>3</strong>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="fw-semibold mb-1">Isi Form Booking</h6>
+                                    <p class="text-muted mb-0 small">Tentukan tanggal sewa dan isi data yang diperlukan</p>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex mb-4">
+                                <div class="flex-shrink-0">
+                                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                        <strong>4</strong>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="fw-semibold mb-1">Bayar & Konfirmasi</h6>
+                                    <p class="text-muted mb-0 small">Lakukan pembayaran dan tunggu konfirmasi dari pemilik</p>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex mb-4">
+                                <div class="flex-shrink-0">
+                                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                        <strong>5</strong>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="fw-semibold mb-1">Ambil Motor</h6>
+                                    <p class="text-muted mb-0 small">Setelah disetujui, Anda dapat mengambil motor sesuai jadwal</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Syarat & Ketentuan dan Kebijakan Privasi -->
+            <div class="col-12">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="bi bi-file-text text-primary me-2" style="font-size: 1.5rem;"></i>
+                                    <h5 class="fw-semibold mb-0">Syarat & Ketentuan</h5>
+                                </div>
+                                <p class="text-muted mb-0">
+                                    Informasi lengkap mengenai aturan dan ketentuan yang berlaku dalam menggunakan layanan rental motor kami.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="bi bi-shield-lock text-primary me-2" style="font-size: 1.5rem;"></i>
+                                    <h5 class="fw-semibold mb-0">Kebijakan Privasi</h5>
+                                </div>
+                                <p class="text-muted mb-0">
+                                    Komitmen kami dalam menjaga keamanan dan privasi data pribadi Anda selama menggunakan platform FannRental.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 @endsection

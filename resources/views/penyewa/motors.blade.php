@@ -1,14 +1,9 @@
 @extends('layouts.fann')
 
-@section('title', 'Daftar Motor - Penyewa')
+@section('title', 'Daftar Motor - Pilih motor yang ingin Anda sewa')
 
 @section('content')
 <!-- Content Header -->
-<div class="mb-6">
-    <h1 class="text-3xl font-bold text-gray-900">Daftar Motor</h1>
-    <p class="text-gray-600 mt-1">Pilih motor yang ingin Anda sewa</p>
-</div>
-
 <!-- Verification Status Alert -->
 @if(!$isVerified)
 <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 rounded-lg">
